@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/pig_128x128.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/pig_32x32.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/pig_16x16.ico">
+  <link rel="mask-icon" href="/images/pig_128x128.ico" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic|Roboto Slab:300,300italic,400,400italic,700,700italic|Rotoro Mono:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"slient2009.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="是时候抛弃自建站点的琐碎，拥抱Github+Hexo了！">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Hexo美化记录">
+<meta property="og:url" content="http://slient2009.github.io/2021/06/21/Hello-Hexo/index.html">
+<meta property="og:site_name" content="Slient2009">
+<meta property="og:description" content="是时候抛弃自建站点的琐碎，拥抱Github+Hexo了！">
+<meta property="og:locale" content="ja_JP">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20210815211733.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20210621200549.jpg">
+<meta property="article:published_time" content="2021-06-21T04:00:00.000Z">
+<meta property="article:modified_time" content="2021-08-16T13:47:10.000Z">
+<meta property="article:author" content="slient2009">
+<meta property="article:tag" content="配置">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20210815211733.png">
+
+<link rel="canonical" href="http://slient2009.github.io/2021/06/21/Hello-Hexo/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'ja'
+  };
+</script>
+
+  <title>Hexo美化记录 | Slient2009</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="ナビゲーションバーの切り替え">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Slient2009</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">All I need is Twin Island Milk</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>ホーム</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>プロフィール</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>タグ<span class="badge">4</span></a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>アーカイブ<span class="badge">6</span></a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="ja">
+    <link itemprop="mainEntityOfPage" href="http://slient2009.github.io/2021/06/21/Hello-Hexo/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/round_tiger.png">
+      <meta itemprop="name" content="slient2009">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Slient2009">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Hexo美化记录
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">投稿日</span>
+
+              <time title="作成日：2021-06-21 00:00:00" itemprop="dateCreated datePublished" datetime="2021-06-21T00:00:00-04:00">2021-06-21</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">編集日</span>
+                <time title="修正日：2021-08-16 09:47:10" itemprop="dateModified" datetime="2021-08-16T09:47:10-04:00">2021-08-16</time>
+              </span>
+
+          
+            <span class="post-meta-item" title="閲覧数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">閲覧数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>是时候抛弃自建站点的琐碎，拥抱Github+Hexo了！</p>
+<span id="more"></span>
+
+<h1 id="Hexo-Github"><a href="#Hexo-Github" class="headerlink" title="Hexo+Github"></a>Hexo+Github</h1><p>感谢<a target="_blank" rel="noopener" href="https://www.lucxer.tech/2020/08/09/hexo-github-zeit%E6%90%AD%E5%BB%BA%E5%8D%9A%E5%AE%A2/">Lucxer</a>的帖子帮助我快速部署，<br>本人的唯一贡献是证明Kali2021也能丝滑地完成配置。</p>
+<h1 id="Next主题美化"><a href="#Next主题美化" class="headerlink" title="Next主题美化"></a>Next主题美化</h1><p>Next主题优化参考自<a target="_blank" rel="noopener" href="https://huangpiao.tech/2019/01/24/Hexo%E5%8D%9A%E5%AE%A2%E4%BC%98%E5%8C%96%E4%B9%8BNext%E4%B8%BB%E9%A2%98%E7%BE%8E%E5%8C%96/">huangpiao.tech</a><br>文章摘要显示设置参考自<a target="_blank" rel="noopener" href="https://jiangding1990.github.io/2017/04/25/Hexo%E4%BD%BF%E7%94%A8NexT%E4%B8%BB%E9%A2%98%E8%AE%BE%E7%BD%AE%E4%B8%BB%E9%A1%B5%E6%98%BE%E7%A4%BA%E6%96%87%E7%AB%A0%E6%91%98%E8%A6%81%E6%96%B9%E6%B3%95/">春风十里</a><br>文章阴影设置参考自<a target="_blank" rel="noopener" href="https://www.cnblogs.com/iHeling/p/14095951.html">和玲</a><br>浏览进度设置参考自<a target="_blank" rel="noopener" href="https://www.jianshu.com/p/525feaf09b96">潘高PG</a><br>访问统计设置参考自<a target="_blank" rel="noopener" href="http://ibruce.info/2015/04/04/busuanzi/">不蒜子</a><br>代码块美化参考自<a target="_blank" rel="noopener" href="https://miaosakurai.com/2020/04/20/Hexo-NexT%E7%BE%8E%E5%8C%96%F0%9F%8D%95Mac-Panel%E9%A3%8E%E6%A0%BC%E4%BB%A3%E7%A0%81%E5%9D%97%E9%85%8D%E7%BD%AE/">樱井喵</a></p>
+<h1 id="Qv2ray"><a href="#Qv2ray" class="headerlink" title="Qv2ray"></a>Qv2ray</h1><p>因为GitHub总是有故低速连接或者直接连不上，所以可能需要使用Qv2ray来代理一下。<br>Qv2ray配置参考自<a target="_blank" rel="noopener" href="https://www.imangie.com/goods/643.html/comment-page-1">imangie</a><br>Git代理配置参考自<a target="_blank" rel="noopener" href="https://blog.csdn.net/default7/article/details/100068256">CSDN</a></p>
+<h1 id="Typora-PicGo-Github"><a href="#Typora-PicGo-Github" class="headerlink" title="Typora + PicGo + Github"></a>Typora + PicGo + Github</h1><p>既然Hexo都部署好了，那么本地的Typora也得加强一下吧。<br>这里使用Github作为图床方便本地的文档快速转成在线的文章，比之前的sm.ms图床要好一些。<br>Typora+PicGo配置参考自<a target="_blank" rel="noopener" href="https://blog.csdn.net/weixin_40962970/article/details/114581733">godven</a>和<a target="_blank" rel="noopener" href="https://blog.csdn.net/weixin_42104572/article/details/113752304?depth_1-">PicGo + Github 图床配置踩坑过程</a>。<br>要注意的是不能上传同名文件，PicGo可以设置自动以时间戳重命名。</p>
+<h1 id="修改GitHub连接方式"><a href="#修改GitHub连接方式" class="headerlink" title="修改GitHub连接方式"></a>修改GitHub连接方式</h1><p>之前在部署的时候为了图方便，GitHub项目的登录还是使用的账户密码方式。但是Github近来强制禁止这样的不安全的登录方法，转而要求使用ssh-key登录，于是，打算更新博客的时候，便遇到了<code>Support for password authentication was removed on August 13, 2021. Please use a personal access token instead</code>的报错。</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20210815211733.png" alt="image-20210815211721768"></p>
+<p>要把登录方式从之前的账户密码变更为密钥登录，需要进行如下步骤。</p>
+<ol>
+<li>在本地使用生成公私钥对，并配置到Github上面，仍然可以参考<a target="_blank" rel="noopener" href="https://www.lucxer.tech/2020/08/09/hexo-github-zeit%E6%90%AD%E5%BB%BA%E5%8D%9A%E5%AE%A2/">Lucxer</a>。</li>
+<li>修改Hexo的配置文件，将部署方式从https改成ssh。<a target="_blank" rel="noopener" href="https://www.cnblogs.com/yaoel/p/5381826.html">使用Github SSH Key来避免Hexo部署时输入账户密码</a>。</li>
+<li>对于blog/.deploy_git/.git/config文件，应该删除[credential]字段，并对应修改remote地址为ssh地址。（不改也还是可以正常部署）</li>
+<li>收工。</li>
+</ol>
+<img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20210621200549.jpg" alt="PorcoRosso" style="zoom: 50%;" />
+
+
+
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E9%85%8D%E7%BD%AE/" rel="tag"># 配置</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/06/20/Hello-World/" rel="prev" title="Hello World">
+      <i class="fa fa-chevron-left"></i> Hello World
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/07/29/Nexus5-Flashing/" rel="next" title="Nexus5刷机体验">
+      Nexus5刷机体验 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          見出し
+        </li>
+        <li class="sidebar-nav-overview">
+          概要
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Hexo-Github"><span class="nav-number">1.</span> <span class="nav-text">Hexo+Github</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Next%E4%B8%BB%E9%A2%98%E7%BE%8E%E5%8C%96"><span class="nav-number">2.</span> <span class="nav-text">Next主题美化</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Qv2ray"><span class="nav-number">3.</span> <span class="nav-text">Qv2ray</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Typora-PicGo-Github"><span class="nav-number">4.</span> <span class="nav-text">Typora + PicGo + Github</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BF%AE%E6%94%B9GitHub%E8%BF%9E%E6%8E%A5%E6%96%B9%E5%BC%8F"><span class="nav-number">5.</span> <span class="nav-text">修改GitHub连接方式</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="slient2009"
+      src="/images/round_tiger.png">
+  <p class="site-author-name" itemprop="name">slient2009</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">6</span>
+          <span class="site-state-item-name">ポスト</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">タグ</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">slient2009</span>
+</div>
+
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="合計閲覧者数">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="閲覧合計数">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

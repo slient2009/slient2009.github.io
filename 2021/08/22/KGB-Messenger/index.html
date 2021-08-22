@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/pig_128x128.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/pig_32x32.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/pig_16x16.ico">
+  <link rel="mask-icon" href="/images/pig_128x128.ico" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic|Roboto Slab:300,300italic,400,400italic,700,700italic|Rotoro Mono:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"slient2009.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="本文以一个开源的Android Crackme–KGB-Messenger，作为实验对象，把最近学习的Frida动态调试和Apktool回编译流程复习一下。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="KGB-Messenger：静态分析、Frida动态调试、Apktool回编译的复习">
+<meta property="og:url" content="http://slient2009.github.io/2021/08/22/KGB-Messenger/index.html">
+<meta property="og:site_name" content="Slient2009">
+<meta property="og:description" content="本文以一个开源的Android Crackme–KGB-Messenger，作为实验对象，把最近学习的Frida动态调试和Apktool回编译流程复习一下。">
+<meta property="og:locale" content="ja_JP">
+<meta property="og:image" content="c:/Users/wenake/AppData/Roaming/Typora/typora-user-images/image-20210822194617036.png">
+<meta property="og:image" content="c:/Users/wenake/AppData/Roaming/Typora/typora-user-images/image-20210822194622824.png">
+<meta property="og:image" content="c:/Users/wenake/AppData/Roaming/Typora/typora-user-images/image-20210822195538116.png">
+<meta property="og:image" content="c:/Users/wenake/AppData/Roaming/Typora/typora-user-images/image-20210822171222492.png">
+<meta property="og:image" content="c:/Users/wenake/AppData/Roaming/Typora/typora-user-images/image-20210822171549896.png">
+<meta property="og:image" content="c:/Users/wenake/AppData/Roaming/Typora/typora-user-images/image-20210822112707403.png">
+<meta property="og:image" content="c:/Users/wenake/AppData/Roaming/Typora/typora-user-images/image-20210822172249232.png">
+<meta property="og:image" content="c:/Users/wenake/AppData/Roaming/Typora/typora-user-images/image-20210822172642033.png">
+<meta property="og:image" content="c:/Users/wenake/AppData/Roaming/Typora/typora-user-images/image-20210822173624384.png">
+<meta property="og:image" content="c:/Users/wenake/AppData/Roaming/Typora/typora-user-images/image-20210822173621209.png">
+<meta property="og:image" content="c:/Users/wenake/AppData/Roaming/Typora/typora-user-images/image-20210822113407609.png">
+<meta property="og:image" content="c:/Users/wenake/AppData/Roaming/Typora/typora-user-images/image-20210822174958584.png">
+<meta property="article:published_time" content="2021-08-22T04:00:00.000Z">
+<meta property="article:modified_time" content="2021-08-22T12:19:24.000Z">
+<meta property="article:author" content="slient2009">
+<meta property="article:tag" content="Android">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="c:/Users/wenake/AppData/Roaming/Typora/typora-user-images/image-20210822194617036.png">
+
+<link rel="canonical" href="http://slient2009.github.io/2021/08/22/KGB-Messenger/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'ja'
+  };
+</script>
+
+  <title>KGB-Messenger：静态分析、Frida动态调试、Apktool回编译的复习 | Slient2009</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="ナビゲーションバーの切り替え">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Slient2009</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">All I need is Twin Island Milk</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>ホーム</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>プロフィール</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>タグ<span class="badge">4</span></a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>アーカイブ<span class="badge">6</span></a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="ja">
+    <link itemprop="mainEntityOfPage" href="http://slient2009.github.io/2021/08/22/KGB-Messenger/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/round_tiger.png">
+      <meta itemprop="name" content="slient2009">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Slient2009">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          KGB-Messenger：静态分析、Frida动态调试、Apktool回编译的复习
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">投稿日</span>
+              
+
+              <time title="作成日：2021-08-22 00:00:00 / 修正日：08:19:24" itemprop="dateCreated datePublished" datetime="2021-08-22T00:00:00-04:00">2021-08-22</time>
+            </span>
+
+          
+            <span class="post-meta-item" title="閲覧数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">閲覧数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>本文以一个开源的Android Crackme–KGB-Messenger，作为实验对象，把最近学习的Frida动态调试和Apktool回编译流程复习一下。</p>
+<span id="more"></span>
+
+<p>步骤参考自非虫-Android软件安全权威指南以及<a target="_blank" rel="noopener" href="https://blog.csdn.net/sinat_29712445/article/details/48104019">apk文件反编译、回编译和签名之完全教程</a></p>
+<p>本次实验使用开源的Android逆向Crackme <a target="_blank" rel="noopener" href="https://github.com/tlamb96/kgb_messenger"><code>KGB-Messenger</code></a></p>
+<h2 id="安装apktool"><a href="#安装apktool" class="headerlink" title="安装apktool"></a>安装apktool</h2><ol>
+<li>下载 Windows版本的 <a target="_blank" rel="noopener" href="https://raw.githubusercontent.com/iBotPeaches/Apktool/master/scripts/windows/apktool.bat">wrapper script</a> (右键链接另存为 <code>apktool.bat</code>)</li>
+<li>下载 apktool (<a target="_blank" rel="noopener" href="https://bitbucket.org/iBotPeaches/apktool/downloads/">下载列表</a>)</li>
+<li>重命名上步下载的 jar 包为 <code>apktool.jar</code></li>
+<li>将 <code>apktool.bat</code>和<code>apktool.jar</code>移动到同一个目录下 (不运行apktool.bat) 并将此文件夹添加进环境变量</li>
+<li>使用 <code>apktool -version</code> 验证是否配置成功，出现版本号则说明配置成功</li>
+</ol>
+<h2 id="逆向分析"><a href="#逆向分析" class="headerlink" title="逆向分析"></a>逆向分析</h2><p>该Crackme还是比较入门的，先拖进Jeb静态逆向分析，结合frida动态调试把flag找出来。</p>
+<p>先是一个环境检查，要求设备的所属地区为<code>Russia</code>，且用户名为<code>RkxBR3s1N0VSTDFOR180UkNIM1J9Cg==</code>（解码为<code>FLAG&#123;57ERL1NG_4RCH3R&#125;</code>），不然直接弹窗提示错误信息。直接Hook绕过。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> System = Java.use(<span class="string">&quot;java.lang.System&quot;</span>);</span><br><span class="line">System.getProperty.overload(<span class="string">&quot;java.lang.String&quot;</span>).implementation = function(argStr)&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="string">&quot;Russia&quot;</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        System.getenv.overload(<span class="string">&#x27;java.lang.String&#x27;</span>).implementation = function(str)&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="string">&quot;RkxBR3s1N0VSTDFOR180UkNIM1J=9Cg==&quot;</span>;</span><br><span class="line">        &#125;</span><br></pre></td></tr></table></figure>
+
+<p>接下来验证用户名和密码。<br>通过伪代码可以看到，用户名得是<code>codenameduchess</code>，且指定了密码的md5值。<br>把md5值去掉开头的6位和末尾的8位，然后到<a target="_blank" rel="noopener" href="https://www.somd5.com/">somd5</a>去查，得到明文为<code>guest</code>。<br>输入合法的用户名和密码，<code>LoginActivity.i()</code>会Toast出第二个<code>FLAG&#123;GOOG13_PRO&#125;</code>。</p>
+<p><img src="C:\Users\wenake\AppData\Roaming\Typora\typora-user-images\image-20210822194617036.png" alt="image-20210822194617036"></p>
+<p><img src="C:\Users\wenake\AppData\Roaming\Typora\typora-user-images\image-20210822194622824.png" alt="image-20210822194622824"></p>
+<p>接下来来到聊天界面<code>MessengerActivity</code>。</p>
+<p><code>MessengerActivity.onSendMessage()</code>作为发送的监听函数，大致反应了最后一关的逻辑：<br>先后发送两句话，分别满足<code>this.a(v1.toString()).equals(this.p)</code>和<code>this.b(v1.toString()).equals(this.r)</code>的要求，然后在<code>this.i()</code>方法中，基于这两句话构造出最后一个flag。<br><code>this.a()</code>是一个可逆的加密算法，<code>this.b()</code>不可逆，需要爆破然后手动补全，代码如下：</p>
+<p><img src="C:\Users\wenake\AppData\Roaming\Typora\typora-user-images\image-20210822195538116.png" alt="image-20210822195538116"></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">pp = <span class="string">&quot;V@]EAASB\u0012WZF\u0012e,a$7(&amp;am2(3.\u0003&quot;</span></span><br><span class="line">p = <span class="built_in">list</span>(pp)</span><br><span class="line">lp = <span class="built_in">len</span>(p)</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> ind <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">0</span>, lp//<span class="number">2</span>):</span><br><span class="line">    tmp = p[ind]</span><br><span class="line">    p[ind] = <span class="built_in">chr</span>(<span class="built_in">ord</span>(p[lp-ind-<span class="number">1</span>]) ^ <span class="number">65</span>)</span><br><span class="line">    p[lp - ind -<span class="number">1</span>] = <span class="built_in">chr</span>(<span class="built_in">ord</span>(tmp) ^ <span class="number">50</span>)</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(<span class="string">&#x27;&#x27;</span>.join(p))</span><br><span class="line"></span><br><span class="line">rr = <span class="string">&quot;\u0000dslp&#125;oQ\u0000 dks$|M\u0000h +AYQg\u0000P*!M$gQ\u0000&quot;</span></span><br><span class="line">r = <span class="built_in">list</span>(rr)</span><br><span class="line">lr = <span class="built_in">len</span>(r)</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> ind <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">0</span>, lr//<span class="number">2</span>):</span><br><span class="line">    tmp = r[ind]</span><br><span class="line">    r[ind] = r[lr-ind-<span class="number">1</span>]</span><br><span class="line">    r[lr-ind-<span class="number">1</span>] = tmp</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> ind <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">0</span>, lr):</span><br><span class="line">    <span class="keyword">for</span> c <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">0</span>,<span class="number">128</span>):</span><br><span class="line">        <span class="keyword">if</span>(c&gt;&gt;(ind%<span class="number">8</span>) ^ c == <span class="built_in">ord</span>(r[ind])):</span><br><span class="line">            <span class="built_in">print</span>(<span class="built_in">chr</span>(c), end=<span class="string">&#x27;&#x27;</span>)</span><br><span class="line">            <span class="keyword">break</span></span><br><span class="line"><span class="comment"># 输出为</span></span><br><span class="line"><span class="comment"># Boris, give me the password</span></span><br><span class="line"><span class="comment"># ay I *PEASE* hve the assword  手动补全为 May I *PEASE* have the Password?</span></span><br></pre></td></tr></table></figure>
+
+<p>最终得到第三个flag：<code>FLAG&#123;p455w0rd_P134SE&#125;</code></p>
+<p><strong>字符串00截断</strong></p>
+<p><code>MessengerActivity.r=&quot;\u0000dslp&#125;oQ\u0000 dks$|M\u0000h +AYQg\u0000P*!M$gQ\u0000&quot;</code>，该字符串以00开头，frida在处理时应该是默认截断了。<br>因此通过frida的console.log打印为空，事实上，通过JS代码的调用都不能获取到该字符串的真实值。<br>这个问题在frida的<a target="_blank" rel="noopener" href="https://github.com/frida/frida-java-bridge/issues/167">issue</a>下面有所讨论，但是官方貌似还没修。</p>
+<h2 id="解包修改"><a href="#解包修改" class="headerlink" title="解包修改"></a>解包修改</h2><p>先用apktool反编译出smali代码</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">apktool d kgb-messenger.apk -o kgb</span><br></pre></td></tr></table></figure>
+
+<p>使用VScode打开<code>kgb</code>目录，配合支持smali高亮的插件，就可以便捷修改。</p>
+<p><strong>先过开屏校验-地区和用户，伪代码如下：</strong></p>
+<p><img src="C:\Users\wenake\AppData\Roaming\Typora\typora-user-images\image-20210822171222492.png" alt="image-20210822171222492"></p>
+<p>这里的检查结果对之后的运行没有影响，只决定是否发生activitiy之间的跳转。<br>所以粗暴处理，直接把红框中代码对应的smali全部删除。<br>当然，smali代码的排布跟java层的代码有所区别，并非线性对应，需要结合寄存器操作划定删除的部分。<br>我直接把<code>setcontentview()</code>之后、包括调用<code>a.a.a.a.a.a()</code>之间的代码全部注释，然后把末尾跳转到<code>goto_0</code>的语句改成<code>return-void</code>。</p>
+<p><img src="C:\Users\wenake\AppData\Roaming\Typora\typora-user-images\image-20210822171549896.png" alt="image-20210822171549896"></p>
+<p>笔者也试过仅修改v.equals()的返回值校验，即两个<code>if-nez</code>语句，不过没有成功。</p>
+<img src="C:\Users\wenake\AppData\Roaming\Typora\typora-user-images\image-20210822112707403.png" alt="image-20210822112707403" style="zoom:67%;" />
+
+<p><strong>过用户名和密码检查</strong></p>
+<p>在<code>LoginActivity</code>中，把用户名和密码保存在this.n和this.o两个成员变量中，之后在调用成员变量进行校验。<br>所以直接在获取之后、调用校验之前，添加两行代码把this.n和this.o强行修改为合法值。<br>这样一来，即使不输入任何值，也能成功登录。</p>
+<p><img src="C:\Users\wenake\AppData\Roaming\Typora\typora-user-images\image-20210822172249232.png" alt="image-20210822172249232"></p>
+<img src="C:\Users\wenake\AppData\Roaming\Typora\typora-user-images\image-20210822172642033.png" alt="image-20210822172642033" style="zoom: 80%;" />
+
+<h2 id="获取最终flag"><a href="#获取最终flag" class="headerlink" title="获取最终flag"></a>获取最终flag</h2><p>来到<code>MessengerActivity</code><br>修改的思路同前：修改equals()的返回值校验进入两个if语句分支，然后在合适的时机把对应的成员变量修改为合法值，只需要随便输入一句话，就能获得flag。</p>
+<img src="C:\Users\wenake\AppData\Roaming\Typora\typora-user-images\image-20210822173624384.png" alt="image-20210822173624384" style="zoom:80%;" />
+
+<img src="C:\Users\wenake\AppData\Roaming\Typora\typora-user-images\image-20210822173621209.png" alt="image-20210822173621209" style="zoom:80%;" />
+
+<h2 id="回编"><a href="#回编" class="headerlink" title="回编"></a>回编</h2><p>修改完smali代码就需要回编译得到apk，仍然可以使用apktool回编。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">apktool b .\kgb\</span><br></pre></td></tr></table></figure>
+
+<p>在dist目录下找到回编得到的apk并安装，发现安装报错，因为这个apk还没有被签名。</p>
+<p><img src="C:\Users\wenake\AppData\Roaming\Typora\typora-user-images\image-20210822113407609.png" alt="image-20210822113407609"></p>
+<p>先用<code>keytool</code>来生成一份自签名证书，然后使用<code>jarsigner</code>来签名apk文件。<br>这两个程序都在jdk中，有环境变量就能直接使用。（Windows Terminal 可能有编码问题，可以在cmd中进行）</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 根据提示设置密码并填入开发者信息，最后输入y确定</span></span><br><span class="line">keytool -genkey -alias key.store -keyalg RSA -validity 20000 -keystore key.store</span><br><span class="line"><span class="meta">#</span><span class="bash"> 开始签名，需要根据提示输入证书的密码</span></span><br><span class="line">jarsigner -verbose -keystore key.store -signedjar apk-after-sign.apk apk-before-sign.apk</span><br><span class="line"><span class="meta">#</span><span class="bash"> 安装已签名apk到设备</span></span><br><span class="line">adb install apk-after-sign.apk</span><br></pre></td></tr></table></figure>
+
+<p>运行软件，通过环境检查，不输入用户名和密码也能直接进入聊天界面，相较于之前，现在随便发一句话就能获得flag。</p>
+<p><img src="C:\Users\wenake\AppData\Roaming\Typora\typora-user-images\image-20210822174958584.png" alt="image-20210822174958584"></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Android/" rel="tag"># Android</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/08/16/Programming-Problems/" rel="prev" title="两个面试算法题">
+      <i class="fa fa-chevron-left"></i> 两个面试算法题
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          見出し
+        </li>
+        <li class="sidebar-nav-overview">
+          概要
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E8%A3%85apktool"><span class="nav-number">1.</span> <span class="nav-text">安装apktool</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%80%86%E5%90%91%E5%88%86%E6%9E%90"><span class="nav-number">2.</span> <span class="nav-text">逆向分析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A7%A3%E5%8C%85%E4%BF%AE%E6%94%B9"><span class="nav-number">3.</span> <span class="nav-text">解包修改</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%8E%B7%E5%8F%96%E6%9C%80%E7%BB%88flag"><span class="nav-number">4.</span> <span class="nav-text">获取最终flag</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9E%E7%BC%96"><span class="nav-number">5.</span> <span class="nav-text">回编</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="slient2009"
+      src="/images/round_tiger.png">
+  <p class="site-author-name" itemprop="name">slient2009</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">6</span>
+          <span class="site-state-item-name">ポスト</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">タグ</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">slient2009</span>
+</div>
+
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="合計閲覧者数">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="閲覧合計数">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

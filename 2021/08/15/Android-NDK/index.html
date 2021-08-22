@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/pig_128x128.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/pig_32x32.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/pig_16x16.ico">
+  <link rel="mask-icon" href="/images/pig_128x128.ico" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic|Roboto Slab:300,300italic,400,400italic,700,700italic|Rotoro Mono:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"slient2009.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="最近学习了一下Android NDK开发，关于Native、反射、JNI注册相关的原理已经有足量且优秀的文章，本文仅记录一下实验过程。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android NDK开发学习笔记">
+<meta property="og:url" content="http://slient2009.github.io/2021/08/15/Android-NDK/index.html">
+<meta property="og:site_name" content="Slient2009">
+<meta property="og:description" content="最近学习了一下Android NDK开发，关于Native、反射、JNI注册相关的原理已经有足量且优秀的文章，本文仅记录一下实验过程。">
+<meta property="og:locale" content="ja_JP">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20210812095228.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20210812210621.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20210812212757.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20210813102941.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20210814173039.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20210814213356.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20210814173036.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20210814154041.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20210814154038.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20210814172122.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20210813193009.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20210814211900.png">
+<meta property="article:published_time" content="2021-08-15T04:00:00.000Z">
+<meta property="article:modified_time" content="2021-08-16T13:47:13.000Z">
+<meta property="article:author" content="slient2009">
+<meta property="article:tag" content="Android">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20210812095228.png">
+
+<link rel="canonical" href="http://slient2009.github.io/2021/08/15/Android-NDK/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'ja'
+  };
+</script>
+
+  <title>Android NDK开发学习笔记 | Slient2009</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="ナビゲーションバーの切り替え">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Slient2009</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">All I need is Twin Island Milk</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>ホーム</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>プロフィール</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>タグ<span class="badge">4</span></a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>アーカイブ<span class="badge">6</span></a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="ja">
+    <link itemprop="mainEntityOfPage" href="http://slient2009.github.io/2021/08/15/Android-NDK/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/round_tiger.png">
+      <meta itemprop="name" content="slient2009">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Slient2009">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Android NDK开发学习笔记
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">投稿日</span>
+
+              <time title="作成日：2021-08-15 00:00:00" itemprop="dateCreated datePublished" datetime="2021-08-15T00:00:00-04:00">2021-08-15</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">編集日</span>
+                <time title="修正日：2021-08-16 09:47:13" itemprop="dateModified" datetime="2021-08-16T09:47:13-04:00">2021-08-16</time>
+              </span>
+
+          
+            <span class="post-meta-item" title="閲覧数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">閲覧数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>最近学习了一下Android NDK开发，关于Native、反射、JNI注册相关的原理已经有足量且优秀的文章，本文仅记录一下实验过程。</p>
+<span id="more"></span>
+
+<h1 id="JNI-参数传递"><a href="#JNI-参数传递" class="headerlink" title="JNI 参数传递"></a>JNI 参数传递</h1><p>JNI会把Java中<strong>所有对象</strong>当做一个C指针传递到本地方法中,这个指针指向JVM内部数据结构,而内部的数据结构在内存中的存储方式是不可见的。只能从JNIEnv指针指向的函数表中选择合适的JNI函数来操作JVM中的数据结构。</p>
+<p><strong>以env-&gt;GetStringUTFChars()为例</strong></p>
+<p>比如native访问java.lang.String 对应的JNI类型jstring时，不能像访问基本数据类型那样使用，因为它是一个Java的引用类型，所以在本地代码中只能通过类似env-&gt;GetStringUTFChars这样的JNI函数来访问字符串的内容。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="keyword">char</span> * GetStringUTFChars(JNIEnv *env, jstring string, jboolean *isCopy);</span><br><span class="line"></span><br><span class="line">Returns a pointer to an array of bytes representing the string in modified UTF-<span class="number">8</span> encoding. <span class="function">This array is valid until it is released by <span class="title">ReleaseStringUTFChars</span><span class="params">()</span>.</span></span><br><span class="line"><span class="function"></span></span><br><span class="line"><span class="function">If isCopy is not NULL, then *isCopy is set to JNI_TRUE <span class="keyword">if</span> a copy is made</span>; or it is set to JNI_FALSE <span class="keyword">if</span> no copy is made.</span><br><span class="line"></span><br><span class="line">LINKAGE:</span><br><span class="line">Index <span class="number">169</span> in the JNIEnv <span class="class"><span class="keyword">interface</span> <span class="title">function</span> <span class="title">table</span>.</span></span><br><span class="line"><span class="class">    </span></span><br><span class="line"><span class="class"><span class="title">PARAMETERS</span>:</span></span><br><span class="line"><span class="class"><span class="title">env</span>: <span class="title">the</span> <span class="title">JNI</span> <span class="title">interface</span> <span class="title">pointer</span>.</span></span><br><span class="line"><span class="class"><span class="title">string</span>: <span class="title">a</span> <span class="title">Java</span> <span class="title">string</span> <span class="title">object</span>.</span></span><br><span class="line"><span class="class"><span class="title">isCopy</span>: <span class="title">a</span> <span class="title">pointer</span> <span class="title">to</span> <span class="title">a</span> <span class="title">boolean</span>.</span></span><br><span class="line"><span class="class"></span></span><br><span class="line"><span class="class"><span class="title">RETURNS</span>:</span></span><br><span class="line"><span class="class"><span class="title">Returns</span> <span class="title">a</span> <span class="title">pointer</span> <span class="title">to</span> <span class="title">a</span> <span class="title">modified</span> <span class="title">UTF</span>-8 <span class="title">string</span>, <span class="title">or</span> <span class="title">NULL</span> <span class="title">if</span> <span class="title">the</span> <span class="title">operation</span> <span class="title">fails</span>.</span></span><br></pre></td></tr></table></figure>
+
+<p>函数接收一个JNIEnv指针，和目标String在Java层的引用，以及一个flag标识是拷贝字符串（JNI_TRUE）还是引用源字符串的指针(JNI_FALSE)。<br>如果设置为JNI_FALSE，则可以在native层修改Java层的数据。</p>
+<h1 id="从Native修改Java数据"><a href="#从Native修改Java数据" class="headerlink" title="从Native修改Java数据"></a>从Native修改Java数据</h1><p>最近研究了一下如何在不进行数据拷贝回传的情况下，从native层修改Java层的数据。<br>Oracle的<a target="_blank" rel="noopener" href="https://docs.oracle.com/javase/7/docs/technotes/guides/jni/spec/functions.html">JNI文档</a>可以作为在Native层使用相关函数的参考。</p>
+<h2 id="通过JNIEnv操纵Java对象修改"><a href="#通过JNIEnv操纵Java对象修改" class="headerlink" title="通过JNIEnv操纵Java对象修改"></a>通过JNIEnv操纵Java对象修改</h2><p>比较常用的应该是利用JNIEnv函数来操纵Java层的对象，进而获得对象的属性并修改属性值，另外还可以实现在Native层调用Java对象的方法。<br>我在这里非常迂回地在Native层实现了一个base64加解密功能，用来实践这种修改思路。这种修改不需要在Java和Native之间显式地传递数据，因为通过JNIEnv函数可以实现从Native主动访问Java层数据。</p>
+<p>主要的思路：</p>
+<ol>
+<li>确定要从base64.mInputText获取输出，通过Native层的函数处理之后，赋值给base64.mOutputText.</li>
+<li>在Native的base64decode()函数中，先通过GetClassObject(thiz)获取Java对象base64。</li>
+<li>然后使用GetFieldID()获取base64的mInputText和mOutputText两个属性的属性ID</li>
+<li>基于FieldID通过env-GetObjectField()获取mInputText的属性值，然后进行解码操作得到明文。</li>
+<li>通过env-SetObjectField()把明文赋值给mOutputText。</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// base64.java</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Base64</span> <span class="keyword">extends</span> <span class="title">AppCompatActivity</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String TAG = <span class="string">&quot;BASE64&quot;</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">static</span> &#123;</span><br><span class="line">        System.loadLibrary(<span class="string">&quot;base64&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> Button mBase64Decode, mBase64Encode;</span><br><span class="line">    <span class="keyword">private</span> EditText mInput;</span><br><span class="line">    <span class="keyword">private</span> TextView mOutput;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> String mInputText, mOutputText;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">(Bundle savedInstanceState)</span></span>&#123;</span><br><span class="line">        <span class="keyword">super</span>.onCreate(savedInstanceState);</span><br><span class="line">        setContentView(R.layout.base64);</span><br><span class="line"></span><br><span class="line">        mInput = (EditText) findViewById(R.id.base64_input);</span><br><span class="line">        mOutput = (TextView) findViewById(R.id.base64_output);</span><br><span class="line"></span><br><span class="line">        mBase64Decode = (Button) findViewById(R.id.decode_button);</span><br><span class="line">        mBase64Encode = (Button) findViewById(R.id.encode_button);</span><br><span class="line">        mOut2In = (ImageButton) findViewById(R.id.out2in);</span><br><span class="line">        mClearText = (ImageButton) findViewById(R.id.clear_button);</span><br><span class="line"></span><br><span class="line">        mBase64Decode.setOnClickListener(<span class="keyword">new</span> View.OnClickListener() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onClick</span><span class="params">(View v)</span> </span>&#123;</span><br><span class="line">                mInputText = mInput.getText().toString();</span><br><span class="line">                Log.i(TAG, <span class="string">&quot;before call native function, mInputText = &quot;</span> + mInputText + <span class="string">&quot; mOutputText= &quot;</span> + mOutputText);</span><br><span class="line">                base64decode();</span><br><span class="line">                Log.i(TAG, <span class="string">&quot;after  call native function, mInputText = &quot;</span> + mInputText + <span class="string">&quot; mOutputText= &quot;</span> + mOutputText);</span><br><span class="line">                mOutput.setText(mOutputText);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line">        </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">native</span> <span class="keyword">void</span> <span class="title">base64decode</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// base64.cpp</span></span><br><span class="line"><span class="keyword">extern</span> <span class="string">&quot;C&quot;</span></span><br><span class="line"><span class="function">JNIEXPORT <span class="keyword">void</span> JNICALL</span></span><br><span class="line"><span class="function"><span class="title">Java_com_example_devndk_Base64_base64decode</span><span class="params">(JNIEnv *env, jobject thiz)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// <span class="doctag">TODO:</span> implement base64decode()</span></span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">char</span> *cipherText;</span><br><span class="line">    <span class="keyword">char</span> *plainText;</span><br><span class="line">    <span class="comment">//先拿到Java层的对象以及对象的mInputText和mOutputText的属性ID</span></span><br><span class="line">    jclass cls = env-&gt;<span class="built_in">GetObjectClass</span>(thiz);</span><br><span class="line">    jfieldID inputTextID = env-&gt;<span class="built_in">GetFieldID</span>(cls, <span class="string">&quot;mInputText&quot;</span>, <span class="string">&quot;Ljava/lang/String;&quot;</span>);</span><br><span class="line">    jfieldID outputTextID = env-&gt;<span class="built_in">GetFieldID</span>(cls, <span class="string">&quot;mOutputText&quot;</span>, <span class="string">&quot;Ljava/lang/String;&quot;</span>);</span><br><span class="line">    <span class="keyword">if</span>(inputTextID == <span class="literal">NULL</span>)&#123;	<span class="keyword">return</span>;	&#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//获取mInputText的属性值，强制转换jobject为jstring</span></span><br><span class="line">    jobject jstr = env-&gt;<span class="built_in">GetObjectField</span>(thiz, inputTextID);</span><br><span class="line">    jstring jstrr = (jstring) jstr;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//copy到native变量中</span></span><br><span class="line">    cipherText = env-&gt;<span class="built_in">GetStringUTFChars</span>(jstrr, <span class="literal">NULL</span>);</span><br><span class="line">    <span class="keyword">if</span>(cipherText == <span class="literal">NULL</span>)&#123;		<span class="keyword">return</span>;	&#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//开始解码，与JNI无关，可以略过</span></span><br><span class="line">    <span class="keyword">int</span> cipher_lens = <span class="built_in">strlen</span>(cipherText);</span><br><span class="line">    <span class="keyword">int</span> plain_lens = <span class="number">1</span> + cipher_lens * <span class="number">3</span> / <span class="number">4</span>;</span><br><span class="line">    plainText = (<span class="keyword">char</span> *)<span class="built_in">malloc</span>(plain_lens * <span class="built_in"><span class="keyword">sizeof</span></span>(<span class="keyword">char</span>));</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> ind=<span class="number">0</span>;ind&lt;cipher_lens/<span class="number">4</span>;ind++)&#123;</span><br><span class="line">        <span class="keyword">int</span> n1 = <span class="built_in">c2n</span>(cipherText[ind*<span class="number">4</span>+<span class="number">0</span>]);</span><br><span class="line">        <span class="keyword">int</span> n2 = <span class="built_in">c2n</span>(cipherText[ind*<span class="number">4</span>+<span class="number">1</span>]);</span><br><span class="line">        <span class="keyword">int</span> n3 = <span class="built_in">c2n</span>(cipherText[ind*<span class="number">4</span>+<span class="number">2</span>]);</span><br><span class="line">        <span class="keyword">int</span> n4 = <span class="built_in">c2n</span>(cipherText[ind*<span class="number">4</span>+<span class="number">3</span>]);</span><br><span class="line"></span><br><span class="line">        plainText[ind*<span class="number">3</span>+<span class="number">0</span>] = (n1&lt;&lt;<span class="number">2</span>) + (n2&gt;&gt;<span class="number">4</span>);</span><br><span class="line">        plainText[ind*<span class="number">3</span>+<span class="number">1</span>] = (n2&lt;&lt;<span class="number">4</span>) + (n3&gt;&gt;<span class="number">2</span>);</span><br><span class="line">        plainText[ind*<span class="number">3</span>+<span class="number">2</span>] = (n3&lt;&lt;<span class="number">6</span>) + (n4);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span>(cipherText[cipher_lens<span class="number">-1</span>]==<span class="string">&#x27;=&#x27;</span>) plainText[plain_lens<span class="number">-2</span>]=<span class="number">0</span>;</span><br><span class="line">    <span class="keyword">if</span>(cipherText[cipher_lens<span class="number">-2</span>]==<span class="string">&#x27;=&#x27;</span>) plainText[plain_lens<span class="number">-3</span>]=<span class="number">0</span>;</span><br><span class="line">    plainText[plain_lens<span class="number">-1</span>]=<span class="number">0</span>;</span><br><span class="line">    </span><br><span class="line">	<span class="comment">//获取解密后的明文plainText,然后赋值给cls.mOutputText</span></span><br><span class="line">    jstr = env-&gt;<span class="built_in">NewStringUTF</span>(plainText);</span><br><span class="line">    __android_log_print(ANDROID_LOG_INFO, <span class="string">&quot;BASE64&quot;</span>, <span class="string">&quot;JAVA--&gt;C JNI:plainText=%s&quot;</span>, plainText);</span><br><span class="line">    <span class="keyword">if</span>(jstr == <span class="literal">NULL</span>)&#123;		<span class="keyword">return</span>;	&#125;</span><br><span class="line">    env-&gt;<span class="built_in">SetObjectField</span>(thiz, outputTextID, jstr);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>运行结果</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20210812095228.png" alt="image-20210812095201973"></p>
+<h2 id="通过GetArrayElements-函数直接修改"><a href="#通过GetArrayElements-函数直接修改" class="headerlink" title="通过GetArrayElements()函数直接修改"></a>通过Get<PrimitiveType>ArrayElements()函数直接修改</h2><p>对于Java的对象，用第一种方法来操纵修改应该是比较方便的。对于一些局部变量，可以考虑向Native层传入地址引用，借助JNIEnv的一些函数来实现无原始数据传输的修改。</p>
+<p>在这里使用Get<PrimitiveType>ArrayElements()这类函数来实现修改。这类函数在JNI手册中介绍如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">Get&lt;PrimitiveType&gt;ArrayElements Routines</span><br><span class="line">NativeType *Get&lt;PrimitiveType&gt;ArrayElements(JNIEnv *env, ArrayType array, jboolean *isCopy);</span><br><span class="line"></span><br><span class="line">A family of functions that returns the body of the primitive array. The result is valid until the corresponding Release&lt;PrimitiveType&gt;ArrayElements() function is called. Since the returned array may be a copy of the Java array, changes made to the returned array will not necessarily be reflected in the original array until Release&lt;PrimitiveType&gt;ArrayElements() is called.</span><br><span class="line"></span><br><span class="line">If isCopy is not NULL, then *isCopy is set to JNI_TRUE if a copy is made; or it is set to JNI_FALSE if no copy is made.</span><br><span class="line"></span><br><span class="line">The following table describes the specific primitive array element accessors. You should make the following substitutions:</span><br><span class="line"></span><br><span class="line">Replace Get&lt;PrimitiveType&gt;ArrayElements with one of the actual primitive element accessor routine names from the table.</span><br><span class="line">Replace ArrayType with the corresponding array type.</span><br><span class="line">Replace NativeType with the corresponding native type for that routine.</span><br><span class="line">Regardless of how boolean arrays are represented in the Java VM, GetBooleanArrayElements() always returns a pointer to jbooleans, with each byte denoting an element (the unpacked representation). All arrays of other types are guaranteed to be contiguous in memory.</span><br><span class="line"></span><br><span class="line">PARAMETERS:</span><br><span class="line">env: the JNI interface pointer.</span><br><span class="line">array: a Java string object.</span><br><span class="line">isCopy: a pointer to a boolean.</span><br><span class="line"></span><br><span class="line">RETURNS:</span><br><span class="line">Returns a pointer to the array elements, or NULL if the operation fails.</span><br></pre></td></tr></table></figure>
+
+<p>以GetCharArrayElements()为例，该函数接收一个jcharArray的指针p和一个用于标识是否拷贝的标志位isCopy。<br>如果isCopy=NULL或者JNI_TRUE，则会在Native层实现一个数组p的拷贝，否则在Native层仅保留该指针而不拷贝。<br>此外，若要使得Native发生的修改在Java层生效，需要在修改操作完成之后使用ReleaseCharArrayElements()，并注意设置mode。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">Release&lt;PrimitiveType&gt;ArrayElements Routines</span><br><span class="line">void Release&lt;PrimitiveType&gt;ArrayElements(JNIEnv *env,</span><br><span class="line">ArrayType array, NativeType *elems, jint mode);</span><br><span class="line"></span><br><span class="line">A family of functions that informs the VM that the native code no longer needs access to elems. The elems argument is a pointer derived from array using the corresponding Get&lt;PrimitiveType&gt;ArrayElements() function. If necessary, this function copies back all changes made to elems to the original array.</span><br><span class="line"></span><br><span class="line">The mode argument provides information on how the array buffer should be released. mode has no effect if elems is not a copy of the elements in array. Otherwise, mode has the following impact, as shown in the following table:</span><br><span class="line"></span><br><span class="line">Table 4-10 Primitive Array Release Modes</span><br><span class="line">mode			actions</span><br><span class="line">0				copy back the content and free the elems buffer</span><br><span class="line">JNI_COMMIT		copy back the content but do not free the elems buffer</span><br><span class="line">JNI_ABORT		free the buffer without copying back the possible changes</span><br><span class="line"></span><br><span class="line">In most cases, programmers pass “0” to the mode argument to ensure consistent behavior for both pinned and copied arrays. The other options give the programmer more control over memory management and should be used with extreme care.</span><br><span class="line"></span><br><span class="line">PARAMETERS:</span><br><span class="line">env: the JNI interface pointer.</span><br><span class="line">array: a Java array object.</span><br><span class="line">elems: a pointer to array elements.</span><br><span class="line">mode: the release mode.</span><br></pre></td></tr></table></figure>
+
+<p>实验代码如下：</p>
+<ol>
+<li>在Java层初始化char[] s = “a1234567890”</li>
+<li>将s传入到Native层，使用env-&gt;GetCharArrayElements()进行修改，调用env-&gt;ReleaseCharArrayElements()提交修改，并适量打印中间结果。</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//Java</span></span><br><span class="line">String ss= <span class="string">&quot;a1234567890&quot;</span>;</span><br><span class="line"><span class="keyword">char</span>[] s = ss.toCharArray();</span><br><span class="line">Log.i(TAG, <span class="string">&quot;before test2change() called, s = &quot;</span> + (<span class="keyword">new</span> String(s)));</span><br><span class="line">test2change(s);<span class="comment">//传入s</span></span><br><span class="line">Log.i(TAG, <span class="string">&quot;after  test2change() called, s = &quot;</span> + (<span class="keyword">new</span> String(s)));</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//Native C++</span></span><br><span class="line"><span class="built_in">Java_com_example_devndk_Base64_test2change</span>(JNIEnv *env, jobject thiz, jcharArray str) &#123;</span><br><span class="line">    <span class="comment">// <span class="doctag">TODO:</span> implement test2change()</span></span><br><span class="line">    jchar * s;</span><br><span class="line">    jint lens;</span><br><span class="line">    s = env-&gt;<span class="built_in">GetCharArrayElements</span>(str, JNI_FALSE);</span><br><span class="line">    <span class="comment">//获取str在Java层的指针，</span></span><br><span class="line">    lens = (<span class="keyword">int</span>) env-&gt;<span class="built_in">GetArrayLength</span>(str);</span><br><span class="line"></span><br><span class="line">    __android_log_print(ANDROID_LOG_INFO, <span class="string">&quot;BASE64&quot;</span>, <span class="string">&quot;s=%x &amp;s=%x lens=%x &amp;lens=%x **s=%c&quot;</span>, s, &amp;s, lens, &amp;lens, *s);</span><br><span class="line">    <span class="keyword">if</span>(s==<span class="literal">NULL</span>)&#123;</span><br><span class="line">        __android_log_print(ANDROID_LOG_INFO, <span class="string">&quot;BASE64&quot;</span>, <span class="string">&quot;s is NULL&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> ind=<span class="number">0</span>;ind&lt;lens/<span class="number">2</span>;ind++)&#123;</span><br><span class="line">        s[ind] = <span class="number">97</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    env-&gt;<span class="built_in">ReleaseCharArrayElements</span>(str, s, <span class="number">0</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>运行结果</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20210812210621.png" alt="image-20210812210613220"></p>
+<p>从输出可以看到，Java层s数组最终发生变化，Native的变量s为指向Java层s数组的指针。</p>
+<h3 id="在Java层打印变量的物理地址（待完善）"><a href="#在Java层打印变量的物理地址（待完善）" class="headerlink" title="在Java层打印变量的物理地址（待完善）"></a>在Java层打印变量的物理地址（待完善）</h3><p>事实上，考虑到Java Heap实际上使用的是<a target="_blank" rel="noopener" href="https://blog.csdn.net/gemmem/article/details/8920039">虚拟内存</a>的缘故，我对<code>s=b64b2ac0</code>是否真的为Java层s数组的物理地址持有一定的怀疑。<br>所以试图在Java层打印s的物理地址，这是一个非常别扭的想法。<br>找了半天，发现sun.misc.Unsafe这个类可能会有所帮助，于是尝试了一个<a target="_blank" rel="noopener" href="https://github.com/iamironz/unsafe">第三方库</a>（因为Android不支持Unsafe）和据说能打印物理地址的<a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/1961146/memory-address-of-variables-in-java">脚本</a>。<br>但是发现Java和Native的地址并不相同，此处<strong>有待探讨</strong>，可能是脚本并不能满足要求。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//测试语句</span></span><br><span class="line">String ss= <span class="string">&quot;a1234567890&quot;</span>;</span><br><span class="line"><span class="keyword">char</span>[] s = ss.toCharArray();</span><br><span class="line">printAddresses(<span class="string">&quot;Address of s&quot;</span>, s);</span><br><span class="line">Log.i(TAG, <span class="string">&quot;before test2change() called, s = &quot;</span> + (<span class="keyword">new</span> String(s)));</span><br><span class="line">test2change(s);</span><br><span class="line">Log.i(TAG, <span class="string">&quot;after  test2change() called, s = &quot;</span> + (<span class="keyword">new</span> String(s)));</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//需要导入预编译的第三方库文件</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">printAddresses</span><span class="params">(String label, Object... objects)</span> </span>&#123;</span><br><span class="line">        System.out.print(label + <span class="string">&quot;: 0x&quot;</span>);</span><br><span class="line">        <span class="keyword">long</span> last = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">final</span> UnsafeAndroid unsafe = <span class="keyword">new</span> UnsafeAndroid();</span><br><span class="line">        <span class="keyword">int</span> offset = unsafe.arrayBaseOffset(objects.getClass());</span><br><span class="line">        <span class="keyword">int</span> scale = unsafe.arrayIndexScale(objects.getClass());</span><br><span class="line">        <span class="keyword">switch</span> (scale) &#123;</span><br><span class="line">            <span class="keyword">case</span> <span class="number">4</span>:</span><br><span class="line">                <span class="keyword">long</span> factor = <span class="number">1</span>;</span><br><span class="line"><span class="comment">//                long factor = is64bit ? 8 : 1;</span></span><br><span class="line">                <span class="keyword">final</span> <span class="keyword">long</span> i1 = (unsafe.getInt(objects, offset) &amp; <span class="number">0xFFFFFFFFL</span>) * factor;</span><br><span class="line">                System.out.print(Long.toHexString(i1));</span><br><span class="line">                last = i1;</span><br><span class="line">                <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt; objects.length; i++) &#123;</span><br><span class="line">                    <span class="keyword">final</span> <span class="keyword">long</span> i2 = (unsafe.getInt(objects, offset + i * <span class="number">4</span>) &amp; <span class="number">0xFFFFFFFFL</span>) * factor;</span><br><span class="line">                    <span class="keyword">if</span> (i2 &gt; last)</span><br><span class="line">                        System.out.print(<span class="string">&quot;, +&quot;</span> + Long.toHexString(i2 - last));</span><br><span class="line">                    <span class="keyword">else</span></span><br><span class="line">                        System.out.print(<span class="string">&quot;, -&quot;</span> + Long.toHexString( last - i2));</span><br><span class="line">                    last = i2;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            <span class="keyword">case</span> <span class="number">8</span>:</span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> AssertionError(<span class="string">&quot;Not supported&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        System.out.println();</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20210812212757.png" alt="image-20210812212750699"></p>
+<h2 id="通过Direct-ByteBuffer修改"><a href="#通过Direct-ByteBuffer修改" class="headerlink" title="通过Direct ByteBuffer修改"></a>通过Direct ByteBuffer修改</h2><p>有位<a target="_blank" rel="noopener" href="https://www.cnblogs.com/heitao/p/7271378.html">老哥</a>说他用GetCharArrayElements()方法没有成功修改，阅读他的代码之后感觉是因为没有调用ReleaseCharArrayElements()提交修改导致的。不过他顺便提到了第三种修改的方法–ByteBuffer。</p>
+<p>ByteBuffer在内存中预留指定大小的存储空间作为IO数据的临时存储，主要还是用于优化内存性能，同样可以避免在Native拷贝数据。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// java</span></span><br><span class="line"><span class="keyword">try</span>&#123;</span><br><span class="line">    <span class="keyword">byte</span>[] d = &#123;<span class="number">97</span>,<span class="number">97</span>,<span class="number">97</span>,<span class="number">97</span>&#125;;</span><br><span class="line">    Log.i(TAG, <span class="string">&quot;d=&quot;</span> + (<span class="keyword">new</span> String(d)));</span><br><span class="line">    ByteBuffer input_buffer = ByteBuffer.allocateDirect(d.length);</span><br><span class="line">    input_buffer.put(d);</span><br><span class="line"></span><br><span class="line">    printAddresses(<span class="string">&quot;Address input_buffer:&quot;</span>, input_buffer);<span class="comment">//见上文</span></span><br><span class="line"></span><br><span class="line">    test(input_buffer);</span><br><span class="line"></span><br><span class="line">    input_buffer.flip(); <span class="comment">//改变缓存区的读写状态</span></span><br><span class="line">    input_buffer.get(d);</span><br><span class="line"></span><br><span class="line">    Log.i(TAG, <span class="string">&quot;d=&quot;</span> + (<span class="keyword">new</span> String(d)));</span><br><span class="line">&#125; <span class="keyword">catch</span> (Exception e)&#123;</span><br><span class="line">    e.printStackTrace();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// c++</span></span><br><span class="line"><span class="built_in">Java_com_example_devndk_Base64_test</span>(JNIEnv *env, jobject thiz, jobject i) &#123;</span><br><span class="line">    <span class="keyword">int</span> iBufferSize = env-&gt;<span class="built_in">GetDirectBufferCapacity</span>(i);</span><br><span class="line">    __android_log_print(ANDROID_LOG_INFO, <span class="string">&quot;BASE64&quot;</span>, <span class="string">&quot;iBufferSize = %d&quot;</span>, iBufferSize);</span><br><span class="line">    <span class="keyword">char</span> *iBuffer = (<span class="keyword">char</span> *)env-&gt;<span class="built_in">GetDirectBufferAddress</span>(i);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span>(iBuffer != <span class="literal">NULL</span>)&#123;</span><br><span class="line">        __android_log_print(ANDROID_LOG_INFO, <span class="string">&quot;BASE64&quot;</span>, <span class="string">&quot;iBuffer=%x *iBuffer=%c&quot;</span>, iBuffer, *iBuffer);</span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>;i&lt;iBufferSize;i++)&#123;</span><br><span class="line">            iBuffer[i]=<span class="number">100</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span>&#123;</span><br><span class="line">        __android_log_print(ANDROID_LOG_INFO, <span class="string">&quot;BASE64&quot;</span>, <span class="string">&quot;iBuffer = NULL&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>运行结果</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20210813102941.png" alt="image-20210813102723917"></p>
+<h1 id="反射"><a href="#反射" class="headerlink" title="反射"></a>反射</h1><h2 id="学习反射"><a href="#学习反射" class="headerlink" title="学习反射"></a>学习反射</h2><p>笔者含泪推荐<a target="_blank" rel="noopener" href="https://www.liaoxuefeng.com/wiki/1252599548343744/1255945147512512">廖雪峰</a>的教程，他从开发的角度出发，讲得非常详细且全面。<br>在这里简单记录一下我看了其他文章没有理解到却在廖雪峰处学会了的知识点，然后是实验代码</p>
+<p><a target="_blank" rel="noopener" href="https://docs.oracle.com/javase/10/docs/api/java/lang/reflect/AccessibleObject.html#setAccessible(boolean)">setAccessible(true)</a>并不是修改目标字段的访问权限，而是试图不进行安全检查访问目标字段。如果此时存在安全检查，则setAccessible可能失败。</p>
+<p>关于几个获取Method和Field的函数的区别。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">- Field getField(name)：根据字段名获取某个public的field（包括父类）</span><br><span class="line">- Field getDeclaredField(name)：根据字段名获取当前类的某个field（不包括父类）</span><br><span class="line">- Field[] getFields()：获取所有public的field（包括父类）</span><br><span class="line">- Field[] getDeclaredFields()：获取当前类的所有field（不包括父类）</span><br><span class="line"></span><br><span class="line">- Method getMethod(name, Class...)：获取某个public的Method（包括父类）</span><br><span class="line">- Method getDeclaredMethod(name, Class...)：获取当前类的某个Method（不包括父类）</span><br><span class="line">- Method[] getMethods()：获取所有public的Method（包括父类）</span><br><span class="line">- Method[] getDeclaredMethods()：获取当前类的所有Method（不包括父类）</span><br><span class="line"></span><br><span class="line">- Constructor getConstructor(Class...)：获取某个public的Constructor；</span><br><span class="line">- Constructor getDeclaredConstructor(Class...)：获取某个Constructor；</span><br><span class="line">- Constructor[] getConstructors()：获取所有public的Constructor；</span><br><span class="line">- Constructor[] getDeclaredConstructors()：获取所有Constructor</span><br></pre></td></tr></table></figure>
+
+<p>使用上述函数编写一个函数用于打印目标类的相关信息。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">ClassInfo</span><span class="params">(String ClassName)</span></span>&#123;</span><br><span class="line">    <span class="keyword">try</span>&#123;</span><br><span class="line">        Class cls = Class.forName(ClassName);</span><br><span class="line">        Object obj = cls.newInstance();</span><br><span class="line"></span><br><span class="line">        <span class="comment">//打印目标类的所有field method constructor</span></span><br><span class="line">        Field[] allClassFields = cls.getFields();</span><br><span class="line">        <span class="keyword">for</span>(Field f: allClassFields)&#123;</span><br><span class="line">            System.out.println(ClassName + <span class="string">&quot;: PublicField - &quot;</span> + f.getName() + <span class="string">&quot;=&quot;</span> + f.get(obj) + <span class="string">&quot;(&quot;</span> + f.getType() + <span class="string">&quot;)&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        Field[] allClassDeclaredFields = cls.getDeclaredFields();</span><br><span class="line">        <span class="keyword">for</span>(Field f: allClassDeclaredFields)&#123;</span><br><span class="line">            f.setAccessible(<span class="keyword">true</span>);</span><br><span class="line">            System.out.println(ClassName + <span class="string">&quot;: DeclaredField - &quot;</span> + f.getName() + <span class="string">&quot;=&quot;</span> + f.get(obj) + <span class="string">&quot;(&quot;</span> + f.getType() + <span class="string">&quot;)&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        Constructor[] allClassConstructors = cls.getConstructors();</span><br><span class="line">        <span class="keyword">for</span>(Constructor c: allClassConstructors)&#123;</span><br><span class="line">            System.out.println(ClassName + <span class="string">&quot;: PublicConstructor - &quot;</span> + c.getName() + <span class="string">&quot;(&quot;</span> + c.getParameterTypes().toString() + <span class="string">&quot;)&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        Constructor[] allClassDeclaredConstructors = cls.getDeclaredConstructors();</span><br><span class="line">        <span class="keyword">for</span>(Constructor c: allClassDeclaredConstructors)&#123;</span><br><span class="line">            c.setAccessible(<span class="keyword">true</span>);</span><br><span class="line">            System.out.println(ClassName + <span class="string">&quot;: DeclaredConstructor - &quot;</span> + c.getName() + <span class="string">&quot;(&quot;</span> + c.getParameterTypes().toString() + <span class="string">&quot;)&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        Method[] allClassMethods = cls.getMethods();</span><br><span class="line">        <span class="keyword">for</span>(Method m: allClassMethods)&#123;</span><br><span class="line">            System.out.println(ClassName + <span class="string">&quot;: PublicMethod - &quot;</span> + m.getName() + <span class="string">&quot;(&quot;</span> + m.getParameterTypes().toString() + <span class="string">&quot;)&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        Method[] allClassDeclaredMethods = cls.getDeclaredMethods();</span><br><span class="line">        <span class="keyword">for</span>(Method m: allClassDeclaredMethods)&#123;</span><br><span class="line">            m.setAccessible(<span class="keyword">true</span>);</span><br><span class="line">            System.out.println(ClassName + <span class="string">&quot;: DeclaredMethod - &quot;</span> + m.getName() + <span class="string">&quot;(&quot;</span> + m.getParameterTypes().toString() + <span class="string">&quot;)&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">catch</span> (ClassNotFoundException e)&#123;</span><br><span class="line">        Log.i(TAG, <span class="string">&quot;Error : ClassNotFoundException&quot;</span>);</span><br><span class="line">    &#125; <span class="keyword">catch</span> (Exception e)&#123;</span><br><span class="line">        Log.i(TAG, <span class="string">&quot;Unknown Exception&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>因为需要使用方法签名确定具体调用哪个方法，所以便捷而准确地或者各个方法的签名会有利工作推进。<br>可以使用Java命令来获取一个类的所有方法的签名，步骤如下：</p>
+<ol>
+<li>打开工作目录<code>APPNAME\app\build\intermediates\javac\debug\classes</code>，同时<code>make project</code>。（Android Studio Ctrl+F9即可）</li>
+<li>命令行 <code>javac -s -p com.example.xxx</code></li>
+</ol>
+<p>运行结果</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20210814173039.png" alt="image-20210814172949102"></p>
+<p>常用类型的对照表如下</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20210814213356.png" alt="image-20210814213352336"></p>
+<p>同时，javap的参数规范如下</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20210814173036.png" alt="image-20210814173029942"></p>
+<p>用于测试的目标类</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ReflectionClass</span> <span class="keyword">extends</span> <span class="title">SuperReflectionClass</span></span>&#123;</span><br><span class="line">    <span class="keyword">private</span> String TAG = <span class="string">&quot;ReflectionClass&quot;</span>;</span><br><span class="line">    <span class="keyword">private</span> String subStr = <span class="string">&quot;ReflectionStr&quot;</span>;</span><br><span class="line">    <span class="keyword">private</span> String priStr = <span class="string">&quot;private string&quot;</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> priInt = <span class="number">123456</span>;</span><br><span class="line">    <span class="keyword">public</span> String pubStr = <span class="string">&quot;public string&quot;</span>;</span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">priMtd</span><span class="params">()</span></span>&#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;priMtd() called&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">priMtd</span><span class="params">(String p)</span></span>&#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;p = &quot;</span> + p + <span class="string">&quot;, priStr=&quot;</span> + <span class="keyword">this</span>.priStr);</span><br><span class="line">        System.out.println(<span class="string">&quot;priMtd(String p) called&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">pubMtd</span><span class="params">()</span></span>&#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;pubMtd() called&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">ReflectionClass</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.subStr = <span class="string">&quot;this is the &quot;</span> + <span class="keyword">this</span>.subStr;</span><br><span class="line">        System.out.println(<span class="string">&quot;ReflectionClass() called&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">ReflectionClass</span><span class="params">(String priStr)</span></span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.priStr = priStr;</span><br><span class="line">        System.out.println(<span class="string">&quot;ReflectionClass(String priStr) called&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SuperReflectionClass</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> String TAG = <span class="string">&quot;superReflectionClass&quot;</span>;</span><br><span class="line">    <span class="keyword">private</span> String priStr = <span class="string">&quot;super private string&quot;</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> priInt = <span class="number">654321</span>;</span><br><span class="line">    <span class="keyword">public</span> String pubStr = <span class="string">&quot;super public string&quot;</span>;</span><br><span class="line">    <span class="keyword">public</span> String superStr = <span class="string">&quot;superString&quot;</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">priMtd</span><span class="params">()</span></span>&#123;</span><br><span class="line">        Log.i(TAG, <span class="string">&quot;superPriMtd() called&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">pubMtd</span><span class="params">()</span></span>&#123;</span><br><span class="line">        Log.i(TAG, <span class="string">&quot;superPubMtd() called&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">superMtd</span><span class="params">()</span></span>&#123;</span><br><span class="line">        Log.i(TAG, <span class="string">&quot;superMtd() called&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">SuperReflectionClass</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.superStr = <span class="string">&quot;This is the &quot;</span> + <span class="keyword">this</span>.superStr;</span><br><span class="line">        Log.i(TAG, <span class="string">&quot;SuperReflectionClass() called&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>运行结果</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20210814154041.png" alt="image-20210814153719963"></p>
+<h2 id="使用反射"><a href="#使用反射" class="headerlink" title="使用反射"></a>使用反射</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">optObjByReflection</span><span class="params">()</span></span>&#123;</span><br><span class="line">    <span class="keyword">try</span>&#123;</span><br><span class="line">        Class cls = Class.forName(<span class="string">&quot;com.example.devndk.ReflectionClass&quot;</span>);</span><br><span class="line">        <span class="comment">//调用无参的构造方法</span></span><br><span class="line">        Object obj = cls.newInstance();</span><br><span class="line"></span><br><span class="line">        Field priStr = cls.getDeclaredField(<span class="string">&quot;priStr&quot;</span>);</span><br><span class="line">        priStr.setAccessible(<span class="keyword">true</span>);<span class="comment">//设置不进行安全检查访问私有属性</span></span><br><span class="line">        System.out.println(<span class="string">&quot;fetch the field priStr = &quot;</span> + priStr.get(obj));</span><br><span class="line"></span><br><span class="line">        Method priMtd = cls.getDeclaredMethod(<span class="string">&quot;priMtd&quot;</span>);</span><br><span class="line">        priMtd.setAccessible(<span class="keyword">true</span>);</span><br><span class="line">        priMtd.invoke(obj);</span><br><span class="line">        <span class="comment">//调用有参的构造方法</span></span><br><span class="line">        Constructor c = cls.getDeclaredConstructor(String.class);<span class="comment">//通过ParameterTypes确定对应的构造方法</span></span><br><span class="line">        Object obj1 = c.newInstance(<span class="string">&quot;constructor with parameters&quot;</span>);<span class="comment">//传入参数</span></span><br><span class="line">        Field priStr1 = cls.getDeclaredField(<span class="string">&quot;priStr&quot;</span>);</span><br><span class="line">        priStr1.setAccessible(<span class="keyword">true</span>);</span><br><span class="line">        System.out.println(<span class="string">&quot;fetch the field priStr = &quot;</span> + priStr1.get(obj));</span><br><span class="line"></span><br><span class="line">        <span class="comment">//调用带参的priMtd方法</span></span><br><span class="line">        Method priMtd1= cls.getDeclaredMethod(<span class="string">&quot;priMtd&quot;</span>, String.class);<span class="comment">//方法名称+对应的paramemterTypes</span></span><br><span class="line">        priMtd1.setAccessible(<span class="keyword">true</span>);</span><br><span class="line">        priMtd1.invoke(obj1, <span class="string">&quot;PriMtd with parameter&quot;</span>);<span class="comment">//调用方法并传入对应的参数</span></span><br><span class="line"></span><br><span class="line">    &#125; <span class="keyword">catch</span> (Exception e)&#123;</span><br><span class="line">        e.printStackTrace();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>运行结果</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20210814154038.png" alt="image-20210814154031695"></p>
+<h2 id="从Native反射"><a href="#从Native反射" class="headerlink" title="从Native反射"></a>从Native反射</h2><p>除了在Java层，从Native同样也能完成反射的工作。<br>所有的流程类似于Java，只是通过JNIEnv函数来实现。同时，获取属性值或者调用方法的时候不需要区分private和public。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">extern</span> <span class="string">&quot;C&quot;</span></span><br><span class="line"><span class="function">JNIEXPORT <span class="keyword">void</span> JNICALL</span></span><br><span class="line"><span class="function"><span class="title">Java_com_example_devndk_MainActivity_reflectByNative</span><span class="params">(JNIEnv *env, jobject thiz)</span> </span>&#123;</span><br><span class="line">    jclass cls = env-&gt;<span class="built_in">FindClass</span>(<span class="string">&quot;com/example/devndk/ReflectionClass&quot;</span>);</span><br><span class="line">    <span class="keyword">if</span>(cls == <span class="literal">NULL</span>)&#123;</span><br><span class="line">        __android_log_print(ANDROID_LOG_INFO,<span class="string">&quot;JNIMsg&quot;</span>, <span class="string">&quot;cls = NULL&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    jmethodID constructorID = env-&gt;<span class="built_in">GetMethodID</span>(cls, <span class="string">&quot;&lt;init&gt;&quot;</span>, <span class="string">&quot;(Ljava/lang/String;)V&quot;</span>);</span><br><span class="line">    <span class="keyword">if</span>(constructorID == <span class="literal">NULL</span>)&#123;</span><br><span class="line">        __android_log_print(ANDROID_LOG_INFO,<span class="string">&quot;JNIMsg&quot;</span>, <span class="string">&quot;constructorID = NULL&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">char</span> s[] = <span class="string">&quot;reflection from native&quot;</span>;</span><br><span class="line">    jstring ss = env-&gt;<span class="built_in">NewStringUTF</span>(s);</span><br><span class="line">    jobject  obj = env-&gt;<span class="built_in">NewObject</span>(cls, constructorID, ss);</span><br><span class="line"></span><br><span class="line">    jmethodID priMtdID = env-&gt;<span class="built_in">GetMethodID</span>(cls, <span class="string">&quot;priMtd&quot;</span>, <span class="string">&quot;(Ljava/lang/String;)V&quot;</span>);</span><br><span class="line">    <span class="keyword">if</span>(priMtdID == <span class="literal">NULL</span>)&#123;</span><br><span class="line">        __android_log_print(ANDROID_LOG_INFO,<span class="string">&quot;JNIMsg&quot;</span>, <span class="string">&quot;priMtdID = NULL&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    env-&gt;<span class="built_in">CallVoidMethod</span>(obj, priMtdID, ss);<span class="comment">//这里不需要区分private和public</span></span><br><span class="line"></span><br><span class="line">    jfieldID priIntID = env-&gt;<span class="built_in">GetFieldID</span>(cls,<span class="string">&quot;priInt&quot;</span>, <span class="string">&quot;I&quot;</span>);</span><br><span class="line">    <span class="keyword">if</span>(priIntID == <span class="literal">NULL</span>)&#123;</span><br><span class="line">        __android_log_print(ANDROID_LOG_INFO,<span class="string">&quot;JNIMsg&quot;</span>, <span class="string">&quot;priIntID = NULL&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    __android_log_print(ANDROID_LOG_INFO,<span class="string">&quot;JNIMsg&quot;</span>, <span class="string">&quot;ReflectionClass.priInt = %d&quot;</span>, env-&gt;<span class="built_in">GetIntField</span>(obj, priIntID));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>运行结果</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20210814172122.png" alt="image-20210814172116714"></p>
+<h2 id="JNIEnv调用"><a href="#JNIEnv调用" class="headerlink" title="JNIEnv调用"></a>JNIEnv调用</h2><p>在Native函数中直接通过传入的thiz对象来控制Java层调用对象会更加简单，直接借助JNIEnv结构体而不必使用反射技术。<br>当然，这里thiz代表的是调用该Native方法的Java层实例，所以<strong>只能用于控制对应的上层实例</strong>。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//MainActivity.java</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MainActivity</span> <span class="keyword">extends</span> <span class="title">AppCompatActivity</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> String TAG = <span class="string">&quot;MainActivity&quot;</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">static</span> &#123;</span><br><span class="line">        System.loadLibrary(<span class="string">&quot;native-lib&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> String priStr=<span class="string">&quot;private string&quot;</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> priInt = <span class="number">123</span>;</span><br><span class="line">    <span class="keyword">public</span> String pubStr = <span class="string">&quot;public string&quot;</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">int</span> pubInt = <span class="number">456</span>;</span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">priMethod</span><span class="params">()</span></span>&#123;</span><br><span class="line">        Log.i(TAG, <span class="string">&quot;private Method() called&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">pubMethod</span><span class="params">()</span></span>&#123;</span><br><span class="line">        Log.i(TAG, <span class="string">&quot;public Method() called&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">(Bundle savedInstanceState)</span> </span>&#123;</span><br><span class="line">        ......</span><br><span class="line">        mThiz = (Button) findViewById(R.id.thiz);</span><br><span class="line">        mThiz.setOnClickListener(<span class="keyword">new</span> View.OnClickListener() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onClick</span><span class="params">(View v)</span> </span>&#123;</span><br><span class="line">                optObjByThiz();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">native</span> <span class="keyword">void</span> <span class="title">optObjByThiz</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//native-lib.cpp</span></span><br><span class="line"><span class="keyword">extern</span> <span class="string">&quot;C&quot;</span></span><br><span class="line"><span class="function">JNIEXPORT <span class="keyword">void</span> JNICALL</span></span><br><span class="line"><span class="function"><span class="title">Java_com_example_devndk_MainActivity_optObjByThiz</span><span class="params">(JNIEnv *env, jobject thiz)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// <span class="doctag">TODO:</span> implement optObjByThiz()</span></span><br><span class="line"></span><br><span class="line">    jclass clz = env-&gt;<span class="built_in">GetObjectClass</span>(thiz);</span><br><span class="line">    jfieldID priStrID = env-&gt;<span class="built_in">GetFieldID</span>(clz, <span class="string">&quot;priStr&quot;</span>, <span class="string">&quot;Ljava/lang/String;&quot;</span>);</span><br><span class="line">    jfieldID priIntID = env-&gt;<span class="built_in">GetFieldID</span>(clz, <span class="string">&quot;priInt&quot;</span>, <span class="string">&quot;I&quot;</span>);</span><br><span class="line">    jmethodID priMtdID = env-&gt;<span class="built_in">GetMethodID</span>(clz, <span class="string">&quot;priMethod&quot;</span>, <span class="string">&quot;()V&quot;</span>);</span><br><span class="line"></span><br><span class="line">    jobject jPriStrObj = env-&gt;<span class="built_in">GetObjectField</span>(thiz, priStrID);</span><br><span class="line">    jstring jPriStr = (jstring) jPriStrObj;</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">char</span> *priStr = env-&gt;<span class="built_in">GetStringUTFChars</span>(jPriStr, <span class="literal">NULL</span>);</span><br><span class="line">    __android_log_print(ANDROID_LOG_INFO,<span class="string">&quot;JNIMsg&quot;</span>, <span class="string">&quot;private string = %s&quot;</span>, priStr);</span><br><span class="line"></span><br><span class="line">    jint priInt = env-&gt;<span class="built_in">GetIntField</span>(thiz, priIntID);</span><br><span class="line">    __android_log_print(ANDROID_LOG_INFO,<span class="string">&quot;JNIMsg&quot;</span>, <span class="string">&quot;private int = %d&quot;</span>, priInt);</span><br><span class="line"></span><br><span class="line">    env-&gt;<span class="built_in">CallVoidMethod</span>(thiz, priMtdID);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>运行结果</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20210813193009.png" alt="image-20210813193006366"></p>
+<h1 id="JNI动态注册"><a href="#JNI动态注册" class="headerlink" title="JNI动态注册"></a>JNI动态注册</h1><blockquote>
+<p>参考了邓凡平《深入理解Android 卷Ⅰ》第2章 深入理解JNI，推荐阅读。</p>
+</blockquote>
+<p>在前文的JNI函数编写过程中，都是使用的静态方法来注册JNI函数。<br>既然Java Native函数和JNI函数都是一一对应的，那么应该会有一种数据结构来保存这种对应关系。<br>在JNI技术中，记录这种对应关系的是一种叫做<strong>JNINativeMethod</strong>的结构，其定义如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span>&#123;</span></span><br><span class="line">	<span class="keyword">const</span> <span class="keyword">char</span>* name; <span class="comment">//Java中native函数的名字，不用携带包的路径，如&quot;native_init&quot;</span></span><br><span class="line">	<span class="keyword">const</span> <span class="keyword">char</span>* signature; <span class="comment">// Java函数的签名信息，用字符串表示，时参数类型和返回值的组合，如&quot;(Ljava/lang/String;)I&quot;，(接收一个String参数，返回int)</span></span><br><span class="line">	<span class="keyword">void</span>* fnPtr; <span class="comment">// JNI层对应函数的函数指针，注意他是void*类型</span></span><br><span class="line">&#125;JNINativeMethod;</span><br></pre></td></tr></table></figure>
+
+<p>于是乎，JNI的动态注册的目标便是在Native层修改JNINativeMethod这个结构。<br>对于该结构的修改，可以通过env-&gt;RegisterNatives()来注册关联关系。</p>
+<p>在这里，我们<strong>通过动态注册，从Native向Java对象MainActivity注册DynamicJNI()和DynamicJNI_2()两个方法</strong>，方法的细节如gMethods数组和它们对应的Native函数所示。<br>为了把方法注册到MainActivity上，先使用<strong>env-&gt;FindClass(aimClass)<strong>找到目标，然后使用</strong>env-&gt;RegisterNatives(clazz, gMethods, MethodsCnt)<strong>函数，完成gMethods描述的函数注册。该步骤被封装为registerMethods函数，具体实现时</strong>记得处理异常情况</strong>。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">native_DynamicJNI</span><span class="params">(JNIEnv *env, jclass clazz)</span></span>&#123;</span><br><span class="line">    __android_log_print(ANDROID_LOG_INFO,<span class="string">&quot;JNIMsg&quot;</span>, <span class="string">&quot;native_DynamicJIN() called&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">native_DynamicJNI_2</span><span class="params">(JNIEnv *env, jclass clazz, jint a, jint b, jstring s)</span></span>&#123;</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">char</span> *ss;</span><br><span class="line">    ss = env-&gt;<span class="built_in">GetStringUTFChars</span>(s, JNI_FALSE);</span><br><span class="line">    __android_log_print(ANDROID_LOG_INFO, <span class="string">&quot;JNIMsg&quot;</span>, <span class="string">&quot;native_DynamicNJI_2() called, received parameter from Java: s = %s&quot;</span>, ss);</span><br><span class="line">    <span class="keyword">return</span> a+b;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">static</span> JNINativeMethod gMethods[] = &#123;</span><br><span class="line">        &#123;</span><br><span class="line">                <span class="string">&quot;DynamicJNI&quot;</span>,          <span class="comment">//供Java引用的方法名</span></span><br><span class="line">                <span class="string">&quot;()V&quot;</span>,              <span class="comment">//描述参数类型和返回值类型，即方法签名</span></span><br><span class="line">                (<span class="keyword">void</span> *) native_DynamicJNI   <span class="comment">//Native层定义的函数名，()包裹返回值类型</span></span><br><span class="line">        &#125;,</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="string">&quot;DynamicJNI_2&quot;</span>,</span><br><span class="line">            <span class="string">&quot;(IILjava/lang/String;)I&quot;</span>,</span><br><span class="line">            (jint *) native_DynamicJNI_2</span><br><span class="line">        &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> METHODS_CNT(x) ((int) (sizeof(x) / sizeof((x)[0])))</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> AIM_CLASS <span class="meta-string">&quot;com/example/devndk/MainActivity&quot;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">int</span> <span class="title">registerMethods</span><span class="params">(JNIEnv *env, <span class="keyword">const</span> <span class="keyword">char</span> *className, JNINativeMethod *gMethods, <span class="keyword">int</span> MethodsCnt)</span></span>&#123;</span><br><span class="line">    jclass clazz = env-&gt;<span class="built_in">FindClass</span>(className);</span><br><span class="line">    <span class="keyword">if</span>(clazz == <span class="literal">NULL</span>)&#123;</span><br><span class="line">        __android_log_print(ANDROID_LOG_INFO, <span class="string">&quot;JNIMsg&quot;</span>,<span class="string">&quot;FindClass() Error&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> JNI_FALSE;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span>(env-&gt;<span class="built_in">RegisterNatives</span>(clazz, gMethods, MethodsCnt) &lt; <span class="number">0</span>)&#123;</span><br><span class="line">        __android_log_print(ANDROID_LOG_INFO, <span class="string">&quot;JNIMsg&quot;</span>,<span class="string">&quot;RegisterNatives() Error&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> JNI_FALSE;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> JNI_TRUE;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在MainActivity.java中，也需要完成相应的声明。(此时忽略Android Studio的错误提示)</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MainActivity</span> <span class="keyword">extends</span> <span class="title">AppCompatActivity</span> </span>&#123;</span><br><span class="line">    ......</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">native</span> <span class="keyword">void</span> <span class="title">DynamicJNI</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">native</span> <span class="keyword">int</span> <span class="title">DynamicJNI_2</span><span class="params">(<span class="keyword">int</span> a, <span class="keyword">int</span> b, String s)</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">        ......</span><br><span class="line">        DynamicJNI();</span><br><span class="line">        <span class="keyword">int</span> ret = DynamicJNI_2(<span class="number">7</span>,<span class="number">7</span>, <span class="string">&quot;DynamicJNI_2&quot;</span>);</span><br><span class="line">        Log.i(TAG, <span class="string">&quot;DynamicJNI_2() return  &quot;</span> + ret);</span><br><span class="line">        .....</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>值得讨论的是，<strong>动态注册工作在什么时候发生？</strong>即registerMethods()函数在什么时候被调用？<br>答案是：<strong>当Java层通过System.loadLibrary()加载完JNI动态库之后，会查找库中名为JNI_OnLoad()的函数，如果存在便调用</strong>。<br>因此，动态注册发生在**JNI_OnLoad()**中，也可以说是通过实现JNI_OnLoad函数并在其中调用registerMethods()函数，来完成动态注册。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">jint <span class="title">JNI_OnLoad</span><span class="params">(JavaVM* vm, <span class="keyword">void</span>* reserved)</span></span>&#123;</span><br><span class="line">    <span class="comment">//注意，JavaVM和JNIEnv不同，JavaVM是虚拟机在JNI的代表，每个进程只有一个这样的JavaVM</span></span><br><span class="line">    JNIEnv* env = <span class="literal">NULL</span>;</span><br><span class="line">    jint result = <span class="number">-1</span>;</span><br><span class="line">    <span class="keyword">if</span>(vm-&gt;<span class="built_in">GetEnv</span>((<span class="keyword">void</span>**) &amp;env, JNI_VERSION_1_6) != JNI_OK)&#123;</span><br><span class="line">        <span class="keyword">return</span> JNI_ERR;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">assert</span>(env != <span class="literal">NULL</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span>(!<span class="built_in">registerMethods</span>(env, AIM_CLASS, gMethods, <span class="built_in">METHODS_CNT</span>(gMethods)))&#123;</span><br><span class="line">        <span class="keyword">return</span> JNI_ERR;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> JNI_VERSION_1_6;<span class="comment">//必须返回</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>运行结果</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20210814211900.png" alt="image-20210814211854054"></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Android/" rel="tag"># Android</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/07/29/Nexus5-Flashing/" rel="prev" title="Nexus5刷机体验">
+      <i class="fa fa-chevron-left"></i> Nexus5刷机体验
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/08/16/Programming-Problems/" rel="next" title="两个面试算法题">
+      两个面试算法题 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          見出し
+        </li>
+        <li class="sidebar-nav-overview">
+          概要
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#JNI-%E5%8F%82%E6%95%B0%E4%BC%A0%E9%80%92"><span class="nav-number">1.</span> <span class="nav-text">JNI 参数传递</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BB%8ENative%E4%BF%AE%E6%94%B9Java%E6%95%B0%E6%8D%AE"><span class="nav-number">2.</span> <span class="nav-text">从Native修改Java数据</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%80%9A%E8%BF%87JNIEnv%E6%93%8D%E7%BA%B5Java%E5%AF%B9%E8%B1%A1%E4%BF%AE%E6%94%B9"><span class="nav-number">2.1.</span> <span class="nav-text">通过JNIEnv操纵Java对象修改</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%80%9A%E8%BF%87GetArrayElements-%E5%87%BD%E6%95%B0%E7%9B%B4%E6%8E%A5%E4%BF%AE%E6%94%B9"><span class="nav-number">2.2.</span> <span class="nav-text">通过GetArrayElements()函数直接修改</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%9C%A8Java%E5%B1%82%E6%89%93%E5%8D%B0%E5%8F%98%E9%87%8F%E7%9A%84%E7%89%A9%E7%90%86%E5%9C%B0%E5%9D%80%EF%BC%88%E5%BE%85%E5%AE%8C%E5%96%84%EF%BC%89"><span class="nav-number">2.2.1.</span> <span class="nav-text">在Java层打印变量的物理地址（待完善）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%80%9A%E8%BF%87Direct-ByteBuffer%E4%BF%AE%E6%94%B9"><span class="nav-number">2.3.</span> <span class="nav-text">通过Direct ByteBuffer修改</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%8D%E5%B0%84"><span class="nav-number">3.</span> <span class="nav-text">反射</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AD%A6%E4%B9%A0%E5%8F%8D%E5%B0%84"><span class="nav-number">3.1.</span> <span class="nav-text">学习反射</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8%E5%8F%8D%E5%B0%84"><span class="nav-number">3.2.</span> <span class="nav-text">使用反射</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%8ENative%E5%8F%8D%E5%B0%84"><span class="nav-number">3.3.</span> <span class="nav-text">从Native反射</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#JNIEnv%E8%B0%83%E7%94%A8"><span class="nav-number">3.4.</span> <span class="nav-text">JNIEnv调用</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#JNI%E5%8A%A8%E6%80%81%E6%B3%A8%E5%86%8C"><span class="nav-number">4.</span> <span class="nav-text">JNI动态注册</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="slient2009"
+      src="/images/round_tiger.png">
+  <p class="site-author-name" itemprop="name">slient2009</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">6</span>
+          <span class="site-state-item-name">ポスト</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">タグ</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">slient2009</span>
+</div>
+
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="合計閲覧者数">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="閲覧合計数">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
