@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/pig_128x128.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/pig_32x32.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/pig_16x16.ico">
+  <link rel="mask-icon" href="/images/pig_128x128.ico" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic|Roboto Slab:300,300italic,400,400italic,700,700italic|Rotoro Mono:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"slient2009.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="攻防世界刷题：Mobile， Easy部分。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Easy Mobile of ADWorld">
+<meta property="og:url" content="http://slient2009.github.io/2021/10/18/ADWorld-Mobile-Easy/index.html">
+<meta property="og:site_name" content="Slient2009">
+<meta property="og:description" content="攻防世界刷题：Mobile， Easy部分。">
+<meta property="og:locale" content="ja_JP">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20210923210058516.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20211010134638847.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20211017200658963.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20211017203816974.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20211017201220218.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20211017201828485.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20211017202524656.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20211017203102910.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20211017203324877.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20211017203452469.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/cap.png">
+<meta property="article:published_time" content="2021-10-18T04:00:01.000Z">
+<meta property="article:modified_time" content="2021-10-18T13:26:37.000Z">
+<meta property="article:author" content="slient2009">
+<meta property="article:tag" content="Android">
+<meta property="article:tag" content="CTF">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20210923210058516.png">
+
+<link rel="canonical" href="http://slient2009.github.io/2021/10/18/ADWorld-Mobile-Easy/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'ja'
+  };
+</script>
+
+  <title>Easy Mobile of ADWorld | Slient2009</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="ナビゲーションバーの切り替え">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Slient2009</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">All I need is Twin Island Milk</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>ホーム</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>プロフィール</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>タグ<span class="badge">6</span></a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>アーカイブ<span class="badge">9</span></a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="ja">
+    <link itemprop="mainEntityOfPage" href="http://slient2009.github.io/2021/10/18/ADWorld-Mobile-Easy/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/round_tiger.png">
+      <meta itemprop="name" content="slient2009">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Slient2009">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Easy Mobile of ADWorld
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">投稿日</span>
+              
+
+              <time title="作成日：2021-10-18 00:00:01 / 修正日：09:26:37" itemprop="dateCreated datePublished" datetime="2021-10-18T00:00:01-04:00">2021-10-18</time>
+            </span>
+
+          
+            <span class="post-meta-item" title="閲覧数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">閲覧数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>攻防世界刷题：Mobile， Easy部分。</p>
+<span id="more"></span>
+
+<h1 id="easy-so"><a href="#easy-so" class="headerlink" title="easy-so"></a>easy-so</h1><p>so层逆向，简单的字符串变换，先交换前后16个字符，然后每两个字符交换位置。<br>顺便体验了一下so动态调试。</p>
+<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/58468014">https://zhuanlan.zhihu.com/p/58468014</a><br><a target="_blank" rel="noopener" href="https://blog.csdn.net/hbhgyu/article/details/81321923">https://blog.csdn.net/hbhgyu/article/details/81321923</a></p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20210923210058516.png" alt="image-20210923210058516"></p>
+<h1 id="app1"><a href="#app1" class="headerlink" title="app1"></a>app1</h1><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">this</span>.btn.setOnClickListener(<span class="keyword">new</span> View.OnClickListener() &#123;</span><br><span class="line">    <span class="meta">@Override</span>  <span class="comment">// android.view.View$OnClickListener</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onClick</span><span class="params">(View arg10)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            String inputString = MainActivity.<span class="keyword">this</span>.text.getText().toString();</span><br><span class="line">            PackageInfo pinfo = MainActivity.<span class="keyword">this</span>.getPackageManager().getPackageInfo(<span class="string">&quot;com.example.yaphetshan.tencentgreat&quot;</span>, <span class="number">0x4000</span>);</span><br><span class="line">            String versionCode = pinfo.versionName; <span class="comment">//&quot;X&lt;cP[?PHNB&lt;P?aj&quot;;</span></span><br><span class="line">            <span class="keyword">int</span> versionName = pinfo.versionCode; <span class="comment">//15</span></span><br><span class="line">            <span class="keyword">int</span> i;</span><br><span class="line">            <span class="keyword">for</span>(i = <span class="number">0</span>; i &lt; inputString.length() &amp;&amp; i &lt; versionCode.length(); ++i) &#123;</span><br><span class="line">                <span class="keyword">if</span>(inputString.charAt(i) != (versionCode.charAt(i) ^ versionName)) &#123;</span><br><span class="line">                    Toast.makeText(MainActivity.<span class="keyword">this</span>, <span class="string">&quot;再接再厉，加油~&quot;</span>, <span class="number">1</span>).show();</span><br><span class="line">                    <span class="keyword">return</span>;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span>(inputString.length() == versionCode.length()) &#123;</span><br><span class="line">                Toast.makeText(MainActivity.<span class="keyword">this</span>, <span class="string">&quot;恭喜开启闯关之门！&quot;</span>, <span class="number">1</span>).show();</span><br><span class="line">                <span class="keyword">return</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">catch</span>(PackageManager.NameNotFoundException v5) &#123;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        Toast.makeText(MainActivity.<span class="keyword">this</span>, <span class="string">&quot;年轻人不要耍小聪明噢&quot;</span>, <span class="number">1</span>).show();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<h1 id="app2"><a href="#app2" class="headerlink" title="app2"></a>app2</h1><p>有点儿莫名其妙的一个题。</p>
+<p>在<code>com.tencent.testvuln.SecondActivity.onCreate</code>中，检查了username和password，具体是通过native的<code>doRawData()</code>函数基于AES进行校验。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span>  <span class="comment">// com.tencent.testvuln.a</span></span><br><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">(Bundle arg6)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">super</span>.onCreate(arg6);</span><br><span class="line">    <span class="keyword">this</span>.setContentView(<span class="number">0x7F030001</span>);  <span class="comment">// layout:activity_main2</span></span><br><span class="line">    Intent v0 = <span class="keyword">this</span>.getIntent();</span><br><span class="line">    String ili_name = v0.getStringExtra(<span class="string">&quot;ili&quot;</span>);  <span class="comment">// name</span></span><br><span class="line">    String lil_pwd = v0.getStringExtra(<span class="string">&quot;lil&quot;</span>);  <span class="comment">// pwd</span></span><br><span class="line">    <span class="comment">// Base64(AES(name+pwd, key)) == &quot;VEIzd/V2UPYNdn/bxH3Xig==&quot;</span></span><br><span class="line">    <span class="keyword">if</span>(Encryto.doRawData(<span class="keyword">this</span>, ili_name + lil_pwd).equals(<span class="string">&quot;VEIzd/V2UPYNdn/bxH3Xig==&quot;</span>)) &#123;</span><br><span class="line">        v0.setAction(<span class="string">&quot;android.test.action.MoniterInstallService&quot;</span>);</span><br><span class="line">        v0.setClass(<span class="keyword">this</span>, MoniterInstallService.class);</span><br><span class="line">        v0.putExtra(<span class="string">&quot;company&quot;</span>, <span class="string">&quot;tencent&quot;</span>);</span><br><span class="line">        v0.putExtra(<span class="string">&quot;name&quot;</span>, <span class="string">&quot;hacker&quot;</span>);</span><br><span class="line">        v0.putExtra(<span class="string">&quot;age&quot;</span>, <span class="number">18</span>);</span><br><span class="line">        <span class="keyword">this</span>.startActivity(v0);</span><br><span class="line">        <span class="keyword">this</span>.startService(v0);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    SharedPreferences.Editor v0_1 = <span class="keyword">this</span>.getSharedPreferences(<span class="string">&quot;test&quot;</span>, <span class="number">0</span>).edit();</span><br><span class="line">    v0_1.putString(<span class="string">&quot;ilil&quot;</span>, ili_name);</span><br><span class="line">    v0_1.putString(<span class="string">&quot;lili&quot;</span>, lil_pwd);</span><br><span class="line">    v0_1.commit();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>跟到native层的<code>doRawData()</code>，发现直接给出的AES的加密模式和加密密钥。去<a target="_blank" rel="noopener" href="http://tool.chacuo.net/cryptaes/%E8%A7%A3%E5%87%BA%E6%9D%A5%E5%BE%97%E5%88%B0%60username=tencent">http://tool.chacuo.net/cryptaes/解出来得到`username=tencent</a> password=aimage`。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">jstring __fastcall <span class="title">doRawData</span><span class="params">(JNIEnv *env, jobject thiz, <span class="keyword">int</span> jclass, <span class="keyword">int</span> str)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="keyword">const</span> <span class="keyword">char</span> *String; <span class="comment">// r6</span></span><br><span class="line">  <span class="keyword">const</span> <span class="keyword">char</span> *v7; <span class="comment">// r8</span></span><br><span class="line">  jstring result; <span class="comment">// r0</span></span><br><span class="line">  jstring (*v9)(JNIEnv *, <span class="keyword">const</span> jchar *, jsize); <span class="comment">// r6</span></span><br><span class="line">  <span class="keyword">char</span> *v10; <span class="comment">// r5</span></span><br><span class="line">  size_t v11; <span class="comment">// r2</span></span><br><span class="line">  <span class="keyword">char</span> key[<span class="number">24</span>]; <span class="comment">// [sp+0h] [bp-28h] BYREF</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> ( j_checkSignature((<span class="keyword">int</span>)env, (<span class="keyword">int</span>)thiz, jclass) == <span class="number">1</span> )<span class="comment">// j_checkSignature(env, thiz, jclass)</span></span><br><span class="line">  &#123;</span><br><span class="line">    strcpy(key, <span class="string">&quot;thisisatestkey==&quot;</span>);</span><br><span class="line">    String = (*env)-&gt;GetStringUTFChars(env, str, <span class="number">0</span>);</span><br><span class="line">    v7 = (<span class="keyword">const</span> <span class="keyword">char</span> *)j_AES_128_ECB_PKCS5Padding_Encrypt(String, key);</span><br><span class="line">    (*env)-&gt;ReleaseStringUTFChars(env, (jstring)str, String);</span><br><span class="line">    result = (*env)-&gt;NewStringUTF(env, v7);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">else</span></span><br><span class="line">  &#123;</span><br><span class="line">    v9 = (*env)-&gt;NewString;</span><br><span class="line">    v10 = UNSIGNATURE[<span class="number">0</span>];</span><br><span class="line">    v11 = strlen(UNSIGNATURE[<span class="number">0</span>]);               <span class="comment">// &quot;UNSIGNATURE&quot;</span></span><br><span class="line">    result = v9(env, (<span class="keyword">const</span> jchar *)v10, v11);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>但是这个信息没什么用，之后的代码去开启了一个service监听指定路径下的文件变化，但是监听的回调函数也没进行什么可疑操作，不知道在哪儿去操作或者展示了flag。<br>扫一下其他class的代码，发现了在<code>FileDataActivity</code>中进行了AES解密操作，解出来得到<code>flag = Cas3_0f_A_CAK3</code>。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">FileDataActivity</span> <span class="keyword">extends</span> <span class="title">a</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> TextView c;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span>  <span class="comment">// com.tencent.testvuln.a</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">(Bundle arg3)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>.onCreate(arg3);</span><br><span class="line">        <span class="keyword">this</span>.setContentView(<span class="number">0x7F030002</span>);  <span class="comment">// layout:activity_main3</span></span><br><span class="line">        <span class="keyword">this</span>.c = (TextView)<span class="keyword">this</span>.findViewById(<span class="number">0x7F070000</span>);  <span class="comment">// id:textView1</span></span><br><span class="line">        <span class="keyword">this</span>.c.setText(Encryto.decode(<span class="keyword">this</span>, <span class="string">&quot;9YuQ2dk8CSaCe7DTAmaqAA==&quot;</span>));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这个activity貌似没有在其他class的代码中被调用过，不知道在哪儿暗示了这个是flag，反正就挺莫名其妙的。</p>
+<h1 id="app3"><a href="#app3" class="headerlink" title="app3"></a>app3</h1><p>下载得到一个<code>.ab</code>，它是Android的备份文件，用<a target="_blank" rel="noopener" href="https://github.com/nelenkov/android-backup-extractor/">工具</a>打开得到一个apk和两个db文件。<br>这个apk在我的设备上运行不了，提示缺少一些so文件，在这个<a target="_blank" rel="noopener" href="https://github.com/pfalcon/android-platform-headers/tree/master/android-2.3.5_r1/lib">仓库</a>里面可以找到多数的so文件，然后补上icu文件依然运行不了，遂作罢。</p>
+<p>于是静态分析代码，关键在这个方法里面。主要是根据<code>name=Stranger password=123456</code>生成了数据库的加密密钥，且该数据库通过<code>sqlcipher</code>完成加解密操作。<br>跟着代码逻辑，可以用在线工具得到数据库密码为<code>ae56f99</code>，然后使用工具<a target="_blank" rel="noopener" href="https://github.com/slient2009/PicGo/blob/main/files/sqlcipher-3.0.1.zip">sqlcipher-shell</a>解密两个数据库文件，从中可以翻到flag的base64字符串。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">a</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        SQLiteDatabase.loadLibs(<span class="keyword">this</span>);</span><br><span class="line">        <span class="keyword">this</span>.mySQLhelper = <span class="keyword">new</span> mySQLutils(<span class="keyword">this</span>, <span class="string">&quot;Demo.db&quot;</span>, <span class="keyword">null</span>, <span class="number">1</span>);</span><br><span class="line">        ContentValues v0 = <span class="keyword">new</span> ContentValues();</span><br><span class="line">        v0.put(<span class="string">&quot;name&quot;</span>, <span class="string">&quot;Stranger&quot;</span>);</span><br><span class="line">        v0.put(<span class="string">&quot;password&quot;</span>, Integer.valueOf(<span class="number">123456</span>));</span><br><span class="line">        a v1 = <span class="keyword">new</span> a();</span><br><span class="line">        String Stra1234 = v1.concat4_4(v0.getAsString(<span class="string">&quot;name&quot;</span>), v0.getAsString(<span class="string">&quot;password&quot;</span>));</span><br><span class="line">        <span class="keyword">this</span>.a = <span class="keyword">this</span>.mySQLhelper.getWritableDatabase(v1.SHA1(Stra1234 + v1.md5(Stra1234, v0.getAsString(<span class="string">&quot;password&quot;</span>))).substring(<span class="number">0</span>, <span class="number">7</span>));</span><br><span class="line">        <span class="keyword">this</span>.a.insert(<span class="string">&quot;TencentMicrMsg&quot;</span>, <span class="keyword">null</span>, v0);</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="easy-apk"><a href="#easy-apk" class="headerlink" title="easy-apk"></a>easy-apk</h1><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#换表base64解密脚本，https://www.programminghunter.com/article/2612605879/</span></span><br><span class="line"><span class="comment">#结果要包裹flag&#123;&#125;</span></span><br><span class="line"><span class="keyword">import</span> base64</span><br><span class="line"><span class="keyword">import</span> string</span><br><span class="line"></span><br><span class="line">str1 = <span class="string">&quot;x2dtJEOmyjacxDemx2eczT5cVS9fVUGvWTuZWjuexjRqy24rV29q&quot;</span></span><br><span class="line"></span><br><span class="line">string1 = <span class="string">&quot;ZYXABCDEFGHIJKLMNOPQRSTUVWzyxabcdefghijklmnopqrstuvw0123456789+/&quot;</span></span><br><span class="line">string2 = <span class="string">&quot;ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span> (base64.b64decode(str1.translate(<span class="built_in">str</span>.maketrans(string1,string2))))</span><br></pre></td></tr></table></figure>
+
+<h1 id="easyjava"><a href="#easyjava" class="headerlink" title="easyjava"></a>easyjava</h1><p>检查代码发现是一个类似于转轮机的加密程序，把反编译代码复制下来，添加爆破的代码片段即可。<br>需要注意的是，我的jeb对一些细节处理不够好，比如下面这个转动密码表的<code>rot1</code>函数。</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20211010134638847.png" alt="image-20211010134638847"></p>
+<p>在汇编代码中，先是把list中的头部元素取出，然后remove(0)，接着把取出的头部元素加入的尾部。<br>但是在反编译的得到的java代码中，却先remove(0)移除了头部元素，然后再把头部元素(相当于第二个元素)复制到末尾，造成逻辑错误，需要交换顺序。<br>同样的情况还发生在<code>com.a.easyjava.a.a() </code>中。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> java.util.ArrayList;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">a</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> ArrayList integerList;</span><br><span class="line">    <span class="keyword">static</span> String b;</span><br><span class="line">    Integer[] c;</span><br><span class="line">    <span class="keyword">static</span> Integer cnt;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">a</span><span class="params">(Integer rotIndex)</span> </span>&#123;</span><br><span class="line">        a.integerList = <span class="keyword">new</span> ArrayList();</span><br><span class="line">        a.b = <span class="string">&quot;abcdefghijklmnopqrstuvwxyz&quot;</span>;</span><br><span class="line">        a.cnt = (<span class="keyword">int</span>)<span class="number">0</span>;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">this</span>.c = <span class="keyword">new</span> Integer[]&#123;<span class="number">7</span>, <span class="number">14</span>, <span class="number">16</span>, <span class="number">21</span>, <span class="number">4</span>, <span class="number">24</span>, <span class="number">25</span>, <span class="number">20</span>, <span class="number">5</span>, <span class="number">15</span>, <span class="number">9</span>, <span class="number">17</span>, <span class="number">6</span>, <span class="number">13</span>, <span class="number">3</span>, <span class="number">18</span>, <span class="number">12</span>, <span class="number">10</span>, <span class="number">19</span>, <span class="number">0</span>, <span class="number">22</span>, <span class="number">2</span>, <span class="number">11</span>, <span class="number">23</span>, <span class="number">1</span>, <span class="number">8</span>&#125;;</span><br><span class="line">        <span class="keyword">int</span> v0;</span><br><span class="line">        <span class="keyword">for</span>(v0 = (<span class="keyword">int</span>)rotIndex; v0 &lt; <span class="keyword">this</span>.c.length; ++v0) &#123;</span><br><span class="line">            a.integerList.add(<span class="keyword">this</span>.c[v0]);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">int</span> v0_1;</span><br><span class="line">        <span class="keyword">for</span>(v0_1 = <span class="number">0</span>; v0_1 &lt; ((<span class="keyword">int</span>)rotIndex); ++v0_1) &#123;</span><br><span class="line">            a.integerList.add(<span class="keyword">this</span>.c[v0_1]);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">a</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        a.cnt = (<span class="keyword">int</span>)(((<span class="keyword">int</span>)a.cnt) + <span class="number">1</span>);</span><br><span class="line">        <span class="keyword">if</span>(((<span class="keyword">int</span>)a.cnt) == <span class="number">25</span>) &#123;</span><br><span class="line">            a.integerList.add(Integer.valueOf(((Integer)a.integerList.get(<span class="number">0</span>)).intValue()));</span><br><span class="line">            a.integerList.remove(<span class="number">0</span>);</span><br><span class="line">            a.cnt = (<span class="keyword">int</span>)<span class="number">0</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">char</span> <span class="title">getCharByNumIndex</span><span class="params">(Integer arg5)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">int</span> v0 = <span class="number">0</span>;</span><br><span class="line">        Integer v1 = (<span class="keyword">int</span>)<span class="number">0</span>;</span><br><span class="line">        <span class="keyword">if</span>(((<span class="keyword">int</span>)arg5) == -<span class="number">10</span>) &#123;</span><br><span class="line">            a.a();</span><br><span class="line">            <span class="keyword">return</span> <span class="string">&quot; &quot;</span>.charAt(<span class="number">0</span>);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">while</span>(v0 &lt; a.integerList.size() - <span class="number">1</span>) &#123;</span><br><span class="line">            <span class="keyword">if</span>(a.integerList.get(v0) == arg5) &#123;</span><br><span class="line">                v1 = (<span class="keyword">int</span>)v0;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            ++v0;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        a.a();</span><br><span class="line">        <span class="keyword">return</span> a.b.charAt(v1.intValue());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">b</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> ArrayList integerList;</span><br><span class="line">    <span class="keyword">static</span> String chars;</span><br><span class="line">    Integer[] c;</span><br><span class="line">    <span class="keyword">static</span> Integer rotateCnt;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">b</span><span class="params">(Integer rotIndex)</span> </span>&#123;</span><br><span class="line">        </span><br><span class="line">        b.integerList = <span class="keyword">new</span> ArrayList();</span><br><span class="line">        b.chars = <span class="string">&quot;abcdefghijklmnopqrstuvwxyz&quot;</span>;</span><br><span class="line">        b.rotateCnt = (<span class="keyword">int</span>)<span class="number">0</span>;</span><br><span class="line">        <span class="keyword">this</span>.c = <span class="keyword">new</span> Integer[]&#123;<span class="number">8</span>, <span class="number">25</span>, <span class="number">17</span>, <span class="number">23</span>, <span class="number">7</span>, <span class="number">22</span>, <span class="number">1</span>, <span class="number">16</span>, <span class="number">6</span>, <span class="number">9</span>, <span class="number">21</span>, <span class="number">0</span>, <span class="number">15</span>, <span class="number">5</span>, <span class="number">10</span>, <span class="number">18</span>, <span class="number">2</span>, <span class="number">24</span>, <span class="number">4</span>, <span class="number">11</span>, <span class="number">3</span>, <span class="number">14</span>, <span class="number">19</span>, <span class="number">12</span>, <span class="number">20</span>, <span class="number">13</span>&#125;;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">int</span> v0;</span><br><span class="line">        <span class="keyword">for</span>(v0 = (<span class="keyword">int</span>)rotIndex; v0 &lt; <span class="keyword">this</span>.c.length; ++v0) &#123;</span><br><span class="line">            b.integerList.add(<span class="keyword">this</span>.c[v0]);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">int</span> v0_1;</span><br><span class="line">        <span class="keyword">for</span>(v0_1 = <span class="number">0</span>; v0_1 &lt; ((<span class="keyword">int</span>)rotIndex); ++v0_1) &#123;</span><br><span class="line">            b.integerList.add(<span class="keyword">this</span>.c[v0_1]);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">rot1</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        b.integerList.add(Integer.valueOf(((Integer)b.integerList.get(<span class="number">0</span>)).intValue()));</span><br><span class="line">        b.integerList.remove(<span class="number">0</span>);</span><br><span class="line">        b.chars = b.chars + <span class="string">&quot;&quot;</span> + b.chars.charAt(<span class="number">0</span>);</span><br><span class="line">        b.chars = b.chars.substring(<span class="number">1</span>, <span class="number">27</span>);</span><br><span class="line">        b.rotateCnt = (<span class="keyword">int</span>)(((<span class="keyword">int</span>)b.rotateCnt) + <span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Integer <span class="title">indexOf</span><span class="params">(String arg5)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">int</span> ind = <span class="number">0</span>;</span><br><span class="line">        Integer v1 = (<span class="keyword">int</span>)<span class="number">0</span>;</span><br><span class="line">        <span class="keyword">if</span>(b.chars.contains(arg5.toLowerCase())) &#123;</span><br><span class="line">            <span class="keyword">while</span>(ind &lt; b.integerList.size() - <span class="number">1</span>) &#123;</span><br><span class="line">                <span class="keyword">if</span>((<span class="keyword">int</span>)b.integerList.get(ind) == ((<span class="keyword">int</span>)b.chars.indexOf(arg5))) &#123;</span><br><span class="line">                    v1 = (<span class="keyword">int</span>)ind;</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                ++ind;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span> &#123;</span><br><span class="line">            v1 = arg5.contains(<span class="string">&quot; &quot;</span>) ? ((<span class="keyword">int</span>)-<span class="number">10</span>) : ((<span class="keyword">int</span>)-<span class="number">1</span>);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        b.rot1();</span><br><span class="line">        <span class="keyword">return</span> v1;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Integer <span class="title">b</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> b.rotateCnt;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">adworldeasyjava</span></span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">char</span> <span class="title">encode</span><span class="params">(String arg1, b arg2, a arg3)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">char</span> ret=  arg3.getCharByNumIndex(arg2.indexOf(arg1));</span><br><span class="line">        System.out.println(<span class="string">&quot;encode:&quot;</span> + arg1 + <span class="string">&quot;|&quot;</span> + ret);</span><br><span class="line">        <span class="keyword">return</span> ret;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Boolean <span class="title">adworldeasyjava</span><span class="params">(String str, Integer pos)</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;adworldeasyjava: &quot;</span> + str +<span class="string">&quot;|&quot;</span>+ pos);</span><br><span class="line">        String arg8 = str;</span><br><span class="line">        String v2 = arg8;</span><br><span class="line">        b v4 = <span class="keyword">new</span> b(((<span class="keyword">int</span>)<span class="number">2</span>));</span><br><span class="line">        a v5 = <span class="keyword">new</span> a(((<span class="keyword">int</span>)<span class="number">3</span>));</span><br><span class="line">        </span><br><span class="line">        StringBuilder v3 = <span class="keyword">new</span> StringBuilder();</span><br><span class="line">        <span class="keyword">int</span> v1 = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">int</span> ind = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">while</span>(ind &lt; v2.length()) &#123;</span><br><span class="line">            v3.append(encode(v2.charAt(ind) + <span class="string">&quot;&quot;</span>, v4, v5));</span><br><span class="line">            <span class="keyword">if</span>(((<span class="keyword">int</span>)(((<span class="keyword">int</span>)(((<span class="keyword">int</span>)v4.b()) / <span class="number">25</span>)))) &gt; v1 &amp;&amp; ((<span class="keyword">int</span>)(((<span class="keyword">int</span>)(((<span class="keyword">int</span>)v4.b()) / <span class="number">25</span>)))) &gt;= <span class="number">1</span>) &#123;</span><br><span class="line">                ++v1;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            ++ind;</span><br><span class="line">        &#125;</span><br><span class="line">        System.out.println(<span class="string">&quot;v3:&quot;</span> + v3.toString());</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span>(v3.toString().equals(<span class="string">&quot;wigwrkaugala&quot;</span>))&#123;</span><br><span class="line">            System.out.println(<span class="string">&quot;final answer: &quot;</span> + str);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span>(v3.charAt(pos) == (<span class="string">&quot;wigwrkaugala&quot;</span>).charAt(pos))&#123;</span><br><span class="line">            System.out.println(<span class="string">&quot;get one&quot;</span>);</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">        <span class="comment">// return Boolean.valueOf(v3.toString().equals(&quot;wigwrkaugala&quot;));</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">static</span> String chars = <span class="string">&quot;abcdefghijklmnopqrstuvwxyz&quot;</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span></span>&#123;</span><br><span class="line">        String ans = <span class="string">&quot;&quot;</span>;</span><br><span class="line">        <span class="keyword">for</span>( <span class="keyword">int</span> j=<span class="number">0</span>;j&lt;<span class="number">12</span>;j++)&#123;</span><br><span class="line">            <span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">25</span>;i&gt;=<span class="number">0</span>;i--)&#123;</span><br><span class="line">                <span class="keyword">if</span>(adworldeasyjava( ans + chars.charAt(i), ans.length()) )&#123;</span><br><span class="line">                    ans = ans + chars.charAt(i);</span><br><span class="line">                    <span class="keyword">break</span>;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        adworldeasyjava(<span class="string">&quot;venividivkcr&quot;</span>, <span class="number">0</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="easyjni"><a href="#easyjni" class="headerlink" title="easyjni"></a>easyjni</h1><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> base64</span><br><span class="line"><span class="keyword">import</span> string</span><br><span class="line"></span><br><span class="line">a=<span class="string">&#x27;MbT3sQgX039i3g==AQOoMQFPskB1Bsc&#x27;</span></span><br><span class="line">s=a[<span class="number">16</span>:<span class="number">32</span>] + a[<span class="number">0</span>:<span class="number">16</span>]</span><br><span class="line"><span class="keyword">for</span> ind <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">0</span>, <span class="built_in">len</span>(s), <span class="number">2</span>):</span><br><span class="line">	<span class="built_in">print</span>(s[ind+<span class="number">1</span>] + s[ind], end=<span class="string">&#x27;&#x27;</span>)</span><br><span class="line"><span class="comment">#QAoOQMPFks1BsB7cbM3TQsXg30i9g3==</span></span><br><span class="line"></span><br><span class="line">string1 = <span class="string">&quot;i5jLW7S0GX6uf1cv3ny4q8es2Q+bdkYgKOIT/tAxUrFlVPzhmow9BHCMDpEaJRZN&quot;</span></span><br><span class="line">string2 = <span class="string">&quot;ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/&quot;</span></span><br><span class="line">str1 = <span class="string">&#x27;QAoOQMPFks1BsB7cbM3TQsXg30i9g3==&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span> (base64.b64decode(str1.translate(<span class="built_in">str</span>.maketrans(string1,string2))))</span><br><span class="line"><span class="comment"># b&#x27;flag&#123;just_ANot#er_@p3&#125;&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<h1 id="RememberOther"><a href="#RememberOther" class="headerlink" title="RememberOther"></a>RememberOther</h1><p>无趣的脑洞题：<br>apk里面藏了个<code>YOU_KNOW_</code>，然后文档里提示本题只是强行沾边了Android，说明出题人不懂Android，而做题人是懂Android的，所以flag是<code>YOU_KNOW_ANDROID</code>。<br>所以出题人看来真的不懂Android。</p>
+<h1 id="easy-dex"><a href="#easy-dex" class="headerlink" title="easy-dex"></a>easy-dex</h1><p>非常有营养的一道题，解题的思路由一系列的知识点构成，并考察了基础的Android逆向知识。<br>结题过程参考自<a target="_blank" rel="noopener" href="https://www.52pojie.cn/thread-1105062-1-1.html">neilwu@52pojie</a>。</p>
+<p>首先打开apk，发现没有任何代码。<br>检查manifest文件，发现属性<code>hasCode=false</code>，这里需要的知识点为<a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_21071977/article/details/77878252">NativeActivity开发</a>，即使用纯C来完成App的开发。</p>
+<p>有了这个知识，用ida打开so文件，定位到<code>android_main</code>函数，里面就是关于这个App的主要逻辑代码。<br>应用要求使用者在十秒之内晃动手机100次，然后解密释放出一个dex文件到指定目录，加载之后来到flag校验的步骤。<br>具体的流程还是需要我们自己去一点点分析还原。</p>
+<ol>
+<li><p>文件路径<br>dex释放过程中涉及到的两个路径名分别保存在<code>filename</code>和<code>name</code>中，并被抑或加密保护，还原的时候还要每4个字节调整顺序。<img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20211017200658963.png" alt="image-20211017200658963"></p>
+</li>
+<li><p>dex文件解密<br>dex文件也通过抑或加密保护，以字节流的方式写在.data中，起始位置是 0x7004，长度是 0x3ca10。</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20211017203816974.png" alt="image-20211017203816974"><br>整个dex文件流一共分为10段来加解密，解密代码如下：<br><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20211017201220218.png" alt="image-20211017201220218"></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> os</span><br><span class="line"><span class="keyword">import</span> zlib</span><br><span class="line"></span><br><span class="line">fr = <span class="built_in">open</span>(<span class="string">&quot;xxx/odex&quot;</span>, <span class="string">&quot;rb&quot;</span>)</span><br><span class="line">dd = <span class="built_in">list</span>(fr.read())</span><br><span class="line">fr.close()</span><br><span class="line"></span><br><span class="line">L = <span class="number">0x3ca10</span></span><br><span class="line">segLen = L // <span class="number">10</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> cnt <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">9</span>,<span class="number">99</span>,<span class="number">10</span>):</span><br><span class="line">    rnd = cnt // <span class="number">10</span></span><br><span class="line">    <span class="keyword">for</span> ind <span class="keyword">in</span> <span class="built_in">range</span>(segLen * rnd, segLen*rnd + segLen):</span><br><span class="line">        dd[ind] ^= cnt</span><br><span class="line">    <span class="keyword">if</span>(cnt == <span class="number">89</span>):</span><br><span class="line">        <span class="keyword">for</span> ind <span class="keyword">in</span> <span class="built_in">range</span>(segLen*rnd+segLen,L):</span><br><span class="line">            dd[ind] ^= <span class="number">89</span></span><br><span class="line"></span><br><span class="line">ddd=<span class="string">b&#x27;&#x27;</span>.join(<span class="built_in">map</span>(<span class="keyword">lambda</span> x:<span class="built_in">int</span>.to_bytes(x,<span class="number">1</span>,<span class="string">&#x27;little&#x27;</span>), dd))</span><br><span class="line"></span><br><span class="line">dddd = zlib.decompress(ddd)</span><br><span class="line"></span><br><span class="line">fw = <span class="built_in">open</span>(<span class="string">&quot;xxx/class.dex&quot;</span>, <span class="string">&quot;wb&quot;</span>)</span><br><span class="line">fw.write(dddd)</span><br><span class="line">fw.close()</span><br></pre></td></tr></table></figure></li>
+</ol>
+<ol start="3">
+<li><p>dex执行<br>程序记录到100次摇晃之后，开始释放dex文件，加载并运行。<br>在<code>loadDex()</code>和<code>runDex()</code>函数中会有<a href="https://slient2009.github.io/2021/08/15/Android-NDK/#%E4%BB%8ENative%E5%8F%8D%E5%B0%84">从native反射java层</a>执行方法的相关代码。<img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20211017201828485.png" alt="image-20211017201828485"></p>
+</li>
+<li><p>TwoFish<br>dex的代码包含了一个flag校验程序，为<code>encode(flag, key)==cipher</code>的模式，加密代码很长很烧脑。</p>
+<p>浏览一下App的字符串信息，有如下发现：<br><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20211017202524656.png" alt="image-20211017202524656"></p>
+<p>这里需要新的知识：TwoFish加密算法，与AES的功能相似（因为也是当初AES海选的参赛选手之一）。<br>我们并不需要自己去实现一遍，找个<a target="_blank" rel="noopener" href="http://tool.chacuo.net/crypttwofish">在线工具</a>就好。<br>不过还需要确定key和cipher。<br><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20211017203102910.png" alt="image-20211017203102910"><br>分析代码，可知cipher=<code>new byte[]&#123;-120, 77, -14, -38, 17, 5, -42, 44, (byte)224, 109, 85, 31, 24, -91, (byte)144, -83, 0x40, -83, (byte)128, 84, 5, -94, -98, -30, 18, 70, -26, 71, 5, -99, -62, -58, 117, 29, -44, 6, 112, -4, 81, 84, 9, 22, -51, 95, -34, 12, 47, 77&#125;</code>。<br>key是<code>0x7F060025</code>对应的String，简单的确定方法如下所示，可知key=<code>(&quot;I have a male fish and a female fish.&quot;).getBytes()</code>。</p>
+</li>
+</ol>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20211017203324877.png" alt="image-20211017203324877"></p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20211017203452469.png" alt="image-20211017203452469"></p>
+<h1 id="黑客精神"><a href="#黑客精神" class="headerlink" title="黑客精神"></a>黑客精神</h1><p>简单扫一下，看起来是注册码校验模式的App，关键的几个操作、检查注册码的函数埋在native层。<br>从JNI_OnLoad()函数里面可以找到与Java层的<code>initSN() saveSN() work()</code>方法绑定的native层函数。</p>
+<p>程序运行时，先要求填入注册码，经过抑或加密之后保存到<code>/sdcard/reg.dat</code>。</p>
+<p>在<code>work()</code>函数中，先调用<code>initSN()</code>检查是否注册，如果已经注册，就修改<code>MainActivity.m=1</code>。<br><code>initSN()</code>就是检查<code>/sdcard/reg.dat</code>中的数据是不是<code>EoPAoY62@ElRD</code>，如果是的话就设置<code>MainActivity.m=1</code>。<br><code>initSN</code>结束之后，就去检查<code>MainActivity.m</code>判断是否注册，并返回相应的提示信息。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> __fastcall <span class="title">work</span><span class="params">(<span class="keyword">int</span> a1)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="keyword">int</span> m; <span class="comment">// r0</span></span><br><span class="line">  <span class="keyword">int</span> v3; <span class="comment">// r0</span></span><br><span class="line">  <span class="keyword">void</span> *sendBackStr; <span class="comment">// r1</span></span><br><span class="line">  <span class="keyword">bool</span> v5; <span class="comment">// zf</span></span><br><span class="line"></span><br><span class="line">  initSN(a1);</span><br><span class="line">  m = getValueOfm(a1);</span><br><span class="line">  <span class="keyword">if</span> ( m )</span><br><span class="line">  &#123;</span><br><span class="line">    v5 = m == <span class="number">1</span>;</span><br><span class="line">    v3 = a1;</span><br><span class="line">    <span class="keyword">if</span> ( v5 )</span><br><span class="line">      sendBackStr = &amp;unk_2E6B;                  <span class="comment">// 输入即是flag,格式为xman&#123;……&#125;！ (idaapi导出解utf-8编码)</span></span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">      sendBackStr = &amp;unk_2E95;                  <span class="comment">// 还不行呢！</span></span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">else</span></span><br><span class="line">  &#123;</span><br><span class="line">    v3 = a1;</span><br><span class="line">    sendBackStr = &amp;unk_2E5B;                    <span class="comment">// 状态不太对。。</span></span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> setWorkString(v3, sendBackStr);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> __fastcall <span class="title">initSN</span><span class="params">(JNIEnv *env)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  FILE *regf; <span class="comment">// r0</span></span><br><span class="line">  FILE *regFile; <span class="comment">// r4</span></span><br><span class="line">  JNIEnv *v4; <span class="comment">// r0</span></span><br><span class="line">  <span class="keyword">int</span> v5; <span class="comment">// r7</span></span><br><span class="line">  <span class="keyword">void</span> *regStr; <span class="comment">// r5</span></span><br><span class="line">  JNIEnv *v8; <span class="comment">// r0</span></span><br><span class="line">  <span class="keyword">int</span> v9; <span class="comment">// r1</span></span><br><span class="line"></span><br><span class="line">  regf = fopen(<span class="string">&quot;/sdcard/reg.dat&quot;</span>, <span class="string">&quot;r+&quot;</span>);</span><br><span class="line">  regFile = regf;</span><br><span class="line">  <span class="keyword">if</span> ( !regf )</span><br><span class="line">  &#123;</span><br><span class="line">    v4 = env;</span><br><span class="line">    <span class="keyword">return</span> setValue(v4, <span class="number">0</span>);                     <span class="comment">// setValue(env, v)，把Java层的MainActivity.m值改为v</span></span><br><span class="line">  &#125;</span><br><span class="line">  fseek(regf, <span class="number">0</span>, <span class="number">2</span>);</span><br><span class="line">  v5 = ftell(regFile);</span><br><span class="line">  regStr = <span class="built_in">malloc</span>(v5 + <span class="number">1</span>);</span><br><span class="line">  <span class="keyword">if</span> ( !regStr )</span><br><span class="line">  &#123;</span><br><span class="line">    fclose(regFile);</span><br><span class="line">    v4 = env;</span><br><span class="line">    <span class="keyword">return</span> setValue(v4, <span class="number">0</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  fseek(regFile, <span class="number">0</span>, <span class="number">0</span>);</span><br><span class="line">  fread(regStr, v5, <span class="number">1u</span>, regFile);</span><br><span class="line">  *((_BYTE *)regStr + v5) = <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">if</span> ( !<span class="built_in">strcmp</span>((<span class="keyword">const</span> <span class="keyword">char</span> *)regStr, <span class="string">&quot;EoPAoY62@ElRD&quot;</span>) )</span><br><span class="line">  &#123;</span><br><span class="line">    v8 = env;</span><br><span class="line">    v9 = <span class="number">1</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">else</span></span><br><span class="line">  &#123;</span><br><span class="line">    v8 = env;</span><br><span class="line">    v9 = <span class="number">0</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  setValue(v8, v9);</span><br><span class="line">  <span class="keyword">return</span> j_fclose(regFile);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>返回的字符串提示输入的注册码就是flag，提交的时候包裹上<code>xman&#123;....&#125;</code>就行了。<br>注册码加密为<code>xor(SignCode, key)=cipher</code>模式，其中<code>cipher=EoPAoY62@ElRD</code>。<br>经过分析，也可以得到<code>key=W3_arE_whO_we_ARE</code>（或者说<code>key=w_a</code>），进一步可以得到flag。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> __fastcall <span class="title">saveSN</span><span class="params">(JNIEnv *env, <span class="keyword">int</span> thiz, <span class="keyword">int</span> ptr_sn)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  FILE *fptr; <span class="comment">// r7</span></span><br><span class="line">  _DWORD *Bytess; <span class="comment">// r4</span></span><br><span class="line">  <span class="keyword">const</span> <span class="keyword">char</span> *key; <span class="comment">// r3</span></span><br><span class="line">  <span class="keyword">int</span> v9; <span class="comment">// r0</span></span><br><span class="line">  <span class="keyword">int</span> v10; <span class="comment">// r1</span></span><br><span class="line">  _WORD *v11; <span class="comment">// r5</span></span><br><span class="line">  JNIEnv *v12; <span class="comment">// r0</span></span><br><span class="line">  <span class="keyword">int</span> x; <span class="comment">// r4</span></span><br><span class="line">  JNIEnv v14; <span class="comment">// r3</span></span><br><span class="line">  <span class="keyword">signed</span> <span class="keyword">int</span> ind; <span class="comment">// r6</span></span><br><span class="line">  <span class="keyword">const</span> <span class="keyword">char</span> *sn; <span class="comment">// r9</span></span><br><span class="line">  <span class="keyword">char</span> *sn_ptr; <span class="comment">// r5</span></span><br><span class="line">  <span class="keyword">signed</span> <span class="keyword">int</span> sn_len; <span class="comment">// r10</span></span><br><span class="line">  <span class="keyword">char</span> v19; <span class="comment">// r2</span></span><br><span class="line">  <span class="keyword">char</span> v20; <span class="comment">// r3</span></span><br><span class="line">  _BYTE Bytes[<span class="number">56</span>]; <span class="comment">// [sp+0h] [bp-38h] BYREF</span></span><br><span class="line"></span><br><span class="line">  fptr = fopen(<span class="string">&quot;/sdcard/reg.dat&quot;</span>, <span class="string">&quot;w+&quot;</span>);</span><br><span class="line">  <span class="keyword">if</span> ( !fptr )</span><br><span class="line">    <span class="keyword">return</span> j___android_log_print(<span class="number">3</span>, <span class="string">&quot;com.gdufs.xman&quot;</span>, byte_2DCA);</span><br><span class="line">  Bytess = Bytes;</span><br><span class="line">  key = <span class="string">&quot;W3_arE_whO_we_ARE&quot;</span>;</span><br><span class="line">  <span class="keyword">do</span></span><br><span class="line">  &#123;</span><br><span class="line">    v9 = *(_DWORD *)key;</span><br><span class="line">    key += <span class="number">8</span>;</span><br><span class="line">    v10 = *((_DWORD *)key - <span class="number">1</span>);</span><br><span class="line">    *Bytess = v9;</span><br><span class="line">    Bytess[<span class="number">1</span>] = v10;</span><br><span class="line">    v11 = Bytess + <span class="number">2</span>;</span><br><span class="line">    Bytess += <span class="number">2</span>;</span><br><span class="line">  &#125;  <span class="keyword">while</span> ( key != <span class="string">&quot;E&quot;</span> );<span class="comment">//这里产生抑或密钥，事实上就是原来的key。</span></span><br><span class="line">  v12 = env;</span><br><span class="line">  x = <span class="number">2016</span>;</span><br><span class="line">  *v11 = *(_WORD *)key;</span><br><span class="line">  v14 = *env;</span><br><span class="line">  ind = <span class="number">0</span>;</span><br><span class="line">  sn = v14-&gt;GetStringUTFChars(v12, (jstring)ptr_sn, <span class="number">0</span>);</span><br><span class="line">  sn_ptr = (<span class="keyword">char</span> *)sn;</span><br><span class="line">  sn_len = <span class="built_in">strlen</span>(sn);</span><br><span class="line">  <span class="keyword">while</span> ( ind &lt; sn_len )</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="keyword">if</span> ( ind % <span class="number">3</span> == <span class="number">1</span> )</span><br><span class="line">    &#123;</span><br><span class="line">      x = (x + <span class="number">5</span>) % <span class="number">16</span>;						  <span class="comment">// x 会进入4，9，1的循环</span></span><br><span class="line">      v19 = Bytes[x + <span class="number">1</span>];                       <span class="comment">// Bytes[9+1]</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span> ( ind % <span class="number">3</span> == <span class="number">2</span> )</span><br><span class="line">    &#123;</span><br><span class="line">      x = (x + <span class="number">7</span>) % <span class="number">15</span>;</span><br><span class="line">      v19 = Bytes[x + <span class="number">2</span>];                       <span class="comment">// Bytes[1+2]</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">    &#123;</span><br><span class="line">      x = (x + <span class="number">3</span>) % <span class="number">13</span>;</span><br><span class="line">      v19 = Bytes[x + <span class="number">3</span>];                       <span class="comment">// Bytes[4+3]</span></span><br><span class="line">    &#125;</span><br><span class="line">    v20 = *sn_ptr;</span><br><span class="line">    ++ind;</span><br><span class="line">    *sn_ptr++ = v20 ^ v19;<span class="comment">//抑或加密</span></span><br><span class="line">  &#125;</span><br><span class="line">  <span class="built_in">fputs</span>(sn, fptr);<span class="comment">//写入文件</span></span><br><span class="line">  <span class="keyword">return</span> j_fclose(fptr);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="你是谁"><a href="#你是谁" class="headerlink" title="你是谁"></a>你是谁</h1><p>首先，构造一个心形图案，约束条件如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">check</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>.matrix[<span class="number">1</span>][<span class="number">1</span>].getStatus() == <span class="number">1</span> &amp;&amp; <span class="keyword">this</span>.matrix[<span class="number">1</span>][<span class="number">2</span>].getStatus() == <span class="number">1</span> </span><br><span class="line">            &amp;&amp; <span class="keyword">this</span>.matrix[<span class="number">1</span>][<span class="number">7</span>].getStatus() == <span class="number">1</span> &amp;&amp; <span class="keyword">this</span>.matrix[<span class="number">1</span>][<span class="number">8</span>].getStatus() == <span class="number">1</span> </span><br><span class="line">            &amp;&amp; <span class="keyword">this</span>.matrix[<span class="number">2</span>][<span class="number">0</span>].getStatus() == <span class="number">1</span> &amp;&amp; <span class="keyword">this</span>.matrix[<span class="number">2</span>][<span class="number">3</span>].getStatus() == <span class="number">1</span> </span><br><span class="line">            &amp;&amp; <span class="keyword">this</span>.matrix[<span class="number">2</span>][<span class="number">6</span>].getStatus() == <span class="number">1</span> &amp;&amp; <span class="keyword">this</span>.matrix[<span class="number">2</span>][<span class="number">9</span>].getStatus() == <span class="number">1</span> </span><br><span class="line">            &amp;&amp; <span class="keyword">this</span>.matrix[<span class="number">3</span>][<span class="number">0</span>].getStatus() == <span class="number">1</span> &amp;&amp; <span class="keyword">this</span>.matrix[<span class="number">3</span>][<span class="number">4</span>].getStatus() == <span class="number">1</span> </span><br><span class="line">            &amp;&amp; <span class="keyword">this</span>.matrix[<span class="number">3</span>][<span class="number">5</span>].getStatus() == <span class="number">1</span> &amp;&amp; <span class="keyword">this</span>.matrix[<span class="number">3</span>][<span class="number">9</span>].getStatus() == <span class="number">1</span> </span><br><span class="line">            &amp;&amp; <span class="keyword">this</span>.matrix[<span class="number">4</span>][<span class="number">0</span>].getStatus() == <span class="number">1</span> &amp;&amp; <span class="keyword">this</span>.matrix[<span class="number">4</span>][<span class="number">9</span>].getStatus() == <span class="number">1</span> </span><br><span class="line">            &amp;&amp; <span class="keyword">this</span>.matrix[<span class="number">5</span>][<span class="number">1</span>].getStatus() == <span class="number">1</span> &amp;&amp; <span class="keyword">this</span>.matrix[<span class="number">5</span>][<span class="number">8</span>].getStatus() == <span class="number">1</span> </span><br><span class="line">            &amp;&amp; <span class="keyword">this</span>.matrix[<span class="number">6</span>][<span class="number">2</span>].getStatus() == <span class="number">1</span> &amp;&amp; <span class="keyword">this</span>.matrix[<span class="number">6</span>][<span class="number">7</span>].getStatus() == <span class="number">1</span> </span><br><span class="line">            &amp;&amp; <span class="keyword">this</span>.matrix[<span class="number">7</span>][<span class="number">3</span>].getStatus() == <span class="number">1</span> &amp;&amp; <span class="keyword">this</span>.matrix[<span class="number">7</span>][<span class="number">6</span>].getStatus() == <span class="number">1</span> </span><br><span class="line">            &amp;&amp; <span class="keyword">this</span>.matrix[<span class="number">8</span>][<span class="number">4</span>].getStatus() == <span class="number">1</span> &amp;&amp; <span class="keyword">this</span>.matrix[<span class="number">8</span>][<span class="number">5</span>].getStatus() == <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/cap.png" alt="cap" style="zoom:33%;" />
+
+<p>其实把所有圈都点了也能通过，不过这个题只静态分析就行。</p>
+<p>关注<code>xyz.konso.testsrtp.background$4.onResult()</code>这个回调函数：<br>这里接入了科大讯飞的语音SDK，传入的results会被解析为文本信息然后传入<code>getsna()</code>中。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onResult</span><span class="params">(RecognizerResult results, <span class="keyword">boolean</span> isLast)</span> </span>&#123;</span><br><span class="line">    Log.d(background.<span class="keyword">this</span>.TAG, results.getResultString());</span><br><span class="line">    String str = results.getResultString();<span class="comment">//解析为文本信息，返回一个JSON对象</span></span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        background.<span class="keyword">this</span>.ss = <span class="keyword">new</span> JSONObject(str).getJSONArray(<span class="string">&quot;ws&quot;</span>).getJSONObject(<span class="number">0</span>).getJSONArray(<span class="string">&quot;cw&quot;</span>).getJSONObject(<span class="number">0</span>).getString(<span class="string">&quot;w&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">catch</span>(Exception e) &#123;</span><br><span class="line">        Log.d(background.<span class="keyword">this</span>.TAG, <span class="string">&quot;catch Excepetion&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    background.<span class="keyword">this</span>.getsna(background.<span class="keyword">this</span>.ss);</span><br><span class="line">    Log.d(background.<span class="keyword">this</span>.TAG, background.<span class="keyword">this</span>.ss);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在<code>getsna()</code>中，逻辑比较简单，输入的flag参数去utf-8解码出来是<code>我是傻逼</code>。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">getsna</span><span class="params">(String flag)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span>(flag.length() != <span class="number">4</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span>[] as = <span class="keyword">new</span> <span class="keyword">int</span>[flag.length()];</span><br><span class="line">    <span class="keyword">int</span> i;</span><br><span class="line">    <span class="keyword">for</span>(i = <span class="number">0</span>; i &lt; flag.length(); ++i) &#123;</span><br><span class="line">        as[i] = flag.charAt(i) &amp; <span class="number">0xFFFF</span>;<span class="comment">// string to int</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> j;</span><br><span class="line">    <span class="keyword">for</span>(j = <span class="number">0</span>; j &lt; <span class="number">4</span>; ++j) &#123;<span class="comment">//排序</span></span><br><span class="line">        <span class="keyword">int</span> k;</span><br><span class="line">        <span class="keyword">for</span>(k = j + <span class="number">1</span>; k &lt; <span class="number">4</span>; ++k) &#123;</span><br><span class="line">            <span class="keyword">if</span>(as[j] &gt; as[k]) &#123;</span><br><span class="line">                <span class="keyword">int</span> temp = as[j];</span><br><span class="line">                as[j] = as[k];</span><br><span class="line">                as[k] = temp;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//           ‘傻’              ‘我’               ‘是’                 ‘逼’</span></span><br><span class="line">    <span class="keyword">if</span>(as[<span class="number">0</span>] == <span class="number">0x50BB</span> &amp;&amp; as[<span class="number">1</span>] == <span class="number">25105</span> &amp;&amp; as[<span class="number">2</span>] == <span class="number">0x662F</span> &amp;&amp; as[<span class="number">3</span>] == <span class="number">0x903C</span>) &#123;</span><br><span class="line">        Toast.makeText(<span class="keyword">this</span>.getContext(), <span class="string">&quot;You get the sorted flag：20667 25105 26159 36924&quot;</span>, <span class="number">0</span>).show();</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    Toast.makeText(<span class="keyword">this</span>.getContext(), <span class="string">&quot;wrong input&quot;</span>, <span class="number">0</span>).show();</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>但是提交的flag形式是啥还是不知道。<br><code>makeText</code>提示<code>sorted flag=20667 25105 26159 36924</code>，那么<code>original flag=25105 26159 20667 36924</code>，且需要保留空格。<br>最后这一步我是真没想到，看来我真是傻逼了。<code>: (</code></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Android/" rel="tag"># Android</a>
+              <a href="/tags/CTF/" rel="tag"># CTF</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/09/09/CVE-2020-6828/" rel="prev" title="CVE-2020-6828 复现">
+      <i class="fa fa-chevron-left"></i> CVE-2020-6828 复现
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          見出し
+        </li>
+        <li class="sidebar-nav-overview">
+          概要
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#easy-so"><span class="nav-number">1.</span> <span class="nav-text">easy-so</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#app1"><span class="nav-number">2.</span> <span class="nav-text">app1</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#app2"><span class="nav-number">3.</span> <span class="nav-text">app2</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#app3"><span class="nav-number">4.</span> <span class="nav-text">app3</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#easy-apk"><span class="nav-number">5.</span> <span class="nav-text">easy-apk</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#easyjava"><span class="nav-number">6.</span> <span class="nav-text">easyjava</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#easyjni"><span class="nav-number">7.</span> <span class="nav-text">easyjni</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#RememberOther"><span class="nav-number">8.</span> <span class="nav-text">RememberOther</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#easy-dex"><span class="nav-number">9.</span> <span class="nav-text">easy-dex</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%BB%91%E5%AE%A2%E7%B2%BE%E7%A5%9E"><span class="nav-number">10.</span> <span class="nav-text">黑客精神</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BD%A0%E6%98%AF%E8%B0%81"><span class="nav-number">11.</span> <span class="nav-text">你是谁</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="slient2009"
+      src="/images/round_tiger.png">
+  <p class="site-author-name" itemprop="name">slient2009</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">9</span>
+          <span class="site-state-item-name">ポスト</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">タグ</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">slient2009</span>
+</div>
+
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="合計閲覧者数">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="閲覧合計数">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
