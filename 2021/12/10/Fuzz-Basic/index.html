@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/pig_128x128.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/pig_32x32.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/pig_16x16.ico">
+  <link rel="mask-icon" href="/images/pig_128x128.ico" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic|Roboto Slab:300,300italic,400,400italic,700,700italic|Rotoro Mono:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"slient2009.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="先以一篇综述学习Fuzz的基本流程《模糊测试技术综述》 任泽众 《计算机研究与发展》本文总结了Fuzz工作流程，并将其作为行文脉络，详细介绍了各个阶段中的相关技术。重点介绍了AFL及其改进研究，简要介绍了Fuzz的多种应用场景，以及反Fuzz和Fuzz+ML等新的研究方向。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Fuzz入门">
+<meta property="og:url" content="http://slient2009.github.io/2021/12/10/Fuzz-Basic/index.html">
+<meta property="og:site_name" content="Slient2009">
+<meta property="og:description" content="先以一篇综述学习Fuzz的基本流程《模糊测试技术综述》 任泽众 《计算机研究与发展》本文总结了Fuzz工作流程，并将其作为行文脉络，详细介绍了各个阶段中的相关技术。重点介绍了AFL及其改进研究，简要介绍了Fuzz的多种应用场景，以及反Fuzz和Fuzz+ML等新的研究方向。">
+<meta property="og:locale" content="ja_JP">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20211209143254411.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20211209205542644.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20211209205622938.png">
+<meta property="article:published_time" content="2021-12-10T05:00:00.000Z">
+<meta property="article:modified_time" content="2021-12-10T15:52:45.000Z">
+<meta property="article:author" content="slient2009">
+<meta property="article:tag" content="Fuzz">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20211209143254411.png">
+
+<link rel="canonical" href="http://slient2009.github.io/2021/12/10/Fuzz-Basic/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'ja'
+  };
+</script>
+
+  <title>Fuzz入门 | Slient2009</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="ナビゲーションバーの切り替え">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Slient2009</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">All I need is Twin Island Milk</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>ホーム</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>プロフィール</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>タグ<span class="badge">7</span></a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>アーカイブ<span class="badge">12</span></a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="ja">
+    <link itemprop="mainEntityOfPage" href="http://slient2009.github.io/2021/12/10/Fuzz-Basic/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/round_tiger.png">
+      <meta itemprop="name" content="slient2009">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Slient2009">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Fuzz入门
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">投稿日</span>
+              
+
+              <time title="作成日：2021-12-10 00:00:00 / 修正日：10:52:45" itemprop="dateCreated datePublished" datetime="2021-12-10T00:00:00-05:00">2021-12-10</time>
+            </span>
+
+          
+            <span class="post-meta-item" title="閲覧数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">閲覧数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>先以一篇综述学习Fuzz的基本流程<br>《模糊测试技术综述》 任泽众 《计算机研究与发展》<br>本文总结了Fuzz工作流程，并将其作为行文脉络，详细介绍了各个阶段中的相关技术。<br>重点介绍了AFL及其改进研究，简要介绍了Fuzz的多种应用场景，以及反Fuzz和Fuzz+ML等新的研究方向。</p>
+<span id="more"></span>
+
+<h1 id="Fuzz基本流程"><a href="#Fuzz基本流程" class="headerlink" title="Fuzz基本流程"></a>Fuzz基本流程</h1><p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20211209143254411.png" alt="image-20211209143254411"></p>
+<h2 id="预处理"><a href="#预处理" class="headerlink" title="预处理"></a>预处理</h2><blockquote>
+<p>搜集目标相关信息（输入格式、内部结构），并制订模糊测试的策略，为监控目标在测试中的运行状态做必要的准备。<br>通常依赖于插桩、符号执行以及五点分析这类程序分析技术。</p>
+<p>挑战：使用什么样的程序分析技术，对目标内部达到什么程度的了解。</p>
+</blockquote>
+<h3 id="分析技术与信息获取"><a href="#分析技术与信息获取" class="headerlink" title="分析技术与信息获取"></a>分析技术与信息获取</h3><h4 id="插桩"><a href="#插桩" class="headerlink" title="插桩"></a>插桩</h4><p>向目标代码中的合适位置添加预设好的代码，获取程序的静态或动态执行信息，如程序的抽象语法树、覆盖率和函数内变量取值。</p>
+<h5 id="静态插桩"><a href="#静态插桩" class="headerlink" title="静态插桩"></a>静态插桩</h5><p>在源码或者中间代码的编译过程中进行插桩</p>
+<p>通过GCC在汇编语言上插桩，通过LLVM在生成的中间语言上插桩。</p>
+<p>节省时间、速度快，依赖源代码</p>
+<h5 id="动态插桩"><a href="#动态插桩" class="headerlink" title="动态插桩"></a>动态插桩</h5><p>利用QEMU等模拟技术进行插桩，获取程序的运行时信息。</p>
+<p>资源开销大。</p>
+<h4 id="符号执行"><a href="#符号执行" class="headerlink" title="符号执行"></a>符号执行</h4><p>将程序行为的推理归结为逻辑领域的推理，通过构建一个表示程序执行的逻辑公式，可以同时推断一个程序在不同输入上的行为。该方法可以是模糊测试获得较好的覆盖率，并且可以深入到程序深处探测漏洞。</p>
+<h5 id="静态符号执行"><a href="#静态符号执行" class="headerlink" title="静态符号执行"></a>静态符号执行</h5><p>通常会因为循环和递归的存在陷入到路径爆炸中，还会因为hash之类操作的存在导致约束求解失败。</p>
+<h5 id="动态符号执行"><a href="#动态符号执行" class="headerlink" title="动态符号执行"></a>动态符号执行</h5><p>针对路径爆炸和非线性约束求解失败的问题，更多使用的是动态符号执行。</p>
+<p>动态符号执行通过对程序进行<strong>实际执行</strong>和<strong>符号化执行</strong>，维护程序的<strong>实际状态</strong>和<strong>符号化状态</strong>，通过<strong>将难以求解的约束替换为实际值</strong>，缓解静态符号执行的问题，并按照深度优先的搜索策略对目标程序进行了探索。</p>
+<p><strong>问题</strong>：<br>由于程序分支的存在，路径爆炸的问题仍然存在。程序越复杂，路径爆炸问题越严重。一种解决办法是使用启发式搜索优先探索重要的路径。<br>使用实际值替换方法解决了部分静态符号执行无法解决的约束求解问题，但是可能会丢失部分路径，造成探索结果不完整。<br>所有的符号执行技术都受限于约束求解方法的能力，比如如何处理取余操作这类的非线性约束，仍然是符号执行面临的挑战。</p>
+<h4 id="污点分析"><a href="#污点分析" class="headerlink" title="污点分析"></a>污点分析</h4><p>五点分析技术会观测程序中哪些数据受到预置污染源（如输入）的污染，目的是跟踪污染源和汇聚点（如敏感数据）之间信息流。</p>
+<p>将污点分析应用到模糊测试中，并降低其资源消耗是最近的重要研究方向。</p>
+<h5 id="静态污点分析"><a href="#静态污点分析" class="headerlink" title="静态污点分析"></a>静态污点分析</h5><p>获取程序控制流图、抽象语法树等信息，依据数据流以及依赖关系精选污点分析。<br>静态污点分析也会有路径爆炸的问题，而简化后的污点分析可能有过度污染的问题。</p>
+<h5 id="动态污点分析"><a href="#动态污点分析" class="headerlink" title="动态污点分析"></a>动态污点分析</h5><p>在程序实际执行的过程中，利用程序的动态执行信息进行污点分析。<br>动态污点资源代价大，分析可信度更高，但是检测结果是否全面取决于污点分析对程序的覆盖情况。</p>
+<h4 id="其他程序分析技术"><a href="#其他程序分析技术" class="headerlink" title="其他程序分析技术"></a>其他程序分析技术</h4><p>面向不同场景的模糊测试研究</p>
+<p>IoT、内核、Android、USB、蓝牙协议、算法复杂度……</p>
+<h3 id="模糊测试在预处理阶段的类型划分"><a href="#模糊测试在预处理阶段的类型划分" class="headerlink" title="模糊测试在预处理阶段的类型划分"></a>模糊测试在预处理阶段的类型划分</h3><h4 id="黑盒模糊测试"><a href="#黑盒模糊测试" class="headerlink" title="黑盒模糊测试"></a>黑盒模糊测试</h4><p>又称输入输出驱动的测试、数据驱动的测试，不能对目标内部状态以及结构进行分析、只能获得输入数据等与内部无关的信息。<br>无法跟踪目标内部的执行状态，只能通过检测目标的输出数据，对目标的状态进行判断。<br>适用于输入数据高度结构化的目标，以及复杂且难以分析的目标，在网络、文件、内核以及IoT模糊测试上都是重要应用。</p>
+<p><strong>意义</strong>：不是所有目标都是开源的；黑盒测试工具设计简单，开发和检测速度快。</p>
+<p><strong>问题</strong>：由于没有目标内部信息，会生成大量无效输入，导致测试的覆盖率相对偏低，检测生成漏洞的能力有限。</p>
+<h4 id="白盒模糊测试"><a href="#白盒模糊测试" class="headerlink" title="白盒模糊测试"></a>白盒模糊测试</h4><p>可以获得充足的目标内部信息，通常采用符号执行的方法。<br>可以生成高质量输入数据，在覆盖率以及程序的深层漏洞检测上有更好的表现。<br>但是在实践中，仍然有路径爆炸的问题，同时伴有大量资源消耗，影响效率。</p>
+<p>在不影响模糊测试效率的前提下，如何获取详细的目标内部信息，是一个重要的研究方向。<br><strong>Driller</strong>: 使用AFL检索程序浅层漏洞，当AFL随机生成的输入无法深入探测程序时，转而进行符号执行。<br><strong>QSYM</strong>： 使用动态二进制转换，将符号执行与本地执行紧密集成，实现了更为细粒度的指令集符号执行，解决了路径约束缓慢、甚至无法形成正确的约束的问题。<br><strong>DigFuzz</strong>: 如何快速而准确地判断哪些程序的路径应该是符号执行技术，是一个混合模糊测试器的优化问题。DigFuzz量化了处理每条路径的困难程度，将难以通过随机种子到达的路径转而交给符号执行，较好地优化了在模糊测试中使用符号执行的策略。</p>
+<h4 id="灰盒模糊测试"><a href="#灰盒模糊测试" class="headerlink" title="灰盒模糊测试"></a>灰盒模糊测试</h4><p>灰盒模糊测试是白盒模糊测试的变体，只能获得部分程序内部信息。</p>
+<p><strong>思想</strong>：对程序内部进行细致而全面的分析，并不是获取良好测试结果的必要条件，仅依靠有限的与测试目标相关的信息，在配合良好的测试策略，仍然可以获得令人满意的测试结果。</p>
+<p>灰盒模糊测试中，最重要的研究成果是AFL。<br>AFL通过在编译时插桩，搜集模糊测试中边缘覆盖率信息；使用进化算法将边覆盖率作为算法的适应函数，使得测试沿着边覆盖率增大的方向进行，极大改善了模糊测试效果。</p>
+<h4 id="小节"><a href="#小节" class="headerlink" title="小节"></a>小节</h4><p>黑盒测试：轻量级测试工具，设计简单，测试速度快，但是检测效果不理想，难以进行深层探测。适用于难以进行内部探测的目标，以及开发和测试时间有限的场景。<br>白盒测试：重量级测试工具，更加智能，效果更好，能较好探测深层漏洞，但是开发和测试工作都跟为复杂且耗时。适用于可以分析内部结构的目标，以及对深层漏洞有较高检测要求的任务。<br>灰盒测试：没有明确的定位。从数据的角度，其“灰度”取决于利用的内部信息的多少；从设计的角度，体现了灰盒测试在检测能力与检测代价之间的平衡，达到最佳的检测效果。</p>
+<h3 id="AFL及其改进"><a href="#AFL及其改进" class="headerlink" title="AFL及其改进"></a>AFL及其改进</h3><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20211209205542644.png" alt="image-20211209205542644" style="zoom:67%;" />
+
+<img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20211209205622938.png" alt="image-20211209205622938" style="zoom:67%;" />
+
+<h2 id="实际测试环节"><a href="#实际测试环节" class="headerlink" title="实际测试环节"></a>实际测试环节</h2><h4 id="输入构造"><a href="#输入构造" class="headerlink" title="输入构造"></a>输入构造</h4><blockquote>
+<p>首先获取一定数量的种子，随后确定种子的能量分配策略、种子的优先级以及种子的突变策略，最后根据这些信息获取大量的输入数据。</p>
+</blockquote>
+<p><strong>挑战</strong>：在尽量满足语法语义检查的情况下，短时间生成大量的输入，用以对目标做全面而深入的分析。<br>目前普遍的方法是：得到一个数据集S(Seed),然后根据S按照一定的策略进行一定册数的便宜，获得大量新数据I(Input)，最后将I输入到被测试对象中进行测试。</p>
+<p>为了获得足量的高质量输入数据，需要经过种子获取、种子筛选、种子突变三个阶段。</p>
+<h5 id="种子获取"><a href="#种子获取" class="headerlink" title="种子获取"></a>种子获取</h5><p>直接使用准备好的高质量数据集、通过模型生成、按照策略从执行过的数据中选取。</p>
+<p><strong>挑战与研究方向</strong>：<br>无目标语言的语法时，如何生成有效数据；<br>面向特定的场景和目标，要有针对性的生成方法；（FANS for Android）<br>直接生成模糊测试模型；<br>按照策略从执行过的输入数据中选取作为种子；（AFL的进化算法及其改进）</p>
+<h5 id="种子筛选"><a href="#种子筛选" class="headerlink" title="种子筛选"></a>种子筛选</h5><h6 id="种子的能量分配"><a href="#种子的能量分配" class="headerlink" title="种子的能量分配"></a>种子的能量分配</h6><p>对种子池中的备选种子划分权重，以确定每个种子要用来生成多少输入，也即一个种子的能量。</p>
+<p>在AFL中，没有考虑到程序不同执行路径频率上的差异，造成种子能量分配不合理。<br>具体来说，模糊测试进行一段时间后，部分难以到达的路径只有少数种子能够到达而执行频率过低，这些种子显然需要更多的能量。AFL在这方面的缺陷，导致低频路径上的漏洞需要更多的时间才会被模糊测试出来。</p>
+<p>改进方法：<br>引入马尔科夫链，使得更倾向于访问低频区域。（AFLFast）<br>引入多臂老虎机模型，使用基于平均损耗的自适应能量分配策略，有效降低能量损耗，在有限时间内实现了覆盖率最大化。（EcoFuzz）<br>使用基于模拟退火的能量调度方法，逐渐将能量分配到距离目标更近的种子上，实现对目标程序给定位置的模糊测试。在探测给定目标程序上取得了更好的效果，但是可能遗漏潜在的漏洞。（AFLGo）<br>为克服这个问题，Hawkeye使用静态分析技术，全面收集与目标程序位置相关的调用图、函数以及基本块层面的距离信息；再使用与AFLGo相同的基本块路径距离和覆盖函数相似度这两个指标，指定能量分配策略。对应覆盖函数相似度越大、基本块路径越小的种子将会被分配到更大的能量，产生更多的测试数据。（Hawkeye）</p>
+<p>AFLFast的能量分配策略不能提高模糊测试能力极限，而是缩短到达极限的时间。<br>AFLGo和Hawkeye的能量分配策略是为了引导模糊测试的方向，而不能提高覆盖率。</p>
+<h6 id="种子的优先级"><a href="#种子的优先级" class="headerlink" title="种子的优先级"></a>种子的优先级</h6><p>种子的优先级决定了模糊测试从种子池中选择种子的顺序。</p>
+<p>AFL引入进化算法，使用适应度函数对输入进行评估，选取最佳输入放入种子池。种子池实质上是一个队列，种子按照入队顺序进行测试，一段时候后，队列内种子不再变化。（AFL）<br>AFLFast不在严格遵循FIFO队列策略，而是适当提升较少被执行、能量较低的种子的优先级，尽量平衡不同路径上的模糊测试密度。(AFLFast)<br>对于定向灰盒测试，Hawkeye会根据种子是否出发新的执行路径、种子与目标种子的相似度、种子是否包含目标函数，将种子分配到3个等级的队列中。(Hawkeye)</p>
+<p>值得注意的是，种子的长度是影响种子优先级的重要因素：<br>输入数据越短、内存占用越小、测试速度越快。因此，在覆盖率增加相同的情况下，短输入的优先级更高。<br>在维持覆盖率不变的情况下，AFL反复删除种子的不同部分，试图缩短种子的长度。</p>
+<p>更多的种子筛选策略：Rebert et al., Optimizing seed selection for fuzzing. [USENIX]</p>
+<h5 id="种子突变"><a href="#种子突变" class="headerlink" title="种子突变"></a>种子突变</h5><p>获得了大量种子和对应的能量分配策略以及优先级策略之后，接下来需要在突变策略的指引下快速生成大量输入数据。<br>变异策略直接影响生成数据的质量，保守策略呆滞覆盖率偏低，激进策略导致大量无效输入。</p>
+<p><strong>比特翻转</strong>：按照一定的步长，连续反转几个比特位；在随即或特定的位置，反转固定宽度的比特位。<br><strong>简单算数运算</strong>：按照8b的步长，依次按照8b、16b、32b的宽度，从头开始加减操作。（AFL）<br><strong>覆盖</strong>：使用预设的值，将种子中的一些部分进行覆盖。<br><strong>插入</strong>：使用预设的值，插入到种子种的一些位置。<br><strong>删除</strong>：删除种子的某些部分。<br><strong>拼接</strong>：选择2个差异较大的种子进行拼接。</p>
+<h6 id="黑盒突变"><a href="#黑盒突变" class="headerlink" title="黑盒突变"></a>黑盒突变</h6><p>不依赖目标相关信息，按照随机突变策略对种子进行突变。<br>可以快速大量生成输入。（AFL）</p>
+<h6 id="导向型突变"><a href="#导向型突变" class="headerlink" title="导向型突变"></a>导向型突变</h6><p><strong>程序状态导向型突变</strong>：<br>通过程序分析技术，得到种子与程序状态的关系，以此指定突变策略，针对感兴趣的程序状态生成相应的测试数据。（VUzzer，Angora）</p>
+<p><strong>如何确定突变位置</strong>：通常使用污点分析技术，寻找输入与程序状态之间的关系，进而确定突变位置。（Angora,VUzzer,REDQUEEN）<br><strong>输入格式高度结构化的目标</strong>：需要保证种子的结构，防止突变对关键字段的修改。Skyfire只选择种子的特定位置进行突变；ProFuzzer分析模糊测试中对发现漏洞至关重要的输入字段，进而调整策略重点突变这些字段。<br><strong>覆盖、替换、插入时预置字段的有效性</strong>：LangFuzz分析目标语法和足量有效输入样例。</p>
+<p><strong>性能导向型突变</strong>：<br>根据输入数据同模糊测试评估指标的关系制订突变的策略。</p>
+<p>AFL在进行连续字节翻转时，会衡量每个字节对覆盖率提升的程度。如果没有提升，则认为该字节对覆盖率提升无意义。据此，获得一个effectmap，用于保存种子中所有字节的有效性（0或1），以此确定是否进行突变。</p>
+<h4 id="输入选择"><a href="#输入选择" class="headerlink" title="输入选择"></a>输入选择</h4><blockquote>
+<p>尝试通过提前过滤掉无效的输入数据，以节省模糊测试的时间。<br>（似乎这个环节适合使用机器学习技术来完成模式识别任务）</p>
+<p>以FuzzGuard为例，Zong Peiyuan et al., FuzzGuard filtering out unreachable inputs in directed grey-box fuzzing through deep learning. [USENIX]</p>
+</blockquote>
+<p>FuzzGuard使用机器学习技术，预测新产生的输入能否使得程序执行到有漏洞的代码处，删除预测为不可达的输入。论文中还讨论了机器学习应用到Fuzz中需要面对的一些问题：数据集不平衡、突变后种子执行路径的随机性。</p>
+<h4 id="评估"><a href="#评估" class="headerlink" title="评估"></a>评估</h4><blockquote>
+<p>设计合适的实验，依照评估指标对模糊测试进行评估。<br>合适的评估指标，可以反映出模糊测试的真实的执行结果，话可以反应模糊测试方法的实际性能。<br>一个合适的模糊测试实验需要选择合适的模糊测试方法作为对比、合适的对象作为模糊测试的目标、合适的重复测试次数和超时时间。</p>
+<p>目前主要聚焦于<strong>覆盖率</strong>和<strong>暴露漏洞平均时间</strong>。</p>
+</blockquote>
+<h5 id="覆盖率"><a href="#覆盖率" class="headerlink" title="覆盖率"></a>覆盖率</h5><p>在测试过程中，对象被覆盖到的数目占总数的比例。<br>通常而言，高覆盖率更可能发现更多的隐藏漏洞，因此众多研究聚焦于覆盖率的提升。</p>
+<p>AFL使用上下文无关的边覆盖率作为评估指标；<br>Angora使用上下文敏感的分支覆盖率作为评估指标；<br>VUzzer使用块覆盖率作为评估指标；</p>
+<p><strong>问题</strong>：<br>如何完成对复杂程序的覆盖信息统计；（CollAFL）<br>一味提升覆盖率，可能导致在一些无漏洞的正常边块上浪费过多时间，更容易受到反模糊测试的影响；（TortoiseFuzz）<br>如何降低覆盖率统计工作的巨大开销；（UnTracer）</p>
+<h5 id="暴露漏洞平均时间"><a href="#暴露漏洞平均时间" class="headerlink" title="暴露漏洞平均时间"></a>暴露漏洞平均时间</h5><p>(AFLGo)<br>覆盖率这一指标是基于“覆盖率更高可能触发更多漏洞”的假设。<br>如果需要复现某个漏洞，且考虑到漏洞在代码中分布不均匀，单纯的覆盖率指标会导致测试在无关部分浪费资源。</p>
+<h5 id="验证实验设计"><a href="#验证实验设计" class="headerlink" title="验证实验设计"></a>验证实验设计</h5><p>(Klees的4个标准)<br>[1]进行多次实验，并进行统计与检验，获取结果的分布；<br>[2]应该使用如CGC/LAVA等具有确定错误的测试集，或使用具有已知漏洞的程序作为被测试对象；<br>[3]应该尝试各种种子输入，如空种子；<br>[4]超时时间至少为24h，或者尝试不同的超时时间；</p>
+<h2 id="结果分析"><a href="#结果分析" class="headerlink" title="结果分析"></a>结果分析</h2><p>模糊测试获得的结果无法被直接使用，需要对测试结果进行重现、复现、分析以及威胁性评估等工作，最终确定是否发现了有价值的漏洞。</p>
+<h2 id="模糊测试的挑战与机遇"><a href="#模糊测试的挑战与机遇" class="headerlink" title="模糊测试的挑战与机遇"></a>模糊测试的挑战与机遇</h2><h3 id="反模糊测试"><a href="#反模糊测试" class="headerlink" title="反模糊测试"></a>反模糊测试</h3><p>目前主流的模糊测试技术基于4个前提条件，反模糊测试也可以从这些条件入手：<br>[1]单次执行速度要足够快 ~ 低频路径插入延时代码<br>[2]模糊工具可以获得覆盖率的反馈 ~ 用无意义代码填充覆盖率图<br>[3]目标中的路径约束可以被符号求解 ~ 使用hash运算干扰混合执行，隐式数据传递<br>[4]崩溃可以被模糊工具检测到</p>
+<p>相关文章：<a target="_blank" rel="noopener" href="https://securitygossip.com/blog/2019/11/08/fuzzification-anti-fuzzing-techniques/">https://securitygossip.com/blog/2019/11/08/fuzzification-anti-fuzzing-techniques/</a></p>
+<h3 id="模糊工具集成"><a href="#模糊工具集成" class="headerlink" title="模糊工具集成"></a>模糊工具集成</h3><p>整合不同模糊测试工具，构造一个通用模糊测试平台。</p>
+<h3 id="与机器学习结合"><a href="#与机器学习结合" class="headerlink" title="与机器学习结合"></a>与机器学习结合</h3><p>有效输入的模式识别</p>
+<p><strong>问题</strong>：数据源、数据集不平衡、性能问题。</p>
+<h3 id="其他发展方向"><a href="#其他发展方向" class="headerlink" title="其他发展方向"></a>其他发展方向</h3><p>提高自动化程度</p>
+<p>与虚拟机技术结合</p>
+<p>测试效果的评估方案改进</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Fuzz/" rel="tag"># Fuzz</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/12/01/Android-Reverse-1/" rel="prev" title="几个Android逆向">
+      <i class="fa fa-chevron-left"></i> 几个Android逆向
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          見出し
+        </li>
+        <li class="sidebar-nav-overview">
+          概要
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Fuzz%E5%9F%BA%E6%9C%AC%E6%B5%81%E7%A8%8B"><span class="nav-number">1.</span> <span class="nav-text">Fuzz基本流程</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%A2%84%E5%A4%84%E7%90%86"><span class="nav-number">1.1.</span> <span class="nav-text">预处理</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%86%E6%9E%90%E6%8A%80%E6%9C%AF%E4%B8%8E%E4%BF%A1%E6%81%AF%E8%8E%B7%E5%8F%96"><span class="nav-number">1.1.1.</span> <span class="nav-text">分析技术与信息获取</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%8F%92%E6%A1%A9"><span class="nav-number">1.1.1.1.</span> <span class="nav-text">插桩</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E9%9D%99%E6%80%81%E6%8F%92%E6%A1%A9"><span class="nav-number">1.1.1.1.1.</span> <span class="nav-text">静态插桩</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%8A%A8%E6%80%81%E6%8F%92%E6%A1%A9"><span class="nav-number">1.1.1.1.2.</span> <span class="nav-text">动态插桩</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%AC%A6%E5%8F%B7%E6%89%A7%E8%A1%8C"><span class="nav-number">1.1.1.2.</span> <span class="nav-text">符号执行</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E9%9D%99%E6%80%81%E7%AC%A6%E5%8F%B7%E6%89%A7%E8%A1%8C"><span class="nav-number">1.1.1.2.1.</span> <span class="nav-text">静态符号执行</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%8A%A8%E6%80%81%E7%AC%A6%E5%8F%B7%E6%89%A7%E8%A1%8C"><span class="nav-number">1.1.1.2.2.</span> <span class="nav-text">动态符号执行</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%B1%A1%E7%82%B9%E5%88%86%E6%9E%90"><span class="nav-number">1.1.1.3.</span> <span class="nav-text">污点分析</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E9%9D%99%E6%80%81%E6%B1%A1%E7%82%B9%E5%88%86%E6%9E%90"><span class="nav-number">1.1.1.3.1.</span> <span class="nav-text">静态污点分析</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%8A%A8%E6%80%81%E6%B1%A1%E7%82%B9%E5%88%86%E6%9E%90"><span class="nav-number">1.1.1.3.2.</span> <span class="nav-text">动态污点分析</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%85%B6%E4%BB%96%E7%A8%8B%E5%BA%8F%E5%88%86%E6%9E%90%E6%8A%80%E6%9C%AF"><span class="nav-number">1.1.1.4.</span> <span class="nav-text">其他程序分析技术</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A8%A1%E7%B3%8A%E6%B5%8B%E8%AF%95%E5%9C%A8%E9%A2%84%E5%A4%84%E7%90%86%E9%98%B6%E6%AE%B5%E7%9A%84%E7%B1%BB%E5%9E%8B%E5%88%92%E5%88%86"><span class="nav-number">1.1.2.</span> <span class="nav-text">模糊测试在预处理阶段的类型划分</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%BB%91%E7%9B%92%E6%A8%A1%E7%B3%8A%E6%B5%8B%E8%AF%95"><span class="nav-number">1.1.2.1.</span> <span class="nav-text">黑盒模糊测试</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%99%BD%E7%9B%92%E6%A8%A1%E7%B3%8A%E6%B5%8B%E8%AF%95"><span class="nav-number">1.1.2.2.</span> <span class="nav-text">白盒模糊测试</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%81%B0%E7%9B%92%E6%A8%A1%E7%B3%8A%E6%B5%8B%E8%AF%95"><span class="nav-number">1.1.2.3.</span> <span class="nav-text">灰盒模糊测试</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%B0%8F%E8%8A%82"><span class="nav-number">1.1.2.4.</span> <span class="nav-text">小节</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#AFL%E5%8F%8A%E5%85%B6%E6%94%B9%E8%BF%9B"><span class="nav-number">1.1.3.</span> <span class="nav-text">AFL及其改进</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%9E%E9%99%85%E6%B5%8B%E8%AF%95%E7%8E%AF%E8%8A%82"><span class="nav-number">1.2.</span> <span class="nav-text">实际测试环节</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%BE%93%E5%85%A5%E6%9E%84%E9%80%A0"><span class="nav-number">1.2.0.1.</span> <span class="nav-text">输入构造</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E7%A7%8D%E5%AD%90%E8%8E%B7%E5%8F%96"><span class="nav-number">1.2.0.1.1.</span> <span class="nav-text">种子获取</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E7%A7%8D%E5%AD%90%E7%AD%9B%E9%80%89"><span class="nav-number">1.2.0.1.2.</span> <span class="nav-text">种子筛选</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#%E7%A7%8D%E5%AD%90%E7%9A%84%E8%83%BD%E9%87%8F%E5%88%86%E9%85%8D"><span class="nav-number">1.2.0.1.2.1.</span> <span class="nav-text">种子的能量分配</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#%E7%A7%8D%E5%AD%90%E7%9A%84%E4%BC%98%E5%85%88%E7%BA%A7"><span class="nav-number">1.2.0.1.2.2.</span> <span class="nav-text">种子的优先级</span></a></li></ol></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E7%A7%8D%E5%AD%90%E7%AA%81%E5%8F%98"><span class="nav-number">1.2.0.1.3.</span> <span class="nav-text">种子突变</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#%E9%BB%91%E7%9B%92%E7%AA%81%E5%8F%98"><span class="nav-number">1.2.0.1.3.1.</span> <span class="nav-text">黑盒突变</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#%E5%AF%BC%E5%90%91%E5%9E%8B%E7%AA%81%E5%8F%98"><span class="nav-number">1.2.0.1.3.2.</span> <span class="nav-text">导向型突变</span></a></li></ol></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%BE%93%E5%85%A5%E9%80%89%E6%8B%A9"><span class="nav-number">1.2.0.2.</span> <span class="nav-text">输入选择</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%AF%84%E4%BC%B0"><span class="nav-number">1.2.0.3.</span> <span class="nav-text">评估</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E8%A6%86%E7%9B%96%E7%8E%87"><span class="nav-number">1.2.0.3.1.</span> <span class="nav-text">覆盖率</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%9A%B4%E9%9C%B2%E6%BC%8F%E6%B4%9E%E5%B9%B3%E5%9D%87%E6%97%B6%E9%97%B4"><span class="nav-number">1.2.0.3.2.</span> <span class="nav-text">暴露漏洞平均时间</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E9%AA%8C%E8%AF%81%E5%AE%9E%E9%AA%8C%E8%AE%BE%E8%AE%A1"><span class="nav-number">1.2.0.3.3.</span> <span class="nav-text">验证实验设计</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BB%93%E6%9E%9C%E5%88%86%E6%9E%90"><span class="nav-number">1.3.</span> <span class="nav-text">结果分析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A8%A1%E7%B3%8A%E6%B5%8B%E8%AF%95%E7%9A%84%E6%8C%91%E6%88%98%E4%B8%8E%E6%9C%BA%E9%81%87"><span class="nav-number">1.4.</span> <span class="nav-text">模糊测试的挑战与机遇</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%8D%E6%A8%A1%E7%B3%8A%E6%B5%8B%E8%AF%95"><span class="nav-number">1.4.1.</span> <span class="nav-text">反模糊测试</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A8%A1%E7%B3%8A%E5%B7%A5%E5%85%B7%E9%9B%86%E6%88%90"><span class="nav-number">1.4.2.</span> <span class="nav-text">模糊工具集成</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%8E%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E7%BB%93%E5%90%88"><span class="nav-number">1.4.3.</span> <span class="nav-text">与机器学习结合</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%B6%E4%BB%96%E5%8F%91%E5%B1%95%E6%96%B9%E5%90%91"><span class="nav-number">1.4.4.</span> <span class="nav-text">其他发展方向</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="slient2009"
+      src="/images/round_tiger.png">
+  <p class="site-author-name" itemprop="name">slient2009</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">12</span>
+          <span class="site-state-item-name">ポスト</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">7</span>
+        <span class="site-state-item-name">タグ</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">slient2009</span>
+</div>
+
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="合計閲覧者数">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="閲覧合計数">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

