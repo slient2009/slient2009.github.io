@@ -28,6 +28,7 @@
 <meta property="og:description" content="攻防世界刷题：Mobile， Easy部分。">
 <meta property="og:locale" content="ja_JP">
 <meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20210923210058516.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20220106150739.png">
 <meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20211010134638847.png">
 <meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20211017200658963.png">
 <meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20211017203816974.png">
@@ -39,7 +40,7 @@
 <meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20211017203452469.png">
 <meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/cap.png">
 <meta property="article:published_time" content="2021-10-18T04:00:01.000Z">
-<meta property="article:modified_time" content="2021-10-18T13:26:37.000Z">
+<meta property="article:modified_time" content="2022-01-07T12:09:49.000Z">
 <meta property="article:author" content="slient2009">
 <meta property="article:tag" content="Android">
 <meta property="article:tag" content="CTF">
@@ -144,7 +145,7 @@
   </li>
         <li class="menu-item menu-item-archives">
 
-    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>アーカイブ<span class="badge">13</span></a>
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>アーカイブ<span class="badge">14</span></a>
 
   </li>
   </ul>
@@ -193,10 +194,16 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">投稿日</span>
-              
 
-              <time title="作成日：2021-10-18 00:00:01 / 修正日：09:26:37" itemprop="dateCreated datePublished" datetime="2021-10-18T00:00:01-04:00">2021-10-18</time>
+              <time title="作成日：2021-10-18 00:00:01" itemprop="dateCreated datePublished" datetime="2021-10-18T00:00:01-04:00">2021-10-18</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">編集日</span>
+                <time title="修正日：2022-01-07 07:09:49" itemprop="dateModified" datetime="2022-01-07T07:09:49-05:00">2022-01-07</time>
+              </span>
 
           
             <span class="post-meta-item" title="閲覧数" id="busuanzi_container_page_pv" style="display: none;">
@@ -236,9 +243,10 @@
 
 <p>这个activity貌似没有在其他class的代码中被调用过，不知道在哪儿暗示了这个是flag，反正就挺莫名其妙的。</p>
 <h1 id="app3"><a href="#app3" class="headerlink" title="app3"></a>app3</h1><p>下载得到一个<code>.ab</code>，它是Android的备份文件，用<a target="_blank" rel="noopener" href="https://github.com/nelenkov/android-backup-extractor/">工具</a>打开得到一个apk和两个db文件。<br>这个apk在我的设备上运行不了，提示缺少一些so文件，在这个<a target="_blank" rel="noopener" href="https://github.com/pfalcon/android-platform-headers/tree/master/android-2.3.5_r1/lib">仓库</a>里面可以找到多数的so文件，然后补上icu文件依然运行不了，遂作罢。</p>
-<p>于是静态分析代码，关键在这个方法里面。主要是根据<code>name=Stranger password=123456</code>生成了数据库的加密密钥，且该数据库通过<code>sqlcipher</code>完成加解密操作。<br>跟着代码逻辑，可以用在线工具得到数据库密码为<code>ae56f99</code>，然后使用工具<a target="_blank" rel="noopener" href="https://github.com/slient2009/PicGo/blob/main/files/sqlcipher-3.0.1.zip">sqlcipher-shell</a>解密两个数据库文件，从中可以翻到flag的base64字符串。</p>
+<p>于是静态分析代码，关键在这个方法里面。主要是根据<code>name=Stranger password=123456</code>生成了数据库的加密密钥，且该数据库通过<code>sqlcipher</code>完成加解密操作。<br>跟着代码逻辑，可以用在线工具得到数据库密码为<code>ae56f99</code>，然后使用工具<a target="_blank" rel="noopener" href="https://github.com/slient2009/PicGo/blob/main/files/sqlcipher-3.0.1.zip">sqlcipher-shell</a>解密两个数据库文件，从中可以翻到flag的base64字符串。<br>也可以直接用<a target="_blank" rel="noopener" href="https://sqlitebrowser.org/">sqlitebrowser</a>打开，选择Sqlcipher3默认。</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">a</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        SQLiteDatabase.loadLibs(<span class="keyword">this</span>);</span><br><span class="line">        <span class="keyword">this</span>.mySQLhelper = <span class="keyword">new</span> mySQLutils(<span class="keyword">this</span>, <span class="string">&quot;Demo.db&quot;</span>, <span class="keyword">null</span>, <span class="number">1</span>);</span><br><span class="line">        ContentValues v0 = <span class="keyword">new</span> ContentValues();</span><br><span class="line">        v0.put(<span class="string">&quot;name&quot;</span>, <span class="string">&quot;Stranger&quot;</span>);</span><br><span class="line">        v0.put(<span class="string">&quot;password&quot;</span>, Integer.valueOf(<span class="number">123456</span>));</span><br><span class="line">        a v1 = <span class="keyword">new</span> a();</span><br><span class="line">        String Stra1234 = v1.concat4_4(v0.getAsString(<span class="string">&quot;name&quot;</span>), v0.getAsString(<span class="string">&quot;password&quot;</span>));</span><br><span class="line">        <span class="keyword">this</span>.a = <span class="keyword">this</span>.mySQLhelper.getWritableDatabase(v1.SHA1(Stra1234 + v1.md5(Stra1234, v0.getAsString(<span class="string">&quot;password&quot;</span>))).substring(<span class="number">0</span>, <span class="number">7</span>));</span><br><span class="line">        <span class="keyword">this</span>.a.insert(<span class="string">&quot;TencentMicrMsg&quot;</span>, <span class="keyword">null</span>, v0);</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
 
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20220106150739.png" alt="image-20220106150732621"></p>
 <h1 id="easy-apk"><a href="#easy-apk" class="headerlink" title="easy-apk"></a>easy-apk</h1><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#换表base64解密脚本，https://www.programminghunter.com/article/2612605879/</span></span><br><span class="line"><span class="comment">#结果要包裹flag&#123;&#125;</span></span><br><span class="line"><span class="keyword">import</span> base64</span><br><span class="line"><span class="keyword">import</span> string</span><br><span class="line"></span><br><span class="line">str1 = <span class="string">&quot;x2dtJEOmyjacxDemx2eczT5cVS9fVUGvWTuZWjuexjRqy24rV29q&quot;</span></span><br><span class="line"></span><br><span class="line">string1 = <span class="string">&quot;ZYXABCDEFGHIJKLMNOPQRSTUVWzyxabcdefghijklmnopqrstuvw0123456789+/&quot;</span></span><br><span class="line">string2 = <span class="string">&quot;ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span> (base64.b64decode(str1.translate(<span class="built_in">str</span>.maketrans(string1,string2))))</span><br></pre></td></tr></table></figure>
 
 <h1 id="easyjava"><a href="#easyjava" class="headerlink" title="easyjava"></a>easyjava</h1><p>检查代码发现是一个类似于转轮机的加密程序，把反编译代码复制下来，添加爆破的代码片段即可。<br>需要注意的是，我的jeb对一些细节处理不够好，比如下面这个转动密码表的<code>rot1</code>函数。</p>
@@ -249,7 +257,7 @@
 <h1 id="easyjni"><a href="#easyjni" class="headerlink" title="easyjni"></a>easyjni</h1><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> base64</span><br><span class="line"><span class="keyword">import</span> string</span><br><span class="line"></span><br><span class="line">a=<span class="string">&#x27;MbT3sQgX039i3g==AQOoMQFPskB1Bsc&#x27;</span></span><br><span class="line">s=a[<span class="number">16</span>:<span class="number">32</span>] + a[<span class="number">0</span>:<span class="number">16</span>]</span><br><span class="line"><span class="keyword">for</span> ind <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">0</span>, <span class="built_in">len</span>(s), <span class="number">2</span>):</span><br><span class="line">	<span class="built_in">print</span>(s[ind+<span class="number">1</span>] + s[ind], end=<span class="string">&#x27;&#x27;</span>)</span><br><span class="line"><span class="comment">#QAoOQMPFks1BsB7cbM3TQsXg30i9g3==</span></span><br><span class="line"></span><br><span class="line">string1 = <span class="string">&quot;i5jLW7S0GX6uf1cv3ny4q8es2Q+bdkYgKOIT/tAxUrFlVPzhmow9BHCMDpEaJRZN&quot;</span></span><br><span class="line">string2 = <span class="string">&quot;ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/&quot;</span></span><br><span class="line">str1 = <span class="string">&#x27;QAoOQMPFks1BsB7cbM3TQsXg30i9g3==&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span> (base64.b64decode(str1.translate(<span class="built_in">str</span>.maketrans(string1,string2))))</span><br><span class="line"><span class="comment"># b&#x27;flag&#123;just_ANot#er_@p3&#125;&#x27;</span></span><br></pre></td></tr></table></figure>
 
 <h1 id="RememberOther"><a href="#RememberOther" class="headerlink" title="RememberOther"></a>RememberOther</h1><p>无趣的脑洞题：<br>apk里面藏了个<code>YOU_KNOW_</code>，然后文档里提示本题只是强行沾边了Android，说明出题人不懂Android，而做题人是懂Android的，所以flag是<code>YOU_KNOW_ANDROID</code>。<br>所以出题人看来真的不懂Android。</p>
-<h1 id="easy-dex"><a href="#easy-dex" class="headerlink" title="easy-dex"></a>easy-dex</h1><p>非常有营养的一道题，解题的思路由一系列的知识点构成，并考察了基础的Android逆向知识。<br>结题过程参考自<a target="_blank" rel="noopener" href="https://www.52pojie.cn/thread-1105062-1-1.html">neilwu@52pojie</a>。</p>
+<h1 id="easy-dex"><a href="#easy-dex" class="headerlink" title="easy-dex"></a>easy-dex</h1><p>非常有营养的一道题，解题的思路由一系列的知识点构成，并考察了基础的Android逆向知识。<br>解题过程参考自<a target="_blank" rel="noopener" href="https://www.52pojie.cn/thread-1105062-1-1.html">neilwu@52pojie</a>。</p>
 <p>首先打开apk，发现没有任何代码。<br>检查manifest文件，发现属性<code>hasCode=false</code>，这里需要的知识点为<a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_21071977/article/details/77878252">NativeActivity开发</a>，即使用纯C来完成App的开发。</p>
 <p>有了这个知识，用ida打开so文件，定位到<code>android_main</code>函数，里面就是关于这个App的主要逻辑代码。<br>应用要求使用者在十秒之内晃动手机100次，然后解密释放出一个dex文件到指定目录，加载之后来到flag校验的步骤。<br>具体的流程还是需要我们自己去一点点分析还原。</p>
 <ol>
@@ -392,7 +400,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">13</span>
+          <span class="site-state-item-count">14</span>
           <span class="site-state-item-name">ポスト</span>
         </a>
       </div>
@@ -429,8 +437,8 @@
 
 <div class="copyright">
   
-  &copy; 
-  <span itemprop="copyrightYear">2021</span>
+  &copy; 2021 – 
+  <span itemprop="copyrightYear">2022</span>
   <span class="with-love">
     <i class="fa fa-heart"></i>
   </span>
