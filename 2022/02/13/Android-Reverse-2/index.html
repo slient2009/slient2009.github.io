@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/pig_128x128.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/pig_32x32.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/pig_16x16.ico">
+  <link rel="mask-icon" href="/images/pig_128x128.ico" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic|Roboto Slab:300,300italic,400,400italic,700,700italic|Rotoro Mono:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"slient2009.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="只有一个Android，我也就只做了个Android，题目链接: https:&#x2F;&#x2F;buuoj.cn&#x2F;match&#x2F;matches&#x2F;81&#x2F;challenges">
+<meta property="og:type" content="article">
+<meta property="og:title" content="VNCTF2022 Android cm1.apk">
+<meta property="og:url" content="http://slient2009.github.io/2022/02/13/Android-Reverse-2/index.html">
+<meta property="og:site_name" content="Slient2009">
+<meta property="og:description" content="只有一个Android，我也就只做了个Android，题目链接: https:&#x2F;&#x2F;buuoj.cn&#x2F;match&#x2F;matches&#x2F;81&#x2F;challenges">
+<meta property="og:locale" content="ja_JP">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20220212205246.png">
+<meta property="article:published_time" content="2022-02-13T05:00:00.000Z">
+<meta property="article:modified_time" content="2022-02-12T13:33:42.000Z">
+<meta property="article:author" content="slient2009">
+<meta property="article:tag" content="Android">
+<meta property="article:tag" content="CTF">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20220212205246.png">
+
+<link rel="canonical" href="http://slient2009.github.io/2022/02/13/Android-Reverse-2/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'ja'
+  };
+</script>
+
+  <title>VNCTF2022 Android cm1.apk | Slient2009</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="Slient2009" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="ナビゲーションバーの切り替え">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Slient2009</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">All I need is Twin Island Milk</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>ホーム</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>プロフィール</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>タグ<span class="badge">7</span></a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>アーカイブ<span class="badge">14</span></a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="ja">
+    <link itemprop="mainEntityOfPage" href="http://slient2009.github.io/2022/02/13/Android-Reverse-2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/round_tiger.png">
+      <meta itemprop="name" content="slient2009">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Slient2009">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          VNCTF2022 Android cm1.apk
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">投稿日</span>
+
+              <time title="作成日：2022-02-13 00:00:00" itemprop="dateCreated datePublished" datetime="2022-02-13T00:00:00-05:00">2022-02-13</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">編集日</span>
+                <time title="修正日：2022-02-12 08:33:42" itemprop="dateModified" datetime="2022-02-12T08:33:42-05:00">2022-02-12</time>
+              </span>
+
+          
+            <span class="post-meta-item" title="閲覧数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">閲覧数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>只有一个Android，我也就只做了个Android，题目链接: <a target="_blank" rel="noopener" href="https://buuoj.cn/match/matches/81/challenges">https://buuoj.cn/match/matches/81/challenges</a></p>
+<span id="more"></span>
+
+<p>首先定位到<code>com.vnctf2022.cm1.MainActivity</code>，发现里面并没有特别的地方，如果安装运行并配合反编译代码，可以很快明白起始这里就是实现了个进度条和反馈收集功能，真正的逻辑在<code>com.vnctf2022.cm1.Main</code>中。</p>
+<p>具体到<code>com.vnctf2022.cm1.Main.init_widget() </code>中，程序先获取了输入然后调用check函数来检查，check()函数中直接去加载了一个dex文件来获取了一个<code>newCls2Check</code>对象进行具体的校验。dex动态加载逻辑在loadDexClass()中，对应的dex文件就是asset目录下的<code>ooo</code>文件。虽然这里有native层的操作，但是都是无关紧要的。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// com.vnctf2022.cm1.Main</span></span><br><span class="line"><span class="function"><span class="keyword">private</span> Boolean <span class="title">check</span><span class="params">(String input)</span> </span>&#123;</span><br><span class="line">        IHeihei newCls2check = <span class="keyword">this</span>.loadDexClass();</span><br><span class="line">        <span class="keyword">if</span>(newCls2check == <span class="keyword">null</span>) &#123;</span><br><span class="line">            Toast.makeText(<span class="keyword">this</span>, <span class="string">&quot;errrrrrrrorrrr what are you doing!!!!!&quot;</span>, <span class="number">0</span>).show();</span><br><span class="line">            <span class="keyword">return</span> Boolean.valueOf(<span class="keyword">false</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> newCls2check.hcheck(input).booleanValue() ? Boolean.valueOf(<span class="keyword">true</span>) : Boolean.valueOf(<span class="keyword">false</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">init_widget</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.btn1 = (Button)<span class="keyword">this</span>.findViewById(<span class="number">0x7F070023</span>);  <span class="comment">// id:btn1</span></span><br><span class="line">        <span class="keyword">this</span>.txt1 = (TextView)<span class="keyword">this</span>.findViewById(<span class="number">0x7F070094</span>);  <span class="comment">// id:txt1</span></span><br><span class="line">        <span class="keyword">this</span>.edit1 = (EditText)<span class="keyword">this</span>.findViewById(<span class="number">0x7F070039</span>);  <span class="comment">// id:edit1</span></span><br><span class="line">        <span class="keyword">this</span>.txt1.setText(<span class="keyword">this</span>.stringFromJNI2());</span><br><span class="line">        <span class="keyword">this</span>.btn1.setOnClickListener(<span class="keyword">new</span> View.OnClickListener() &#123;</span><br><span class="line">            <span class="meta">@Override</span>  <span class="comment">// android.view.View$OnClickListener</span></span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onClick</span><span class="params">(View arg3)</span> </span>&#123;</span><br><span class="line">                String input = Main.<span class="keyword">this</span>.edit1.getText().toString();</span><br><span class="line">                Main.<span class="keyword">this</span>.txt1.setText(input);</span><br><span class="line">                <span class="keyword">if</span>(Main.<span class="keyword">this</span>.check(input).booleanValue()) &#123;</span><br><span class="line">                    Toast.makeText(Main.<span class="keyword">this</span>.getBaseContext(), <span class="string">&quot;you are right~&quot;</span>, <span class="number">0</span>).show();</span><br><span class="line">                    <span class="keyword">return</span>;</span><br><span class="line">                &#125;</span><br><span class="line">                Toast.makeText(Main.<span class="keyword">this</span>.getBaseContext(), <span class="string">&quot;Wrong!&quot;</span>, <span class="number">0</span>).show();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> IHeihei <span class="title">loadDexClass</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        File v0 = <span class="keyword">this</span>.getDir(<span class="string">&quot;dex&quot;</span>, <span class="number">0</span>);</span><br><span class="line">        String dexPath = v0.getAbsolutePath() + File.separator + <span class="string">&quot;classes.dex&quot;</span>;</span><br><span class="line">        File dexFile = <span class="keyword">new</span> File(dexPath);</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="keyword">if</span>(!dexFile.exists()) &#123;</span><br><span class="line">                dexFile.createNewFile();</span><br><span class="line">                FileUtils.copyFiles(<span class="keyword">this</span>, <span class="string">&quot;ooo&quot;</span>, dexFile);<span class="comment">// 这里的copyFile是自己实现的，并不是直接复制</span></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">catch</span>(IOException v2_1) &#123;</span><br><span class="line">            v2_1.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        DexClassLoader v2_2 = <span class="keyword">new</span> DexClassLoader(dexPath, v0.getAbsolutePath(), <span class="keyword">null</span>, <span class="keyword">this</span>.getClassLoader());</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            IHeihei clsInstance = (IHeihei)v2_2.loadClass(<span class="string">&quot;com.vnctf2022.cm1.Haha&quot;</span>).newInstance();</span><br><span class="line">            <span class="keyword">if</span>(clsInstance != <span class="keyword">null</span>) &#123;</span><br><span class="line">                <span class="keyword">return</span> clsInstance;</span><br><span class="line">            &#125;</span><br><span class="line">            Log.e(<span class="string">&quot;Mz1&quot;</span>, <span class="string">&quot; --- loaderr&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">catch</span>(Exception v0_1) &#123;</span><br><span class="line">            v0_1.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>FileUtils.copyFiles</code>是程序自己实现的，包含了一定的解密逻辑，所以直接用jeb来反编译<code>ooo</code>文件是行不通的。一种简单的办法就是把安装apk并运行，然后直接去目录下面找到对应的<code>classes.dex</code>文件来分析即可。</p>
+<p>分析<code>classes.dex</code>，其中<code>com.vnctf2022.cm1.Haha</code>类包含了相关的校验逻辑，整个校验逻辑稍微复杂了一些，但是耐心梳理还是可以理清的。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// classes.dex com.vnctf2022.cm1.Haha</span></span><br><span class="line"><span class="keyword">package</span> com.vnctf2022.cm1;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> android.content.Context;</span><br><span class="line"><span class="keyword">import</span> android.widget.Toast;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Haha</span> <span class="keyword">implements</span> <span class="title">IHeihei</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> String flag;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Haha</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.flag = <span class="string">&quot;flag&#123;fake_flag_again&#125;&quot;</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">byte</span>[] bencrypt(<span class="keyword">byte</span>[] input, <span class="keyword">byte</span>[] keys) &#123;</span><br><span class="line">        <span class="keyword">return</span> input.length == <span class="number">0</span> ? input : Haha.toByteArray(Haha.encrypt(Haha.toIntArray(input, <span class="keyword">false</span>), Haha.toIntArray(keys, <span class="keyword">false</span>)), <span class="keyword">false</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">int</span>[] encrypt(<span class="keyword">int</span>[] input, <span class="keyword">int</span>[] keys) &#123;</span><br><span class="line">        <span class="keyword">int</span> rounds = <span class="number">52</span> / input.length + <span class="number">6</span>;</span><br><span class="line">        <span class="keyword">int</span> rnd_s = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">int</span> prev_int = input[input.length - <span class="number">1</span>];</span><br><span class="line">        <span class="keyword">do</span> &#123;</span><br><span class="line">            rnd_s += -<span class="number">1640531527</span>;</span><br><span class="line">            <span class="keyword">int</span> rnd_e = rnd_s &gt;&gt;&gt; <span class="number">2</span> &amp; <span class="number">3</span>;</span><br><span class="line">            <span class="keyword">int</span> ind;</span><br><span class="line">            <span class="keyword">for</span>(ind = <span class="number">0</span>; ind &lt; input.length - <span class="number">1</span>; ++ind) &#123;</span><br><span class="line">                <span class="keyword">int</span> ind_chr = input[ind] + ((prev_int &gt;&gt;&gt; <span class="number">5</span> ^ input[ind + <span class="number">1</span>] &lt;&lt; <span class="number">2</span>) + (input[ind + <span class="number">1</span>] &gt;&gt;&gt; <span class="number">3</span> ^ prev_int &lt;&lt; <span class="number">4</span>) ^ (rnd_s ^ input[ind + <span class="number">1</span>]) + (keys[ind &amp; <span class="number">3</span> ^ rnd_e] ^ prev_int));</span><br><span class="line">                input[ind] = ind_chr;</span><br><span class="line">                prev_int = ind_chr;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">int</span> next_int = input[<span class="number">0</span>];</span><br><span class="line">            <span class="keyword">int</span> last_ind = input.length - <span class="number">1</span>;</span><br><span class="line">            <span class="keyword">int</span> lc = input[last_ind] + ((prev_int &gt;&gt;&gt; <span class="number">5</span> ^ next_int &lt;&lt; <span class="number">2</span>) + (next_int &gt;&gt;&gt; <span class="number">3</span> ^ prev_int &lt;&lt; <span class="number">4</span>) ^ (rnd_s ^ next_int) + (keys[ind &amp; <span class="number">3</span> ^ rnd_e] ^ prev_int));</span><br><span class="line">            input[last_ind] = lc;</span><br><span class="line">            prev_int = lc;</span><br><span class="line">            --rounds;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">while</span>(rounds &gt; <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> input;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span>  <span class="comment">// com.vnctf2022.cm1.IHeihei</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Boolean <span class="title">hcheck</span><span class="params">(String input)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">byte</span>[] aim = <span class="keyword">new</span> <span class="keyword">byte</span>[]&#123;<span class="number">68</span>, <span class="number">39</span>, -<span class="number">92</span>, <span class="number">108</span>, -<span class="number">82</span>, -<span class="number">18</span>, <span class="number">72</span>, -<span class="number">55</span>, <span class="number">74</span>, -<span class="number">56</span>, <span class="number">38</span>, <span class="number">11</span>, <span class="number">60</span>, <span class="number">84</span>, <span class="number">97</span>, -<span class="number">40</span>, <span class="number">87</span>, <span class="number">71</span>, <span class="number">99</span>, -<span class="number">82</span>, <span class="number">120</span>, <span class="number">104</span>, <span class="number">0x2F</span>, -<span class="number">71</span>, -<span class="number">58</span>, -<span class="number">57</span>, <span class="number">0</span>, <span class="number">33</span>, <span class="number">42</span>, <span class="number">38</span>, -<span class="number">44</span>, -<span class="number">39</span>, -<span class="number">60</span>, <span class="number">0x71</span>, -<span class="number">2</span>, <span class="number">92</span>, -<span class="number">75</span>, <span class="number">0x76</span>, -<span class="number">77</span>, <span class="number">50</span>, <span class="number">0x87</span>, <span class="number">43</span>, <span class="number">0x20</span>, -<span class="number">106</span>&#125;;</span><br><span class="line">        <span class="keyword">byte</span>[] _tmp = Haha.bencrypt(input.getBytes(), <span class="string">&quot;H4pPY_VNCTF!!OvO&quot;</span>.getBytes());</span><br><span class="line">        <span class="keyword">if</span>(_tmp.length != aim.length) &#123;</span><br><span class="line">            <span class="keyword">return</span> Boolean.valueOf(<span class="keyword">false</span>);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">int</span> i;</span><br><span class="line">        <span class="keyword">for</span>(i = <span class="number">0</span>; i &lt; _tmp.length; ++i) &#123;</span><br><span class="line">            <span class="keyword">if</span>(_tmp[i] != aim[i]) &#123;</span><br><span class="line">                <span class="keyword">return</span> Boolean.valueOf(<span class="keyword">false</span>);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> Boolean.valueOf(<span class="keyword">true</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span>  <span class="comment">// com.vnctf2022.cm1.IHeihei</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">hi</span><span class="params">(Context arg3)</span> </span>&#123;</span><br><span class="line">        Toast.makeText(arg3, <span class="string">&quot;anothor dex&quot;</span>, <span class="number">1</span>).show();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">byte</span>[] toByteArray(<span class="keyword">int</span>[] arg5, <span class="keyword">boolean</span> arg6) &#123;  <span class="comment">// 把intArray分拆为byteArray</span></span><br><span class="line">        <span class="keyword">int</span> n = arg5.length &lt;&lt; <span class="number">2</span>;</span><br><span class="line">        <span class="keyword">if</span>(arg6) &#123;</span><br><span class="line">            <span class="keyword">int</span> m = arg5[arg5.length - <span class="number">1</span>];</span><br><span class="line">            <span class="keyword">if</span>(m &gt; n) &#123;</span><br><span class="line">                <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            n = m;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">byte</span>[] result = <span class="keyword">new</span> <span class="keyword">byte</span>[n];</span><br><span class="line">        <span class="keyword">int</span> i;</span><br><span class="line">        <span class="keyword">for</span>(i = <span class="number">0</span>; i &lt; n; ++i) &#123;</span><br><span class="line">            result[i] = (<span class="keyword">byte</span>)(arg5[i &gt;&gt;&gt; <span class="number">2</span>] &gt;&gt;&gt; ((i &amp; <span class="number">3</span>) &lt;&lt; <span class="number">3</span>) &amp; <span class="number">0xFF</span>);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> result;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">int</span>[] toIntArray(<span class="keyword">byte</span>[] arg7, <span class="keyword">boolean</span> arg8) &#123;</span><br><span class="line">        <span class="keyword">int</span>[] result;</span><br><span class="line">        <span class="keyword">int</span> v0 = (arg7.length &amp; <span class="number">3</span>) == <span class="number">0</span> ? arg7.length &gt;&gt;&gt; <span class="number">2</span> : (arg7.length &gt;&gt;&gt; <span class="number">2</span>) + <span class="number">1</span>;</span><br><span class="line">        <span class="keyword">if</span>(arg8) &#123;</span><br><span class="line">            result = <span class="keyword">new</span> <span class="keyword">int</span>[v0 + <span class="number">1</span>];</span><br><span class="line">            result[v0] = arg7.length;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span> &#123;</span><br><span class="line">            result = <span class="keyword">new</span> <span class="keyword">int</span>[v0];</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">int</span> i;</span><br><span class="line">        <span class="keyword">for</span>(i = <span class="number">0</span>; i &lt; arg7.length; ++i) &#123;</span><br><span class="line">            <span class="keyword">int</span> v3 = i &gt;&gt;&gt; <span class="number">2</span>;</span><br><span class="line">            result[v3] |= (arg7[i] &amp; <span class="number">0xFF</span>) &lt;&lt; ((i &amp; <span class="number">3</span>) &lt;&lt; <span class="number">3</span>);  <span class="comment">// result[i]是一个int，对应输入的每连续4个char</span></span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> result;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>输入的<code>string input</code>先转换成<code>byte[]</code>，然后送入<code>bencrypt(byte[], byte[])</code>进行加密，使用到的密钥是<code>&quot;H4pPY_VNCTF!!OvO&quot;.getBytes()</code>。</p>
+<p>在<code>bencrypt()</code>函数中，先把<code>byte[] input</code>和<code>byte[] keys</code>转换为int序列。其实就是每4个byte合并成int32，然后送入<code>encrypt(int[], int[])</code>进行加密，然后把这个加密函数返回的<code>int[]</code>转换回<code>byte[]</code>，其实就是前面转换的逆过程，把每个int32拆解为4个byte。然后比较得到的<code>byte[]</code>和<code>byte[] aim</code>是否一致。</p>
+<p>具体到<code>encrypt()</code>内部，是一个对input的多轮加密过程。简单来说，每轮加密时，下一轮密文next_input[i]由本轮的input[i+1]、刚刚计算得到的next_input[i-1]、keys[]和两个轮密钥rnd_s和rnd_e计算得到。（input[-1]=input[length-1], input[length]=input[0]）</p>
+<p>$next_input[i] = func(input[i+1], next_input[i-1], keys[], rnd_s, rnd_e), i : 0 \rightarrow n$</p>
+<p>这个过程可以视作顺序的递推，是可逆的，逆操作就是倒序的逆推。</p>
+<p>$input[i]=reverse_func(input[i+1], next_input[i-1], keys[], rnd_s, rnd_e), i : n \rightarrow 0$</p>
+<p>涉及到的三组密钥都是固定的，与输入无关。<br>aim的长度为44，所以input也即flag长度为44，共计加密10轮。</p>
+<p>解密脚本如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> java.util.Arrays;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">vnctfcm1apk</span></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">byte</span>[] bencrypt(<span class="keyword">byte</span>[] input, <span class="keyword">byte</span>[] keys) &#123;</span><br><span class="line">        <span class="keyword">return</span> input.length == <span class="number">0</span> ? input : toByteArray(encrypt(toIntArray(input, <span class="keyword">false</span>), toIntArray(keys, <span class="keyword">false</span>)), <span class="keyword">false</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">int</span>[] encrypt(<span class="keyword">int</span>[] input, <span class="keyword">int</span>[] keys) &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;input: &quot;</span> + Arrays.toString(input));</span><br><span class="line">        System.out.println(<span class="string">&quot;keys : &quot;</span> + Arrays.toString(keys));</span><br><span class="line"></span><br><span class="line">        <span class="keyword">int</span> rounds = <span class="number">52</span> / input.length + <span class="number">6</span>;</span><br><span class="line">        <span class="keyword">int</span> rnd_s = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">int</span> prev_int = input[input.length - <span class="number">1</span>];</span><br><span class="line">        <span class="keyword">do</span> &#123;</span><br><span class="line">            rnd_s += -<span class="number">1640531527</span>;</span><br><span class="line">            <span class="keyword">int</span> rnd_e = rnd_s &gt;&gt;&gt; <span class="number">2</span> &amp; <span class="number">3</span>;</span><br><span class="line">            </span><br><span class="line">            System.out.println(<span class="string">&quot;[rnd_e:&quot;</span> + rnd_e + <span class="string">&quot;, rnd_s:&quot;</span> + rnd_s + <span class="string">&quot;]&quot;</span>);</span><br><span class="line">            <span class="keyword">int</span> ind;</span><br><span class="line">            <span class="keyword">for</span>(ind = <span class="number">0</span>; ind &lt; input.length - <span class="number">1</span>; ++ind) &#123;</span><br><span class="line">                <span class="keyword">int</span> ind_chr = input[ind] + ((prev_int &gt;&gt;&gt; <span class="number">5</span> ^ input[ind + <span class="number">1</span>] &lt;&lt; <span class="number">2</span>) + (input[ind + <span class="number">1</span>] &gt;&gt;&gt; <span class="number">3</span> ^ prev_int &lt;&lt; <span class="number">4</span>) ^ (rnd_s ^ input[ind + <span class="number">1</span>]) + (keys[ind &amp; <span class="number">3</span> ^ rnd_e] ^ prev_int));</span><br><span class="line">                input[ind] = ind_chr;</span><br><span class="line">                prev_int = ind_chr;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">int</span> next_int = input[<span class="number">0</span>];</span><br><span class="line">            <span class="keyword">int</span> last_ind = input.length - <span class="number">1</span>;</span><br><span class="line">            <span class="keyword">int</span> lc = input[last_ind] + ((prev_int &gt;&gt;&gt; <span class="number">5</span> ^ next_int &lt;&lt; <span class="number">2</span>) + (next_int &gt;&gt;&gt; <span class="number">3</span> ^ prev_int &lt;&lt; <span class="number">4</span>) ^ (rnd_s ^ next_int) + (keys[ind &amp; <span class="number">3</span> ^ rnd_e] ^ prev_int));</span><br><span class="line">            input[last_ind] = lc;</span><br><span class="line">            prev_int = lc;</span><br><span class="line">            --rounds;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">while</span>(rounds &gt; <span class="number">0</span>);</span><br><span class="line">        </span><br><span class="line">        System.out.print(<span class="string">&quot;try encrypt: [&quot;</span>);</span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">byte</span> a:toByteArray(input, <span class="keyword">false</span>))&#123;</span><br><span class="line">            System.out.print(a + <span class="string">&quot;,&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        System.out.println(<span class="string">&quot;]&quot;</span>);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> input;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">int</span>[] decrypt(<span class="keyword">int</span>[] aim, <span class="keyword">int</span>[] keys)&#123;</span><br><span class="line">        <span class="keyword">int</span>[] preaim = <span class="keyword">new</span> <span class="keyword">int</span>[aim.length];</span><br><span class="line">        <span class="keyword">int</span>[] rnd_s = <span class="keyword">new</span> <span class="keyword">int</span>[]&#123;-<span class="number">1640531527</span>,<span class="number">1013904242</span>,-<span class="number">626627285</span>,<span class="number">2027808484</span>,<span class="number">387276957</span>,-<span class="number">1253254570</span>,<span class="number">1401181199</span>,-<span class="number">239350328</span>,-<span class="number">1879881855</span>,<span class="number">774553914</span>&#125;;</span><br><span class="line">        <span class="keyword">int</span>[] rnd_e = <span class="keyword">new</span> <span class="keyword">int</span>[]&#123;<span class="number">2</span>,<span class="number">0</span>,<span class="number">2</span>,<span class="number">1</span>,<span class="number">3</span>,<span class="number">1</span>,<span class="number">3</span>,<span class="number">2</span>,<span class="number">0</span>,<span class="number">2</span>&#125;;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">int</span> rnd=<span class="number">9</span>;rnd&gt;=<span class="number">0</span>;rnd--)&#123;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">int</span> ind = aim.length - <span class="number">1</span>;</span><br><span class="line">            <span class="keyword">int</span> last_ind = aim.length - <span class="number">1</span>;</span><br><span class="line">            <span class="keyword">int</span> prev_int = aim[last_ind-<span class="number">1</span>];</span><br><span class="line">            <span class="keyword">int</span> next_int = aim[<span class="number">0</span>];</span><br><span class="line">            <span class="keyword">int</span> lc = aim[last_ind];</span><br><span class="line"></span><br><span class="line">            preaim[last_ind] = (lc - ((prev_int &gt;&gt;&gt; <span class="number">5</span> ^ next_int &lt;&lt; <span class="number">2</span>) + (next_int &gt;&gt;&gt; <span class="number">3</span> ^ prev_int &lt;&lt; <span class="number">4</span>) ^ (rnd_s[rnd] ^ next_int) + (keys[ind &amp; <span class="number">3</span> ^ rnd_e[rnd]] ^ prev_int))  );</span><br><span class="line"></span><br><span class="line">            <span class="keyword">for</span>(ind = aim.length - <span class="number">1</span> -<span class="number">1</span>; ind&gt;=<span class="number">0</span>; ind--)&#123;</span><br><span class="line">                <span class="keyword">if</span>(ind==<span class="number">0</span>) prev_int = preaim[aim.length-<span class="number">1</span>];</span><br><span class="line">                <span class="keyword">else</span> prev_int = aim[ind-<span class="number">1</span>];</span><br><span class="line">                next_int = preaim[ind+<span class="number">1</span>];</span><br><span class="line">                preaim[ind] = (aim[ind] - ((prev_int &gt;&gt;&gt; <span class="number">5</span> ^ next_int &lt;&lt; <span class="number">2</span>) + (next_int &gt;&gt;&gt; <span class="number">3</span> ^ prev_int &lt;&lt; <span class="number">4</span>) ^ (rnd_s[rnd] ^ next_int) + (keys[ind &amp; <span class="number">3</span> ^ rnd_e[rnd]] ^ prev_int))  );</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            aim = preaim;</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// System.out.println(&quot;ans : &quot; + Arrays.toString(toByteArray(aim)));</span></span><br><span class="line">        System.out.print(<span class="string">&quot;try decrypt: [&quot;</span>);</span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">byte</span> a:toByteArray(aim, <span class="keyword">false</span>))&#123;</span><br><span class="line">            System.out.print(a + <span class="string">&quot;,&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        System.out.println(<span class="string">&quot;]&quot;</span>);</span><br><span class="line">        System.out.print(<span class="string">&quot;try flag: &quot;</span>);</span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">byte</span> a:toByteArray(aim, <span class="keyword">false</span>))&#123;</span><br><span class="line">            System.out.print((<span class="keyword">char</span>)a);</span><br><span class="line">        &#125;</span><br><span class="line">        System.out.println(<span class="string">&quot;&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> aim;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] argc)</span></span>&#123;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">int</span> rounds = <span class="number">7</span>; <span class="comment">// 52 / 44 + 6</span></span><br><span class="line">        <span class="keyword">byte</span>[] aim_byte=<span class="keyword">new</span> <span class="keyword">byte</span>[]&#123;<span class="number">68</span>, <span class="number">39</span>, -<span class="number">92</span>, <span class="number">108</span>, -<span class="number">82</span>, -<span class="number">18</span>, <span class="number">72</span>, -<span class="number">55</span>, <span class="number">74</span>, -<span class="number">56</span>, <span class="number">38</span>, <span class="number">11</span>, <span class="number">60</span>, <span class="number">84</span>, <span class="number">97</span>, -<span class="number">40</span>, <span class="number">87</span>, <span class="number">71</span>, <span class="number">99</span>, -<span class="number">82</span>, <span class="number">120</span>, <span class="number">104</span>, <span class="number">0x2F</span>, -<span class="number">71</span>, -<span class="number">58</span>, -<span class="number">57</span>, <span class="number">0</span>, <span class="number">33</span>, <span class="number">42</span>, <span class="number">38</span>, -<span class="number">44</span>, -<span class="number">39</span>, -<span class="number">60</span>, <span class="number">0x71</span>, -<span class="number">2</span>, <span class="number">92</span>, -<span class="number">75</span>, <span class="number">0x76</span>, -<span class="number">77</span>, <span class="number">50</span>, (<span class="keyword">byte</span>)<span class="number">0x87</span>, <span class="number">43</span>, <span class="number">0x20</span>, -<span class="number">106</span>&#125;;</span><br><span class="line">        <span class="keyword">int</span>[] aim_int =<span class="keyword">new</span> <span class="keyword">int</span>[]&#123;<span class="number">0b1101100101001000010011101000100</span>,<span class="number">0b11001001010010001110111010101110</span>,<span class="number">0b1011001001101100100001001010</span>,<span class="number">0b11011000011000010101010000111100</span>,<span class="number">0b10101110011000110100011101010111</span>,<span class="number">0b10111001001011110110100001111000</span>,<span class="number">0b100001000000001100011111000110</span>,<span class="number">0b11011001110101000010011000101010</span>,<span class="number">0b1011100111111100111000111000100</span>,<span class="number">0b110010101100110111011010110101</span>,<span class="number">0b10010110001000000010101110000111</span>&#125;;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">byte</span>[] try_byte=<span class="keyword">new</span> <span class="keyword">byte</span>[]&#123;<span class="number">86</span>,<span class="number">78</span>,<span class="number">67</span>,<span class="number">84</span>,<span class="number">70</span>,<span class="number">123</span>,<span class="number">57</span>,<span class="number">51</span>,<span class="number">101</span>,<span class="number">101</span>,<span class="number">55</span>,<span class="number">54</span>,<span class="number">56</span>,<span class="number">56</span>,<span class="number">45</span>,<span class="number">102</span>,<span class="number">50</span>,<span class="number">49</span>,<span class="number">54</span>,<span class="number">45</span>,<span class="number">52</span>,<span class="number">50</span>,<span class="number">99</span>,<span class="number">98</span>,<span class="number">45</span>,<span class="number">97</span>,<span class="number">53</span>,<span class="number">99</span>,<span class="number">50</span>,<span class="number">45</span>,<span class="number">49</span>,<span class="number">57</span>,<span class="number">49</span>,<span class="number">102</span>,<span class="number">102</span>,<span class="number">52</span>,<span class="number">101</span>,<span class="number">52</span>,<span class="number">49</span>,<span class="number">50</span>,<span class="number">98</span>,<span class="number">97</span>,<span class="number">125</span>,<span class="number">0</span>&#125;;</span><br><span class="line">        </span><br><span class="line">        decrypt( toIntArray(aim_byte, <span class="keyword">false</span>), toIntArray(<span class="string">&quot;H4pPY_VNCTF!!OvO&quot;</span>.getBytes(), <span class="keyword">false</span>) );</span><br><span class="line"></span><br><span class="line">        <span class="keyword">int</span>[] ens = <span class="keyword">new</span> <span class="keyword">int</span>[<span class="number">11</span>];</span><br><span class="line">        ens = encrypt( toIntArray(try_byte, <span class="keyword">false</span>) , toIntArray(<span class="string">&quot;H4pPY_VNCTF!!OvO&quot;</span>.getBytes(), <span class="keyword">false</span>) );</span><br><span class="line">        System.out.println(<span class="string">&quot;encoded msg length = &quot;</span> + toByteArray(ens, <span class="keyword">false</span>).length);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">int</span>[] toIntArray(<span class="keyword">byte</span>[] arg7, <span class="keyword">boolean</span> arg8) &#123;</span><br><span class="line">        <span class="keyword">int</span>[] result;</span><br><span class="line">        <span class="keyword">int</span> v0 = (arg7.length &amp; <span class="number">3</span>) == <span class="number">0</span> ? arg7.length &gt;&gt;&gt; <span class="number">2</span> : (arg7.length &gt;&gt;&gt; <span class="number">2</span>) + <span class="number">1</span>;</span><br><span class="line">        <span class="comment">// System.out.println(&quot;IntArray length:&quot; + v0);</span></span><br><span class="line">        <span class="keyword">if</span>(arg8) &#123;</span><br><span class="line">            result = <span class="keyword">new</span> <span class="keyword">int</span>[v0 + <span class="number">1</span>];</span><br><span class="line">            result[v0] = arg7.length;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span> &#123;</span><br><span class="line">            result = <span class="keyword">new</span> <span class="keyword">int</span>[v0];</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">int</span> i;</span><br><span class="line">        <span class="keyword">for</span>(i = <span class="number">0</span>; i &lt; arg7.length; ++i) &#123;</span><br><span class="line">            <span class="keyword">int</span> v3 = i &gt;&gt;&gt; <span class="number">2</span>;</span><br><span class="line">            result[v3] |= (arg7[i] &amp; <span class="number">0xFF</span>) &lt;&lt; ((i &amp; <span class="number">3</span>) &lt;&lt; <span class="number">3</span>);</span><br><span class="line">            </span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> result;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">byte</span>[] toByteArray(<span class="keyword">int</span>[] arg5, <span class="keyword">boolean</span> arg6) &#123;</span><br><span class="line">        <span class="keyword">int</span> n = arg5.length &lt;&lt; <span class="number">2</span>;</span><br><span class="line">        <span class="keyword">if</span>(arg6) &#123;</span><br><span class="line">            <span class="keyword">int</span> m = arg5[arg5.length - <span class="number">1</span>];</span><br><span class="line">            <span class="keyword">if</span>(m &gt; n) &#123;</span><br><span class="line">                <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            n = m;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// System.out.println(&quot;ByteArray length:&quot; + n);</span></span><br><span class="line">        <span class="keyword">byte</span>[] result = <span class="keyword">new</span> <span class="keyword">byte</span>[n];</span><br><span class="line">        <span class="keyword">int</span> i;</span><br><span class="line">        <span class="keyword">for</span>(i = <span class="number">0</span>; i &lt; n; ++i) &#123;</span><br><span class="line">            result[i] = (<span class="keyword">byte</span>)(arg5[i &gt;&gt;&gt; <span class="number">2</span>] &gt;&gt;&gt; ((i &amp; <span class="number">3</span>) &lt;&lt; <span class="number">3</span>) &amp; <span class="number">0xFF</span>);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> result;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可惜时不我Die</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20220212205246.png" alt="image-20220212205239215"></p>
+
+    </div>
+
+    
+    
+    
+        
+
+  <div class="followme">
+    <p>Welcome to my other publishing channels</p>
+
+    <div class="social-list">
+
+        <div class="social-item">
+          <a target="_blank" class="social-link" href="/atom.xml">
+            <span class="icon">
+              <i class="fa fa-rss"></i>
+            </span>
+
+            <span class="label">RSS</span>
+          </a>
+        </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Android/" rel="tag"># Android</a>
+              <a href="/tags/CTF/" rel="tag"># CTF</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/12/10/Fuzz-Basic/" rel="prev" title="Fuzz入门">
+      <i class="fa fa-chevron-left"></i> Fuzz入门
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          見出し
+        </li>
+        <li class="sidebar-nav-overview">
+          概要
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="slient2009"
+      src="/images/round_tiger.png">
+  <p class="site-author-name" itemprop="name">slient2009</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">14</span>
+          <span class="site-state-item-name">ポスト</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">7</span>
+        <span class="site-state-item-name">タグ</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://slient2009.github.io/atom.xml" title="RSS → https:&#x2F;&#x2F;slient2009.github.io&#x2F;atom.xml"><i class="rss fa-fw"></i>RSS</a>
+      </span>
+  </div>
+
+
+
+
+
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2021 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">slient2009</span>
+</div>
+
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="合計閲覧者数">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="閲覧合計数">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
