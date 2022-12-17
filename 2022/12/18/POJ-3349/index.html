@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/pig_128x128.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/pig_32x32.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/pig_16x16.ico">
+  <link rel="mask-icon" href="/images/pig_128x128.ico" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic|Roboto Slab:300,300italic,400,400italic,700,700italic|Rotoro Mono:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"slient2009.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="关于哈希我有些神奇的想法">
+<meta property="og:type" content="article">
+<meta property="og:title" content="POJ3349">
+<meta property="og:url" content="http://slient2009.github.io/2022/12/18/POJ-3349/index.html">
+<meta property="og:site_name" content="Slient2009">
+<meta property="og:description" content="关于哈希我有些神奇的想法">
+<meta property="og:locale" content="ja_JP">
+<meta property="article:published_time" content="2022-12-18T05:00:06.000Z">
+<meta property="article:modified_time" content="2022-12-17T08:20:59.000Z">
+<meta property="article:author" content="slient2009">
+<meta property="article:tag" content="算法">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://slient2009.github.io/2022/12/18/POJ-3349/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'ja'
+  };
+</script>
+
+  <title>POJ3349 | Slient2009</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="Slient2009" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="ナビゲーションバーの切り替え">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Slient2009</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">All I need is Twin Island Milk</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>ホーム</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>プロフィール</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>タグ<span class="badge">8</span></a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>アーカイブ<span class="badge">20</span></a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="ja">
+    <link itemprop="mainEntityOfPage" href="http://slient2009.github.io/2022/12/18/POJ-3349/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/round_tiger.png">
+      <meta itemprop="name" content="slient2009">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Slient2009">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          POJ3349
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">投稿日</span>
+
+              <time title="作成日：2022-12-18 00:00:06" itemprop="dateCreated datePublished" datetime="2022-12-18T00:00:06-05:00">2022-12-18</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">編集日</span>
+                <time title="修正日：2022-12-17 03:20:59" itemprop="dateModified" datetime="2022-12-17T03:20:59-05:00">2022-12-17</time>
+              </span>
+
+          
+            <span class="post-meta-item" title="閲覧数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">閲覧数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>关于哈希我有些神奇的想法</p>
+<span id="more"></span>
+
+
+<h2 id="题面"><a href="#题面" class="headerlink" title="题面"></a>题面</h2><p><a target="_blank" rel="noopener" href="http://poj.org/problem?id=3349">POJ 3349 Snowflake Snow Snowflakes</a><br>一片雪花有六个臂，用六个整数来表示（0&lt;= Li &lt;= 1000000）。<br>定义两片雪花相同当且仅当雪花经过一系列旋转或翻折后可以重合。<br>输入N(1&lt;=N&lt;=100000)片雪花的信息，求这些雪花中是否有两片相同。</p>
+<h2 id="常规哈希"><a href="#常规哈希" class="headerlink" title="常规哈希"></a>常规哈希</h2><p>考虑到各个臂长是地位相等的，所以类似进制哈希的想法可以放弃了。<br>可以考虑连加或连乘的哈希函数，使得各个臂长值对哈希值的贡献地位相等。<br>然后用哈希挂链的方法来解决冲突的问题。<br>相同的雪花一定会挂在同一条链上，如何确定两个哈希值相同的雪花相同?<br>事实上，将臂长数组视作一个环，取环的字典序最小的表示序列可唯一确定一种雪花。<br>如<br>4 5 6 1 2 3    -&gt;    1 2 3 4 5 6<br>5 3 1 6 7 2    -&gt;    1 3 5 2 7 6<br>这个方法难度不大。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;cstdio&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;cstring&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;algorithm&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"><span class="keyword">int</span> n;</span><br><span class="line"><span class="keyword">int</span> lengths[<span class="number">100010</span>][<span class="number">7</span>];</span><br><span class="line"><span class="keyword">int</span> orderMat[<span class="number">20</span>][<span class="number">10</span>];</span><br><span class="line"><span class="keyword">int</span> hashST[<span class="number">65537</span>];</span><br><span class="line"><span class="keyword">bool</span> ordered[<span class="number">100100</span>];</span><br><span class="line"><span class="keyword">int</span> orderArray[<span class="number">7</span>];</span><br><span class="line"><span class="keyword">int</span> tmp[<span class="number">7</span>];</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">orderLengths</span><span class="params">(<span class="keyword">int</span> x)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>;i&lt;<span class="number">6</span>;i++)&#123;</span><br><span class="line">        <span class="keyword">if</span>(tmp[i]&gt;orderArray[i]) <span class="keyword">return</span> ;</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span>(tmp[i]&lt;orderArray[i]) <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>;i&lt;<span class="number">6</span>;i++) orderArray[i]=tmp[i];</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">getOrder</span><span class="params">(<span class="keyword">int</span> x)</span><span class="comment">//更早的版本是生成环的12个序列在取最小的字典序序列</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> minn = <span class="number">0x7f7f7f7f</span>;</span><br><span class="line">    <span class="built_in">memset</span>(orderArray,<span class="number">0x7f7f7f7f</span>,<span class="keyword">sizeof</span>(orderArray));</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>;i&lt;<span class="number">6</span>;i++) minn=min(minn,lengths[x][i]);</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>;i&lt;<span class="number">6</span>;i++)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">if</span>(lengths[x][i]==minn)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">int</span> j=<span class="number">0</span>;</span><br><span class="line">            <span class="keyword">if</span>(lengths[x][(i+<span class="number">5</span>)%<span class="number">6</span>]&gt;=lengths[x][(i+<span class="number">1</span>)%<span class="number">6</span>])<span class="comment">//谁都有为了剪枝不择手段的时候，可能还会多耗时233</span></span><br><span class="line">            &#123;</span><br><span class="line">                <span class="keyword">for</span>(j=<span class="number">0</span>;j+i&lt;<span class="number">6</span>;j++) tmp[j]=lengths[x][i+j];</span><br><span class="line">                <span class="keyword">for</span>(<span class="keyword">int</span> jj=<span class="number">0</span>;jj&lt;i;jj++,j++) tmp[j]=lengths[x][jj];</span><br><span class="line">                orderLengths(x);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span>(lengths[x][(i+<span class="number">5</span>)%<span class="number">6</span>]&lt;=lengths[x][(i+<span class="number">1</span>)%<span class="number">6</span>])</span><br><span class="line">            &#123;</span><br><span class="line">                j=<span class="number">0</span>;</span><br><span class="line">                <span class="keyword">for</span>(j=<span class="number">0</span>;i-j&gt;=<span class="number">0</span>;j++) tmp[j]=lengths[x][i-j];</span><br><span class="line">                <span class="keyword">for</span>(<span class="keyword">int</span> jj=<span class="number">5</span>;jj&gt;i;jj--,j++) tmp[j]=lengths[x][jj];</span><br><span class="line">                orderLengths(x);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>;i&lt;<span class="number">6</span>;i++) lengths[x][i]=orderArray[i];</span><br><span class="line">    minn--;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">hashCalc</span><span class="params">(<span class="keyword">int</span> x)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> hashV=<span class="number">0</span>;</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>;i&lt;<span class="number">6</span>;i++) hashV=(hashV+lengths[x][i])%<span class="number">65537</span>;</span><br><span class="line">    <span class="keyword">return</span> hashV;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">bool</span> <span class="title">judge</span><span class="params">(<span class="keyword">int</span> a,<span class="keyword">int</span> b)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    getOrder(a);</span><br><span class="line">    getOrder(b);</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>;i&lt;<span class="number">6</span>;i++)&#123;</span><br><span class="line">        <span class="keyword">if</span>(lengths[a][i]!=lengths[b][i]) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">bool</span> <span class="title">query</span><span class="params">(<span class="keyword">int</span> x)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> pos=hashCalc(x);</span><br><span class="line">    <span class="keyword">if</span>(hashST[pos]==<span class="number">0</span>) </span><br><span class="line">    &#123;</span><br><span class="line">        hashST[pos]=x;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">int</span> now=hashST[pos];</span><br><span class="line">        <span class="keyword">while</span>(!judge(now,x) &amp;&amp; lengths[now][<span class="number">6</span>]!=<span class="number">-1</span>) now=lengths[now][<span class="number">6</span>];</span><br><span class="line">        <span class="keyword">if</span>(judge(now,x)) <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">        <span class="keyword">else</span> &#123;</span><br><span class="line">            lengths[now][<span class="number">6</span>]=x;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">bool</span> flag=<span class="number">0</span>;</span><br><span class="line">    <span class="built_in">memset</span>(hashST,<span class="number">0</span>,<span class="keyword">sizeof</span>(hashST));</span><br><span class="line">    <span class="built_in">memset</span>(ordered,<span class="number">0</span>,<span class="keyword">sizeof</span>(ordered));</span><br><span class="line">    <span class="built_in">scanf</span>(<span class="string">&quot;%d&quot;</span>,&amp;n);</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">1</span>;i&lt;=n;i++)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">int</span> j=<span class="number">0</span>;j&lt;<span class="number">6</span>;j++) <span class="built_in">scanf</span>(<span class="string">&quot;%d&quot;</span>,&amp;lengths[i][j]);</span><br><span class="line">        lengths[i][<span class="number">6</span>]=<span class="number">-1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">1</span>;i&lt;=n;i++)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">if</span>(query(i)) </span><br><span class="line">        &#123;</span><br><span class="line">            flag=<span class="number">1</span>;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span>(!flag) <span class="built_in">printf</span>(<span class="string">&quot;No two snowflakes are alike.&quot;</span>);</span><br><span class="line">    <span class="keyword">else</span> <span class="built_in">printf</span>(<span class="string">&quot;Twin snowflakes found.&quot;</span>);</span><br><span class="line">    <span class="keyword">while</span>(<span class="number">1</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="字典树哈希？"><a href="#字典树哈希？" class="headerlink" title="字典树哈希？"></a>字典树哈希？</h2><p>由雪花的唯一表达序列入手，如果把这个序列插入到字典树里，岂不是变成了字典树查询+插入的无脑操作？<br>连哈希都不用了耶！<br>然而这样做有两个问题</p>
+<h3 id="1-字典树的节点数量比较大"><a href="#1-字典树的节点数量比较大" class="headerlink" title="1 字典树的节点数量比较大"></a>1 字典树的节点数量比较大</h3><p>插入到字典树之前，需要将表示序列变成字符数组，最长有48位，一共有10w片雪花，则最多有480w个节点。<br>每个节点还要维护一个bool表示一个记录，10个儿子指向’0’ ~ ‘9’字符，也就是10个int。<br>没算错的话是183M，当然生成的数据没这么变态，所以还没有报MLE。</p>
+<h3 id="2-时间开销也不小"><a href="#2-时间开销也不小" class="headerlink" title="2 时间开销也不小"></a>2 时间开销也不小</h3><p>没有两片相同雪花的情况下会有10w次查询插入操作，最多执行480w次节点访问操作。<br>一开始还没注意计算唯一表示序列的时间复杂度，看起来没什么，改着改着出了问题。<br>计算函数没写好，所用的时间可能比查询插入的时间还要多，即使重写优化了计算函数，还是没有卡过。<br>而且个人认为问题大概就出现在这里。</p>
+<h3 id="原因分析"><a href="#原因分析" class="headerlink" title="原因分析"></a>原因分析</h3><p>为什么用字典树哈希过不了？（原谅我自创名词）</p>
+<h4 id="1-背离了哈希的初衷"><a href="#1-背离了哈希的初衷" class="headerlink" title="1 背离了哈希的初衷"></a>1 背离了哈希的初衷</h4><p>哈希函数在可以较短的时间内解决了数据索引的问题，同时还将表长控制在可以接受的范围内。<br>将时间复杂度转移到了解决哈希冲突的处理上来。<br>还要注意的是空间开销和哈希冲突概率总是成反比，有时候可以从这里入手来一波时间空间互换。<br>如果将字典树上的节点视作雪花的哈希值，<br>一个是6次加法，另一个是48层的树高，在树上节点的转移、新建节点的时间开销也不可忽略。<br>这样一来，查询或者新建一个节点大概需要上百个基本操作时间。<br>虽然字典树上没有冲突，但是计算函数耗时太多。<br>而且方法一的冲突大概不会太多，基本可以忽略。<br>那么字典树的方法完败了……</p>
+<h4 id="2-获取唯一序列函数复杂"><a href="#2-获取唯一序列函数复杂" class="headerlink" title="2 获取唯一序列函数复杂"></a>2 获取唯一序列函数复杂</h4><p>这个函数我写过两个版本<br>一是生成环的12种表示序列，然后去选其中字典序最小的。<br>二是从环中值最小的位置向两边扩展的到序列，开一个tmp数组取字典序最小。<br>即使是第二个版本，得到一片雪花的唯一表示序列至少需要几十次的基本操作时间。<br>得到10w片的唯一表示序列又用去了几千万次基本操作时间。<br>加一加差不多就过亿了吧……</p>
+<p>虽然没卡过，还是腆着脸贴一下代码，欢迎指正。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;cstdio&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;cstring&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;algorithm&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"><span class="keyword">int</span> n;</span><br><span class="line"><span class="keyword">int</span> lengths[<span class="number">100010</span>][<span class="number">6</span>];</span><br><span class="line"><span class="keyword">int</span> orderMat[<span class="number">20</span>][<span class="number">10</span>];</span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">node</span>&#123;</span></span><br><span class="line">    <span class="keyword">bool</span> cnt;</span><br><span class="line">    <span class="keyword">int</span> kids[<span class="number">10</span>];</span><br><span class="line">&#125;Tire[<span class="number">4800100</span>];</span><br><span class="line"><span class="keyword">int</span> total=<span class="number">0</span>;</span><br><span class="line"><span class="keyword">int</span> strNum[<span class="number">50</span>];</span><br><span class="line"><span class="keyword">int</span> lens=<span class="number">0</span>;</span><br><span class="line"><span class="keyword">int</span> orderArray[<span class="number">7</span>];</span><br><span class="line"><span class="keyword">int</span> tmp[<span class="number">7</span>];</span><br><span class="line"><span class="keyword">int</span> hashST[<span class="number">65537</span>];</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">orderLengths</span><span class="params">(<span class="keyword">int</span> x)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>;i&lt;<span class="number">6</span>;i++)&#123;</span><br><span class="line">        <span class="keyword">if</span>(tmp[i]&gt;orderArray[i]) <span class="keyword">return</span> ;</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span>(tmp[i]&lt;orderArray[i]) <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>;i&lt;<span class="number">6</span>;i++) orderArray[i]=tmp[i];</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">getOrder</span><span class="params">(<span class="keyword">int</span> x)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> minn = <span class="number">0x7f7f7f7f</span>;</span><br><span class="line">    <span class="built_in">memset</span>(orderArray,<span class="number">0x7f7f7f7f</span>,<span class="keyword">sizeof</span>(orderArray));</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>;i&lt;<span class="number">6</span>;i++) minn=min(minn,lengths[x][i]);</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>;i&lt;<span class="number">6</span>;i++)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">if</span>(lengths[x][i]==minn)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">int</span> j=<span class="number">0</span>;</span><br><span class="line">            <span class="keyword">if</span>(lengths[x][(i+<span class="number">5</span>)%<span class="number">6</span>]&gt;=lengths[x][(i+<span class="number">1</span>)%<span class="number">6</span>])</span><br><span class="line">            &#123;</span><br><span class="line">                <span class="keyword">for</span>(j=<span class="number">0</span>;j+i&lt;<span class="number">6</span>;j++) tmp[j]=lengths[x][i+j];</span><br><span class="line">                <span class="keyword">for</span>(<span class="keyword">int</span> jj=<span class="number">0</span>;jj&lt;i;jj++,j++) tmp[j]=lengths[x][jj];</span><br><span class="line">                orderLengths(x);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span>(lengths[x][(i+<span class="number">5</span>)%<span class="number">6</span>]&lt;=lengths[x][(i+<span class="number">1</span>)%<span class="number">6</span>])</span><br><span class="line">            &#123;</span><br><span class="line">                j=<span class="number">0</span>;</span><br><span class="line">                <span class="keyword">for</span>(j=<span class="number">0</span>;i-j&gt;=<span class="number">0</span>;j++) tmp[j]=lengths[x][i-j];</span><br><span class="line">                <span class="keyword">for</span>(<span class="keyword">int</span> jj=<span class="number">5</span>;jj&gt;i;jj--,j++) tmp[j]=lengths[x][jj];</span><br><span class="line">                orderLengths(x);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>;i&lt;<span class="number">6</span>;i++) lengths[x][i]=orderArray[i];</span><br><span class="line">    minn--;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">bool</span> <span class="title">query</span><span class="params">(<span class="keyword">int</span> x)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    lens=<span class="number">0</span>;</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>;i&lt;<span class="number">6</span>;i++)&#123;</span><br><span class="line">        <span class="keyword">int</span> tmp=lengths[x][i];</span><br><span class="line">        <span class="keyword">while</span>(tmp)&#123;</span><br><span class="line">            strNum[lens++]=tmp%<span class="number">10</span>;</span><br><span class="line">            tmp/=<span class="number">10</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">int</span> now=<span class="number">0</span>;</span><br><span class="line">    <span class="keyword">bool</span> flag=<span class="number">1</span>;</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>;i&lt;lens;i++)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">if</span>(Tire[now].kids[strNum[i]]==<span class="number">0</span>) </span><br><span class="line">        &#123;</span><br><span class="line">            Tire[now].kids[strNum[i]]=(++total);</span><br><span class="line">            Tire[total].cnt=<span class="number">0</span>;</span><br><span class="line">            now=total;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span> now=Tire[now].kids[strNum[i]];</span><br><span class="line">    &#125;</span><br><span class="line">    flag=Tire[now].cnt;</span><br><span class="line">    Tire[now].cnt=<span class="number">1</span>;</span><br><span class="line">    <span class="keyword">return</span> flag;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">scanf</span>(<span class="string">&quot;%d&quot;</span>,&amp;n);</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">1</span>;i&lt;=n;i++)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">int</span> j=<span class="number">0</span>;j&lt;<span class="number">6</span>;j++) <span class="built_in">scanf</span>(<span class="string">&quot;%d&quot;</span>,&amp;lengths[i][j]);</span><br><span class="line">        getOrder(i);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">1</span>;i&lt;=n;i++)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">int</span> j=<span class="number">0</span>;j&lt;<span class="number">6</span>;j++) <span class="built_in">printf</span>(<span class="string">&quot;%d&quot;</span>,lengths[i][j]);</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;\n&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">1</span>;i&lt;=n;i++)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">if</span>(query(i))</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="built_in">printf</span>(<span class="string">&quot;Twin snowflakes found.&quot;</span>);</span><br><span class="line">            <span class="keyword">while</span>(<span class="number">1</span>);</span><br><span class="line">            <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;No two snowflakes are alike.&quot;</span>);</span><br><span class="line">    <span class="keyword">while</span>(<span class="number">1</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>本文来得很草率，计算分析过程非常不严谨，源于笔者对程序运行过程不甚了解。</p>
+
+    </div>
+
+    
+    
+    
+        
+
+  <div class="followme">
+    <p>Welcome to my other publishing channels</p>
+
+    <div class="social-list">
+
+        <div class="social-item">
+          <a target="_blank" class="social-link" href="/atom.xml">
+            <span class="icon">
+              <i class="fa fa-rss"></i>
+            </span>
+
+            <span class="label">RSS</span>
+          </a>
+        </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E7%AE%97%E6%B3%95/" rel="tag"># 算法</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/12/18/CTF-Unity/" rel="prev" title="很久之前的巅峰极客Unity逆向">
+      <i class="fa fa-chevron-left"></i> 很久之前的巅峰极客Unity逆向
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          見出し
+        </li>
+        <li class="sidebar-nav-overview">
+          概要
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%A2%98%E9%9D%A2"><span class="nav-number">1.</span> <span class="nav-text">题面</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B8%B8%E8%A7%84%E5%93%88%E5%B8%8C"><span class="nav-number">2.</span> <span class="nav-text">常规哈希</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AD%97%E5%85%B8%E6%A0%91%E5%93%88%E5%B8%8C%EF%BC%9F"><span class="nav-number">3.</span> <span class="nav-text">字典树哈希？</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-%E5%AD%97%E5%85%B8%E6%A0%91%E7%9A%84%E8%8A%82%E7%82%B9%E6%95%B0%E9%87%8F%E6%AF%94%E8%BE%83%E5%A4%A7"><span class="nav-number">3.1.</span> <span class="nav-text">1 字典树的节点数量比较大</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-%E6%97%B6%E9%97%B4%E5%BC%80%E9%94%80%E4%B9%9F%E4%B8%8D%E5%B0%8F"><span class="nav-number">3.2.</span> <span class="nav-text">2 时间开销也不小</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8E%9F%E5%9B%A0%E5%88%86%E6%9E%90"><span class="nav-number">3.3.</span> <span class="nav-text">原因分析</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-%E8%83%8C%E7%A6%BB%E4%BA%86%E5%93%88%E5%B8%8C%E7%9A%84%E5%88%9D%E8%A1%B7"><span class="nav-number">3.3.1.</span> <span class="nav-text">1 背离了哈希的初衷</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-%E8%8E%B7%E5%8F%96%E5%94%AF%E4%B8%80%E5%BA%8F%E5%88%97%E5%87%BD%E6%95%B0%E5%A4%8D%E6%9D%82"><span class="nav-number">3.3.2.</span> <span class="nav-text">2 获取唯一序列函数复杂</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="slient2009"
+      src="/images/round_tiger.png">
+  <p class="site-author-name" itemprop="name">slient2009</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">20</span>
+          <span class="site-state-item-name">ポスト</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-name">タグ</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://slient2009.github.io/atom.xml" title="RSS → https:&#x2F;&#x2F;slient2009.github.io&#x2F;atom.xml"><i class="rss fa-fw"></i>RSS</a>
+      </span>
+  </div>
+
+
+
+
+
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2021 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">slient2009</span>
+</div>
+
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="合計閲覧者数">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="閲覧合計数">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

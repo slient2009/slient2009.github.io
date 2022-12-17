@@ -20,20 +20,33 @@
     var CONFIG = {"hostname":"slient2009.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
   </script>
 
-  <meta name="description" content="听说最近的电影《你好世界》不咋好看，当然这和Hexo自动生成的Hello World并没有太多的关系。">
+  <meta name="description" content="很久之前，巅峰极客的两个Unity游戏逆向题。">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Hello World">
-<meta property="og:url" content="http://slient2009.github.io/2021/06/20/Hello-World/index.html">
+<meta property="og:title" content="很久之前的巅峰极客Unity逆向">
+<meta property="og:url" content="http://slient2009.github.io/2022/12/18/CTF-Unity/index.html">
 <meta property="og:site_name" content="Slient2009">
-<meta property="og:description" content="听说最近的电影《你好世界》不咋好看，当然这和Hexo自动生成的Hello World并没有太多的关系。">
+<meta property="og:description" content="很久之前，巅峰极客的两个Unity游戏逆向题。">
 <meta property="og:locale" content="ja_JP">
-<meta property="article:published_time" content="2021-06-20T04:00:00.000Z">
-<meta property="article:modified_time" content="2021-09-09T08:53:12.000Z">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/202212171609542.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/202212171609924.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/202212171610090.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/202212171610860.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/202212171610400.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/202212171610713.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/202212171611755.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/202212171611504.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/202212171611859.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/202212171611102.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/202212171611943.png">
+<meta property="article:published_time" content="2022-12-18T05:00:05.000Z">
+<meta property="article:modified_time" content="2022-12-17T08:14:23.000Z">
 <meta property="article:author" content="slient2009">
-<meta property="article:tag" content="配置">
+<meta property="article:tag" content="CTF">
+<meta property="article:tag" content="RE">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/202212171609542.png">
 
-<link rel="canonical" href="http://slient2009.github.io/2021/06/20/Hello-World/">
+<link rel="canonical" href="http://slient2009.github.io/2022/12/18/CTF-Unity/">
 
 
 <script id="page-configurations">
@@ -46,7 +59,7 @@
   };
 </script>
 
-  <title>Hello World | Slient2009</title>
+  <title>很久之前的巅峰极客Unity逆向 | Slient2009</title>
   
 
 
@@ -159,7 +172,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="ja">
-    <link itemprop="mainEntityOfPage" href="http://slient2009.github.io/2021/06/20/Hello-World/">
+    <link itemprop="mainEntityOfPage" href="http://slient2009.github.io/2022/12/18/CTF-Unity/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/round_tiger.png">
@@ -172,7 +185,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          Hello World
+          很久之前的巅峰极客Unity逆向
         </h1>
 
         <div class="post-meta">
@@ -182,14 +195,14 @@
               </span>
               <span class="post-meta-item-text">投稿日</span>
 
-              <time title="作成日：2021-06-20 00:00:00" itemprop="dateCreated datePublished" datetime="2021-06-20T00:00:00-04:00">2021-06-20</time>
+              <time title="作成日：2022-12-18 00:00:05" itemprop="dateCreated datePublished" datetime="2022-12-18T00:00:05-05:00">2022-12-18</time>
             </span>
               <span class="post-meta-item">
                 <span class="post-meta-item-icon">
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">編集日</span>
-                <time title="修正日：2021-09-09 04:53:12" itemprop="dateModified" datetime="2021-09-09T04:53:12-04:00">2021-09-09</time>
+                <time title="修正日：2022-12-17 03:14:23" itemprop="dateModified" datetime="2022-12-17T03:14:23-05:00">2022-12-17</time>
               </span>
 
           
@@ -210,22 +223,39 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <p>听说最近的电影《你好世界》不咋好看，当然这和Hexo自动生成的Hello World并没有太多的关系。</p>
+        <p>很久之前，巅峰极客的两个Unity游戏逆向题。</p>
 <span id="more"></span>
 
-<p>Welcome to <a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a target="_blank" rel="noopener" href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a target="_blank" rel="noopener" href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a target="_blank" rel="noopener" href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/writing.html">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/server.html">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/generating.html">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/202212171609542.png" alt="1.png"></p>
+<p>最近开始接触到Unity的逆向，一周之内遇见了三次。<br>难道说这是逆向出题的新方向？<br>不好说，只能拿起DnSpy来一梭子先，虽然第二个题烂尾了。</p>
+<h2 id="DnSpy"><a href="#DnSpy" class="headerlink" title="DnSpy"></a>DnSpy</h2><p><a target="_blank" rel="noopener" href="https://github.com/0xd4d/dnSpy">https://github.com/0xd4d/dnSpy</a></p>
+<p>Unity的逆向用IDA或者OD可能不是很好使，只好召唤DnSpy了。<br>DnSpy界面清爽，支持.NET和Unity等程序无源码的反编译、调试和修改。<br>请在github上按照需求下载对应的版本。</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/202212171609924.png" alt="2.png"></p>
+<h2 id="Misc-签到"><a href="#Misc-签到" class="headerlink" title="Misc-签到"></a>Misc-签到</h2><p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/202212171610090.png" alt="4.png"></p>
+<p>听说三叶草等了几分钟就把flag等出来了，对这种操作不得不服气。<br>用dnSpy打开这个exe，可以看到程序的结构。<br>App1和App1.Properties分别对应主窗口和“关于”窗口。<br>flag在App1中显示，在WindowsFormsApp1下找找，可以看到<string>a变量就是flag。</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/202212171610860.png" alt="6.png"></p>
+<h2 id="Re-NinJaProject"><a href="#Re-NinJaProject" class="headerlink" title="Re-NinJaProject"></a>Re-NinJaProject</h2><h3 id="大意"><a href="#大意" class="headerlink" title="大意"></a>大意</h3><p>游戏中操作忍者去吃小球，程序会检验此时的状态sha1值是否满足条件。如果满足，flag是此状态的MD5值前10位。<br>游戏状态的定义比较复杂，它由</p>
+<ul>
+<li>固定的头部字符串</li>
+<li>当前忍者吃到的红球list的异或值（吃到红球score++）</li>
+<li>当前忍者吃到的蓝球list的异或值（吃到蓝球score–）</li>
+<li>界面中月亮和云的坐标抑或值</li>
+<li>当前忍者hp和score的异或值（被怪碰到hp–）<br>字符串组成。<br>如果这个字符串的sha1值正确，算出MD5就可以了。</li>
+</ul>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/202212171610400.png" alt="7.png"></p>
+<h3 id="难点"><a href="#难点" class="headerlink" title="难点"></a>难点</h3><p>比较麻烦的是如何确定游戏中小球、月亮和云的位置。<br>朋友说游戏已经被封装好了，不能查看设定的位置。<br>只好寄托于dnSpy的修改功能。</p>
+<h3 id="定位代码"><a href="#定位代码" class="headerlink" title="定位代码"></a>定位代码</h3><p>载入Assembly-CSharp.dll(Unity是建立在dll上的)<br>查看人如其名的PalyerMove类，可以断定Update()负责实时刷新状态，C0t1Nu30RnOt()负责校验状态是否合法。<br>redlist保存吃到的红球，bluelist保存吃到的蓝球<br>hp，score保存对应的值</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/202212171610713.png" alt="8.png"></p>
+<p>选中变量右键分析，可以查看在那些地方被调用。<br>我的机器上这个功能有点儿问题，不能找到被赋值处，可以遍历程序结构检查。<br>找到redlist,bluelist,score,hp的赋值和使用代码。</p>
+<p>例如：<br>红球的X和Y坐标被取两位小数并转string相连后加入redlist(string数组)中。<br>在检验状态时，取出来进行抑或，加入状态字符串。</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/202212171611755.png" alt="9.png"></p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/202212171611504.png" alt="10.png"></p>
+<h3 id="打印数据"><a href="#打印数据" class="headerlink" title="打印数据"></a>打印数据</h3><p>由于游戏中景物的坐标不变，只是吃到球的顺序改变，对应到状态字符串中是字符串顺序改变而内容不变。<br>所以我在C0t1Nu30RnOt()中添加了一些代码，打印出每个球坐标的异或值以及月亮、云坐标的异或值。<br>剩下的交由枚举顺序爆破吧。<br>选中类-右键-编辑类-编辑代码-编译-选中左上文件栏-保存模块或保存全部，这样才算完成了dll覆写。</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/202212171611859.png" alt="11.png"></p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/202212171611102.png" alt="13.png"></p>
+<h3 id="枚举状态"><a href="#枚举状态" class="headerlink" title="枚举状态"></a>枚举状态</h3><p>不必把球吃完，也没有提示不吃蓝球，所以枚举数量很大。<br>满打满算是10选10的全排列+10选9的全排列+…+10选0的全排列。<br>由当前枚举到的状态可以计算score值，但还需枚举hp值。<br>从游戏玩家的角度出发，自然希望吃完红球，不吃蓝球，不碰怪，hp和score都是max。<br>可以由此指定搜索策略。<br>然而我失败了，不管是优先搜索还是全面暴力都没有结果。<br>至此，不由得对比赛时段内就做出来的dalao们献上膝盖。</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/202212171611943.png" alt="12.png"></p>
+<h3 id="坐等官方WP来看看哪儿出了问题。"><a href="#坐等官方WP来看看哪儿出了问题。" class="headerlink" title="坐等官方WP来看看哪儿出了问题。"></a>坐等官方WP来看看哪儿出了问题。</h3><p>哦，原来是隐藏了一个球，告辞…</p>
 
     </div>
 
@@ -254,7 +284,8 @@
 
       <footer class="post-footer">
           <div class="post-tags">
-              <a href="/tags/%E9%85%8D%E7%BD%AE/" rel="tag"># 配置</a>
+              <a href="/tags/CTF/" rel="tag"># CTF</a>
+              <a href="/tags/RE/" rel="tag"># RE</a>
           </div>
 
         
@@ -262,10 +293,13 @@
 
         
     <div class="post-nav">
-      <div class="post-nav-item"></div>
       <div class="post-nav-item">
-    <a href="/2021/06/21/Hello-Hexo/" rel="next" title="Hexo美化记录">
-      Hexo美化记录 <i class="fa fa-chevron-right"></i>
+    <a href="/2022/12/18/MSF-Android/" rel="prev" title="MSF-Android课程实验">
+      <i class="fa fa-chevron-left"></i> MSF-Android课程实验
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/12/18/POJ-3349/" rel="next" title="POJ3349">
+      POJ3349 <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
       </footer>
@@ -325,7 +359,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Quick-Start"><span class="nav-number">1.</span> <span class="nav-text">Quick Start</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Create-a-new-post"><span class="nav-number">1.1.</span> <span class="nav-text">Create a new post</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Run-server"><span class="nav-number">1.2.</span> <span class="nav-text">Run server</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Generate-static-files"><span class="nav-number">1.3.</span> <span class="nav-text">Generate static files</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Deploy-to-remote-sites"><span class="nav-number">1.4.</span> <span class="nav-text">Deploy to remote sites</span></a></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#DnSpy"><span class="nav-number">1.</span> <span class="nav-text">DnSpy</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Misc-%E7%AD%BE%E5%88%B0"><span class="nav-number">2.</span> <span class="nav-text">Misc-签到</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Re-NinJaProject"><span class="nav-number">3.</span> <span class="nav-text">Re-NinJaProject</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A4%A7%E6%84%8F"><span class="nav-number">3.1.</span> <span class="nav-text">大意</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%9A%BE%E7%82%B9"><span class="nav-number">3.2.</span> <span class="nav-text">难点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%9A%E4%BD%8D%E4%BB%A3%E7%A0%81"><span class="nav-number">3.3.</span> <span class="nav-text">定位代码</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%89%93%E5%8D%B0%E6%95%B0%E6%8D%AE"><span class="nav-number">3.4.</span> <span class="nav-text">打印数据</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9E%9A%E4%B8%BE%E7%8A%B6%E6%80%81"><span class="nav-number">3.5.</span> <span class="nav-text">枚举状态</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%9D%90%E7%AD%89%E5%AE%98%E6%96%B9WP%E6%9D%A5%E7%9C%8B%E7%9C%8B%E5%93%AA%E5%84%BF%E5%87%BA%E4%BA%86%E9%97%AE%E9%A2%98%E3%80%82"><span class="nav-number">3.6.</span> <span class="nav-text">坐等官方WP来看看哪儿出了问题。</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
