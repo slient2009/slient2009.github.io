@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/pig_128x128.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/pig_32x32.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/pig_16x16.ico">
+  <link rel="mask-icon" href="/images/pig_128x128.ico" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic|Roboto Slab:300,300italic,400,400italic,700,700italic|Rotoro Mono:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"slient2009.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="论文A Practical Intent Fuzzing Tool for  Robustness of Inter-Component  Communication in Android Apps阅读笔记">
+<meta property="og:type" content="article">
+<meta property="og:title" content="IntentFuzzer阅读笔记">
+<meta property="og:url" content="http://slient2009.github.io/2022/04/01/HwachaFuzzer/index.html">
+<meta property="og:site_name" content="Slient2009">
+<meta property="og:description" content="论文A Practical Intent Fuzzing Tool for  Robustness of Inter-Component  Communication in Android Apps阅读笔记">
+<meta property="og:locale" content="ja_JP">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20220301143309.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20220301143359.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20220301171316.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20220301171324.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20220301171910.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20220301173023.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20220301173104.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20220301173450.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20220301173702.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20220301173708.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20220301173717.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20220301173724.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20220301173730.png">
+<meta property="article:published_time" content="2022-04-01T04:00:03.000Z">
+<meta property="article:modified_time" content="2022-12-18T07:39:09.000Z">
+<meta property="article:author" content="slient2009">
+<meta property="article:tag" content="Android">
+<meta property="article:tag" content="Paper">
+<meta property="article:tag" content="Fuzz">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20220301143309.png">
+
+<link rel="canonical" href="http://slient2009.github.io/2022/04/01/HwachaFuzzer/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'ja'
+  };
+</script>
+
+  <title>IntentFuzzer阅读笔记 | Slient2009</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="Slient2009" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="ナビゲーションバーの切り替え">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Slient2009</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">All I need is Twin Island Milk</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>ホーム</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>プロフィール</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>タグ<span class="badge">9</span></a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>アーカイブ<span class="badge">26</span></a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="ja">
+    <link itemprop="mainEntityOfPage" href="http://slient2009.github.io/2022/04/01/HwachaFuzzer/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/round_tiger.png">
+      <meta itemprop="name" content="slient2009">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Slient2009">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          IntentFuzzer阅读笔记
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">投稿日</span>
+
+              <time title="作成日：2022-04-01 00:00:03" itemprop="dateCreated datePublished" datetime="2022-04-01T00:00:03-04:00">2022-04-01</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">編集日</span>
+                <time title="修正日：2022-12-18 02:39:09" itemprop="dateModified" datetime="2022-12-18T02:39:09-05:00">2022-12-18</time>
+              </span>
+
+          
+            <span class="post-meta-item" title="閲覧数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">閲覧数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>论文A Practical Intent Fuzzing Tool for  Robustness of Inter-Component  Communication in Android Apps阅读笔记</p>
+<span id="more"></span>
+
+
+
+<blockquote>
+<p>A Practical Intent Fuzzing Tool for  Robustness of Inter-Component  Communication in Android Apps</p>
+<p>同样也是Intent Fuzzer，<br>设计了一种Intent Specification Language 用于描述Intent的结构，便于生成测试Intent；<br>基于传统的最长公共子序列算法进行同源crash数据的辨别，因为在Android中，许多原因相同的crash的log日志基本相同，只会在进程号、线程号等方面有细微差别；<br>指出了当前的Android Intent Fuzzer所采用的算法策略不能相互通用，认为需要在通用性设计上进行努力。而文章设计的Intent Specification Language恰好可以解决这个问题（如果它被广泛认可的话）</p>
+<p>研究者来自韩国，Related Work部分写得比较详细，<strong>值得认真阅读。</strong></p>
+</blockquote>
+<h3 id="1-Intro"><a href="#1-Intro" class="headerlink" title="1 Intro"></a>1 Intro</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//样例代码</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Note</span> <span class="keyword">extends</span> <span class="title">Activity</span> </span>&#123;</span><br><span class="line">    String title;</span><br><span class="line">    String content;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">onCreate</span><span class="params">(Bundle savedInstanceState)</span> </span>&#123;</span><br><span class="line">        Intent intent = getIntent();</span><br><span class="line">        String action = intent.getAction();</span><br><span class="line">        <span class="keyword">if</span>(action.equals(<span class="string">&quot;android.intent.action.EDIT&quot;</span>))&#123;</span><br><span class="line">            title = intent.getStringExtra(<span class="string">&quot;title&quot;</span>);</span><br><span class="line">            content = intent.getStringExtra(<span class="string">&quot;content&quot;</span>); </span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span>(action.equals(<span class="string">&quot;android.intent.action.INSERT&quot;</span>))&#123;</span><br><span class="line">            title = <span class="string">&quot;No title&quot;</span>; </span><br><span class="line">            content = <span class="string">&quot;Type your memo&quot;</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// Code: display a title and a content</span></span><br><span class="line">    &#125; </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="1-1-Intent-Vulnerability"><a href="#1-1-Intent-Vulnerability" class="headerlink" title="1.1 Intent Vulnerability"></a>1.1 Intent Vulnerability</h4><p>intent的设置与intent-filter的过滤匹配分析：<a target="_blank" rel="noopener" href="https://blog.csdn.net/iispring/article/details/48481793">https://blog.csdn.net/iispring/article/details/48481793</a></p>
+<p>作者把<em>Intent Vulnerability</em>大致分为四类：</p>
+<ol>
+<li>Miss Action: intent部分字段未定义就发送，接受时未检查导致异常。<br>对示例代码，如果action没有定义，那么接受之后在处理时会在action.equals()处抛出异常。</li>
+<li>Other Action: intent设置了非预期的action，可能导致进入非预期的执行逻辑。<br>对示例代码，如果action设置的action不是INSERT或EDIT，那么会在未提取title和content字段的情况下执行后续的代码，可能造成NullPointerException。（其实这里加个else马上return就好）</li>
+<li>Miss Value: 如果Intent的Action设置正确，但是Extra的部分字段缺失，也可能导致NULL。<br>对示例代码，如果Intent没有设置”title”和”content”字段的值，那么getExtraString时会返回NULL，在执行后续代码时可能NullPointerException。</li>
+<li>Wrong Type: Action设置正确，Extra字段也设置了，但是键值的类型搞错了，那么getExtraString也会返回NULL，导致同样的错误。</li>
+</ol>
+<h4 id="1-2-Shortage-of-related-researches"><a href="#1-2-Shortage-of-related-researches" class="headerlink" title="1.2 Shortage of related researches"></a>1.2 Shortage of related researches</h4><p>介绍了相关研究，文献[2-7]，并总结了如下不足</p>
+<ol>
+<li>这些研究设计的intent fuzzer都和自己的intent生成策略绑定得太紧，fuzzer更换生成策略的代价较高。<br>Null IntentFuzzer粗暴地把intent所有field置空来测试鲁棒性。（毕竟2009的研究）<br>JarJarBinks在此基础上加了随机和半合法的intent生成策略。<br>DroidFuzzer专注于MIME(audio和video)格式数据处理，主要是针对于MIME数据的生成和变异，来测试应用解析这些数据时有没有逻辑错误。（虽然局限，但是有效）<br>IntentFuzzer,IntentDroid,ICCFuzzer使用了一些静态和动态的分析手段，进一步分析了app是如何来响应intent的。</li>
+<li>现有研究对crash日志的处理不到位。<br>一个显然的事实是：同一个failure可能在测试过程中产生了多条崩溃日志，应该采取有效的方法来把这些日志去重，降低人工分析日志的工作量。</li>
+</ol>
+<h4 id="1-3-Contribution"><a href="#1-3-Contribution" class="headerlink" title="1.3 Contribution"></a>1.3 Contribution</h4><p>于是顺其自然地引出自己的贡献：</p>
+<ol>
+<li>设计了一个规范，Intent Specification Language，来描述intent的结构，这样的话，Fuzzer和Intent Generation就可以在逻辑上分离。遵循这种设计语言的Fuzzer和Intent Generation可以自由组合。（在Android Intent Fuzz这个细分方向，应该是这个组最早提的）</li>
+<li>基于最长公共子序列算法设计了一种failure日志去重方法。</li>
+<li>Practical&amp;Effective，开源了代码和数据集以及测试结果，比较solid。</li>
+</ol>
+<h3 id="2-Related-Work"><a href="#2-Related-Work" class="headerlink" title="2 Related Work"></a>2 Related Work</h3><p>可以参考同时发布的其他几篇论文笔记。</p>
+<h3 id="3-Motivation-Intent-Vulnerability"><a href="#3-Motivation-Intent-Vulnerability" class="headerlink" title="3 Motivation: Intent Vulnerability"></a>3 Motivation: Intent Vulnerability</h3><p>Activity: 带有窗口的前台程序<br>Service: 不带有窗口的控制后台任务的程序<br>Broadcast Receiver: 响应来自系统的事件<br>Content Provider: 各种数据、存储的使用接口</p>
+<p>Intent的优势：Intent可以将组件（Component）松散地耦合在一起，除了目标组件的信息之外，还可以包含指导目标组件如何处理本intent的信息，以及携带一些数据。程序员在编写组件的代码时，并不需要过度区分intent来自App内部还是外部，都可以按照同样的模式来处理intent。</p>
+<p><em>Intent Vulnerability</em>: 恶意构造intent来引发crash，在Intro中有讲。</p>
+<p>文章认为Intent Vulnerability的问题难以在开发的过程中解决，原因如下。（至少它希望读者这么认为）</p>
+<ol>
+<li>Intent将各个组件松散地结合在一起，因此它的指向性并不很强。以隐式Intent为例，在运行发送之前，没人会知道它最后会调用哪个组件，因为它的构造是不定的，会影响intent的匹配过程，更不要说随时可能出现的动态注册的intent-filter。</li>
+<li>即使是显式的intent和显式的intent-filter以及对应的组件之间，也不好预先验证Intent的合法性。因为Intent的构造和解析代码可以写成多条语句，不好分析。（其实我倒觉得这里可以通过一些静态分析的方式来确定，可以参考FANS对service调用参数的建模方法）</li>
+</ol>
+<p>于是研究并解决这个问题就是非常有意义的啦。</p>
+<h3 id="4-Intent-Specfication-Language"><a href="#4-Intent-Specfication-Language" class="headerlink" title="4 Intent Specfication Language"></a>4 Intent Specfication Language</h3><p>文章提出了一种规范化的语言来描述Intent的具体结构。</p>
+<p>以前面提及的示例代码为例，可以编写如下的Intent规范，它描述了.Note可以正确响应的两类Intent。<br>从结构上看，它是一系列Intent规范的集合，一个单独的Intent规范由一系列的字段(Field)组成，每个字段都表示并指明了正确的Intent的字段值。<br>其中，Extra Data字段由一系列的键值对组成，键名是Intent正确的键名，键值是Intent正确的键值类型。一系列的键值对通过<code>[]</code>包裹。<br>单个Intent规范由<code>&#123;&#125;</code>包裹，规范之间由<code>||</code>连接表示并集。（原文为disjuction，析取）</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&#123; 	cmp = Activity com.example.android/.Note</span><br><span class="line">	act = android.intent.action.EDIT</span><br><span class="line">	[ title = String, content = String ] </span><br><span class="line">&#125; || </span><br><span class="line">&#123; 	cmp = Activity com.example.android/.Note</span><br><span class="line">	act = android.intent.action.INSERT </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>特别介绍了<em>ground intent specification</em>，可以理解为确定性Intent规范。<br>因为它的每一个字段都被指定了确定的值，因此也只能生成出一个intent测试用例。<br>根据后文，应该理解为一个确定了内容的Intent。</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&#123; 	cmp = Activity com.example.android/.Note</span><br><span class="line">	act = android.intent.action.EDIT </span><br><span class="line">	[ 	title = String <span class="attr">&quot;my title&quot;</span>, </span><br><span class="line">		content = String <span class="attr">&quot;your content&quot;</span> ]</span><br><span class="line">	dat = URI http:<span class="comment">//our.uri.com </span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Intent specification language更为准确的表达如下：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">INTENTSPEC 	::= &#123; FIELD FIELD ... FIELD &#125; | &#123; FIELD FIELD ... FIELD &#125; || INTENTSPEC</span><br><span class="line">FIELD 		::= COMPONENT | ACTION | DATA | EXTRA | CATEGORY | TYPE | FLAG | INTERNAL </span><br><span class="line"></span><br><span class="line">COMPONENT 	::= cmp = COMPTYPE COMPNAME</span><br><span class="line">COMPTYPE 	::= Activity | Service | BroadcastReceiver | ContentProvider </span><br><span class="line">COMPNAME 	::= ID / (ID | .ID)</span><br><span class="line">ACTION 		::= act = ID</span><br><span class="line">DATA 		::= dat = URI</span><br><span class="line">EXTRA 		::= [ ID=EXTRAVALUE , ... , ID=EXTRAVALUE ]</span><br><span class="line">CATEGORY 	::= cat = [ ID , ... , ID ]</span><br><span class="line">TYPE 		::= typ = URI</span><br><span class="line">FLAG 		::= flg= [ ID , ... , ID ]</span><br><span class="line">INTERNAL 	::= internal = BOOL</span><br><span class="line"></span><br><span class="line">EXTRAVALUE 	::= String STRING? | boolean BOOL? | <span class="keyword">int</span> INT?</span><br><span class="line">				| long LONG? | float FLOAT? | uri URI? | component COMPNAME?</span><br><span class="line">				| <span class="keyword">int</span>[] INTARRAY? | long[] LONGARRAY? | float[] FLOATARRAY?</span><br><span class="line">INTARRAY 	::= INT , ... , INT </span><br><span class="line">LONGARRAY 	::= LONG , ... , LONG</span><br><span class="line">FLOATARRAY 	::= FLOAT , ... , FLOAT</span><br><span class="line"></span><br><span class="line">LETTER 		::= (A - Z | a - z)+</span><br><span class="line">ID 			::= LETTER (A - Z | a - z | <span class="number">0</span> - <span class="number">9</span> | _ | . | $)*</span><br><span class="line">URI 		::= LETTER (A - Z | a - z | <span class="number">0</span> - <span class="number">9</span> | _ | . | / | : | * | ? | @ )*</span><br><span class="line"></span><br><span class="line">(BOOL, INT, LONG, FLOAT, and STRING denote the corresponding primitive values.)</span><br></pre></td></tr></table></figure>
+
+<p>Intent specification language指定了目标组件的类型，可以指导选择测试方法；<br>指定了intent字段的类型，在此基础之上我们可以变化生成具体的值来确定一个intent的具体内容。</p>
+<p>正如前文说到的，Intent Specification Language很好地解耦了fuzzer和generator，只要遵循这个规范语言的fuzzer和generator都可以自由地组合在一起。而且也支持测试人员手动编写一些规范来进行测试。</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20220301143309.png" alt="image-20220301143302262"></p>
+<h3 id="5-Flexible-Intent-Fuzzing-Tool-with-an-Automatic-Tally-of-Failures"><a href="#5-Flexible-Intent-Fuzzing-Tool-with-an-Automatic-Tally-of-Failures" class="headerlink" title="5 Flexible Intent Fuzzing Tool with an Automatic Tally of Failures"></a>5 Flexible Intent Fuzzing Tool with an Automatic Tally of Failures</h3><p>Fuzz的工作流程如下：</p>
+<ol>
+<li>Hwacha接收并分析apk文件，基于AndroidManifest.xml生成intent specification，同时安装apk到设备上。</li>
+<li>基于intent specification生成测试用例，进一步生成直接可用的ADB测试命令行并执行， 然后通过logcat获取日志。</li>
+<li>将日志记录去重然后输出到文档中。</li>
+</ol>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20220301143359.png" alt="image-20220301143359642"></p>
+<h4 id="5-1-Generating-Intent-Test-Cases"><a href="#5-1-Generating-Intent-Test-Cases" class="headerlink" title="5.1 Generating Intent Test Cases"></a>5.1 Generating Intent Test Cases</h4><p>Intent测试用例生成分为两步：1.分析apk得到Intent Specification。2.基于一定的策略将Intent Specification转换为一系列的groud intent specification，也即一个确定的intent。</p>
+<h5 id="5-1-1-Automatic-Construction-of-Intent-Specification"><a href="#5-1-1-Automatic-Construction-of-Intent-Specification" class="headerlink" title="5.1.1 Automatic Construction of Intent Specification"></a>5.1.1 Automatic Construction of Intent Specification</h5><p>说了一大堆，其实就是从AndroidManifest.xml里面去提取intent-filter来形成一个<em>minimal intent specification</em>，这样搞有两个不足之处：</p>
+<ol>
+<li>没有包含动态注册的Broadcast Receiver，当然这个可以排除在目标之外。（静态注册的BroadcastReceiver也是通过intent-filter来声明的）</li>
+<li>Androidmanifest.xml里面的intent-filter除了可能包含的cmp，act，category，data之外，不再包含关于extra data的详细信息，所以之前提到的<em>intent vulnerability</em>的场景很难去触发到，除了把extra全部置空之外，没有把某个字段置为错误类型值的机会，因为连字段名都不知道。这里就需要引入一些static&amp;dynamic的方法去获取intent在目标组件处被解析时，会尝试从中提取哪些字段。（文章没有涉及这个工作，不过我认为可以通过CodeQL或者AST的方法来尝试做一下）</li>
+</ol>
+<h5 id="5-1-2-A-Fuzzing-Strategy-for-Generating-Ground-Intent-Specification"><a href="#5-1-2-A-Fuzzing-Strategy-for-Generating-Ground-Intent-Specification" class="headerlink" title="5.1.2 A Fuzzing Strategy for Generating Ground Intent Specification"></a>5.1.2 A Fuzzing Strategy for Generating Ground Intent Specification</h5><p>顺着上面生成的intent specification，接下来的工作就是生成具体的intent测试用例，也即<em>ground intent specification</em>，然后通过ADB一梭子fuzz。</p>
+<p>作者有这样的观察：为了处理intent，目标组件的代码一般在onCreate()函数一开始时，就通过一系列的条件语句来提取intent的属性值或者extra字段值，然后引入不同的intent响应逻辑中。</p>
+<p>作者认为，<em>intent vulnerability</em>要么因为intent满足了一些条件进入if语句之后触发，要么因为intent没能满足所有条件进入else语句然后触发。可以参考前面的示例代码。（有点儿废话了，我认为这里的一系列的条件语句和intent.getXXX()的函数调用反而告诉了我们组件可以成功响应这一类intent应该具备哪些属性和extra字段）</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//示例：已经提取出来的intent specification</span></span><br><span class="line">&#123; 	cmp = Activity com.example.android/.Note</span><br><span class="line">	act = android.intent.action.EDIT</span><br><span class="line">	[ title = String, content = String ] </span><br><span class="line">&#125; || </span><br><span class="line">&#123; 	cmp = Activity com.example.android/.Note</span><br><span class="line">	act = android.intent.action.INSERT </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>根据这种舍本逐末的观察，作者构建了以下三类ground intent specification：</p>
+<ol>
+<li><p>Compatible ground intent specification:<br>兼容性intent，包含intent specification所描述的所有属性且属性值相同，可以额外携带一些其他属性和Extra数据。目的就是进入if语句中。（如果if只检查属性值的话）</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&#123; 	cmp = Activity com.example.android/.Note</span><br><span class="line">	act = android.intent.action.EDIT </span><br><span class="line">	[ RzUrx7 = boolean True, HR7Ja6d7 = String AHMlyG0z3jjErO ]</span><br><span class="line">	dat = URI qoFXwARtpfV-LNN </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>Incompatible ground intent specification:<br>非兼容性intent，intent带有正确的属性，但是属性值可以发生变化，同时也可以携带其他属性和Extra数据。</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&#123; 	cmp = Activity com.example.android/.Note</span><br><span class="line"> 	act = android.intent.action.ADD </span><br><span class="line"> 	[ key2 = int[] -1233387, -72316, </span><br><span class="line"> 	dKQn = String xZQbcCTOW]</span><br><span class="line"> 	typ = video<span class="comment">/*</span></span><br><span class="line"><span class="comment"> &#125;</span></span><br></pre></td></tr></table></figure></li>
+<li><p>Another Incompatible ground intent specification</p>
+<p>另外一种非兼容性intent，只保留正确的cmp属性，其他属性和Extra数据都随机生成。</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&#123; 	cmp = Activity com.example.android/.Note</span><br><span class="line"> 	dat = tel:<span class="number">123</span> </span><br><span class="line"> 	cat = [ ttoIjEWJnpk, vYQEpERvvb, xpWj_Q,</span><br><span class="line"> 	android.intent.category.APP_CALENDAR] </span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure></li>
+</ol>
+<p>按照作者的设想，compatible intent会进入if语句，也即intent带有正确的属性值(如category，data，action等)，将会测试发现对intent的错误解析逻辑。incompatible intent会进入else语句，这里是响应不正确intent的代码，但是可能并没有设计好逻辑，也许会造成Null等未知的异常。</p>
+<p>这里没有对随机生成的算法进行叙述，我认为这是很重要的，因为我认为随机生成的extra很小概率会是目标组件所认可的。</p>
+<h4 id="5-2-Executing-Intent-Test-Casees-via-ADB-commands"><a href="#5-2-Executing-Intent-Test-Casees-via-ADB-commands" class="headerlink" title="5.2 Executing Intent Test Casees via ADB commands"></a>5.2 Executing Intent Test Casees via ADB commands</h4><p>讲了一下如何基于生成的groud intent specification来构建ADB命令行参数。</p>
+<p>然后ADB测试的流程：</p>
+<ol>
+<li>clear: 清楚上一个测试的app实例</li>
+<li>adb：运行本次测试的adb命令行</li>
+<li>collect：通过logcat收集本次测试的日志</li>
+<li>analyze：分析这次adb命令行测试有没有导致app中的目标组件异常停止，这里是分析log日志里面有没有诸如”xxx has died”之类的字符串模式</li>
+</ol>
+<p>还提了一下频繁测试会导致ADB不稳定，所以设置了一定的等待时间。同时写了一个看门狗程序来检查ADB，情况不对就重启设备。</p>
+<h4 id="5-3-Automatically-Reporting-Failures-Without-Duplication"><a href="#5-3-Automatically-Reporting-Failures-Without-Duplication" class="headerlink" title="5.3 Automatically Reporting Failures Without Duplication"></a>5.3 Automatically Reporting Failures Without Duplication</h4><p>因为同一个问题可能会产生多个log日志，所以提出了一个基于最长公共子序列算法的log去重算法。</p>
+<h3 id="6-Evaluation"><a href="#6-Evaluation" class="headerlink" title="6 Evaluation"></a>6 Evaluation</h3><h4 id="6-1-Failures-Count-Due-to-Intent-Vulnerability"><a href="#6-1-Failures-Count-Due-to-Intent-Vulnerability" class="headerlink" title="6.1 Failures Count Due to Intent Vulnerability"></a>6.1 Failures Count Due to Intent Vulnerability</h4><p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20220301171316.png" alt="image-20220301171316078"></p>
+<p>Failures/appSize 倒是一个不错的衡量app鲁棒性的指标。</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20220301171324.png" alt="image-20220301171324759"></p>
+<h4 id="6-2-Automatic-Classification-of-Failures-in-Android-Logs"><a href="#6-2-Automatic-Classification-of-Failures-in-Android-Logs" class="headerlink" title="6.2 Automatic Classification of Failures in Android Logs"></a>6.2 Automatic Classification of Failures in Android Logs</h4><p>这里的group就是同属于一类的logs，相当于一个单独的vulnerability。</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20220301171910.png" alt="image-20220301171910253"></p>
+<h4 id="6-3-Execution-Time-for-Intent-Fuzz-Testing"><a href="#6-3-Execution-Time-for-Intent-Fuzz-Testing" class="headerlink" title="6.3 Execution Time for Intent Fuzz Testing"></a>6.3 Execution Time for Intent Fuzz Testing</h4><p>单个app的测试时长和针对其生成的intent case数量是成比例的。</p>
+<p>将failure分类的时间一般还是比较小的；Fuzzer tool本身的鲁棒性很强，过程全自动。</p>
+<p>但是设置了单个case 5秒的测试时长，平均一个app的测试时长为3.17h。</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20220301173023.png" alt="image-20220301173023677"></p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20220301173104.png" alt="image-20220301173103983"></p>
+<h4 id="6-4-Root-Cause-Analysis-on-Intent-Vulnerability"><a href="#6-4-Root-Cause-Analysis-on-Intent-Vulnerability" class="headerlink" title="6.4 Root Cause Analysis on Intent Vulnerability"></a>6.4 Root Cause Analysis on Intent Vulnerability</h4><p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20220301173450.png" alt="image-20220301173450277"></p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20220301173702.png" alt="image-20220301173702068"></p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20220301173708.png" alt="image-20220301173707981"></p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20220301173717.png" alt="image-20220301173717609"></p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20220301173724.png" alt="image-20220301173724004"></p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20220301173730.png" alt="image-20220301173730151"></p>
+
+    </div>
+
+    
+    
+    
+        
+
+  <div class="followme">
+    <p>Welcome to my other publishing channels</p>
+
+    <div class="social-list">
+
+        <div class="social-item">
+          <a target="_blank" class="social-link" href="/atom.xml">
+            <span class="icon">
+              <i class="fa fa-rss"></i>
+            </span>
+
+            <span class="label">RSS</span>
+          </a>
+        </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Android/" rel="tag"># Android</a>
+              <a href="/tags/Paper/" rel="tag"># Paper</a>
+              <a href="/tags/Fuzz/" rel="tag"># Fuzz</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/04/01/IntentFuzzer/" rel="prev" title="IntentFuzzer阅读笔记">
+      <i class="fa fa-chevron-left"></i> IntentFuzzer阅读笔记
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/04/01/FANS/" rel="next" title="FANS阅读笔记">
+      FANS阅读笔记 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          見出し
+        </li>
+        <li class="sidebar-nav-overview">
+          概要
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-Intro"><span class="nav-number">1.</span> <span class="nav-text">1 Intro</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-1-Intent-Vulnerability"><span class="nav-number">1.1.</span> <span class="nav-text">1.1 Intent Vulnerability</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-2-Shortage-of-related-researches"><span class="nav-number">1.2.</span> <span class="nav-text">1.2 Shortage of related researches</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-3-Contribution"><span class="nav-number">1.3.</span> <span class="nav-text">1.3 Contribution</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-Related-Work"><span class="nav-number">2.</span> <span class="nav-text">2 Related Work</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-Motivation-Intent-Vulnerability"><span class="nav-number">3.</span> <span class="nav-text">3 Motivation: Intent Vulnerability</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-Intent-Specfication-Language"><span class="nav-number">4.</span> <span class="nav-text">4 Intent Specfication Language</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-Flexible-Intent-Fuzzing-Tool-with-an-Automatic-Tally-of-Failures"><span class="nav-number">5.</span> <span class="nav-text">5 Flexible Intent Fuzzing Tool with an Automatic Tally of Failures</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#5-1-Generating-Intent-Test-Cases"><span class="nav-number">5.1.</span> <span class="nav-text">5.1 Generating Intent Test Cases</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#5-1-1-Automatic-Construction-of-Intent-Specification"><span class="nav-number">5.1.1.</span> <span class="nav-text">5.1.1 Automatic Construction of Intent Specification</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#5-1-2-A-Fuzzing-Strategy-for-Generating-Ground-Intent-Specification"><span class="nav-number">5.1.2.</span> <span class="nav-text">5.1.2 A Fuzzing Strategy for Generating Ground Intent Specification</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#5-2-Executing-Intent-Test-Casees-via-ADB-commands"><span class="nav-number">5.2.</span> <span class="nav-text">5.2 Executing Intent Test Casees via ADB commands</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#5-3-Automatically-Reporting-Failures-Without-Duplication"><span class="nav-number">5.3.</span> <span class="nav-text">5.3 Automatically Reporting Failures Without Duplication</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-Evaluation"><span class="nav-number">6.</span> <span class="nav-text">6 Evaluation</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#6-1-Failures-Count-Due-to-Intent-Vulnerability"><span class="nav-number">6.1.</span> <span class="nav-text">6.1 Failures Count Due to Intent Vulnerability</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#6-2-Automatic-Classification-of-Failures-in-Android-Logs"><span class="nav-number">6.2.</span> <span class="nav-text">6.2 Automatic Classification of Failures in Android Logs</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#6-3-Execution-Time-for-Intent-Fuzz-Testing"><span class="nav-number">6.3.</span> <span class="nav-text">6.3 Execution Time for Intent Fuzz Testing</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#6-4-Root-Cause-Analysis-on-Intent-Vulnerability"><span class="nav-number">6.4.</span> <span class="nav-text">6.4 Root Cause Analysis on Intent Vulnerability</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="slient2009"
+      src="/images/round_tiger.png">
+  <p class="site-author-name" itemprop="name">slient2009</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">26</span>
+          <span class="site-state-item-name">ポスト</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-name">タグ</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://slient2009.github.io/atom.xml" title="RSS → https:&#x2F;&#x2F;slient2009.github.io&#x2F;atom.xml"><i class="rss fa-fw"></i>RSS</a>
+      </span>
+  </div>
+
+
+
+
+
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2021 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">slient2009</span>
+</div>
+
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="合計閲覧者数">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="閲覧合計数">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

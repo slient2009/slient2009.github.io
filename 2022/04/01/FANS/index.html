@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/pig_128x128.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/pig_32x32.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/pig_16x16.ico">
+  <link rel="mask-icon" href="/images/pig_128x128.ico" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic|Roboto Slab:300,300italic,400,400italic,700,700italic|Rotoro Mono:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"slient2009.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="论文FANS: Fuzzing Android Native System Services via Automated Interface Analysis阅读笔记和代码阅读笔记">
+<meta property="og:type" content="article">
+<meta property="og:title" content="FANS阅读笔记">
+<meta property="og:url" content="http://slient2009.github.io/2022/04/01/FANS/index.html">
+<meta property="og:site_name" content="Slient2009">
+<meta property="og:description" content="论文FANS: Fuzzing Android Native System Services via Automated Interface Analysis阅读笔记和代码阅读笔记">
+<meta property="og:locale" content="ja_JP">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20211225151708.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20211226164606.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20211226204935.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20211226213501.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20211226213513.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20211226213803.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/202212181542927.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20211226230410.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20211227094740.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20211227100633.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20211227142202.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20211227143640.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20211228161948.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20211227151522.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/202212181542999.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20211227160557.png">
+<meta property="article:published_time" content="2022-04-01T04:00:04.000Z">
+<meta property="article:modified_time" content="2022-12-18T08:56:49.000Z">
+<meta property="article:author" content="slient2009">
+<meta property="article:tag" content="Android">
+<meta property="article:tag" content="Paper">
+<meta property="article:tag" content="Fuzz">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20211225151708.png">
+
+<link rel="canonical" href="http://slient2009.github.io/2022/04/01/FANS/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'ja'
+  };
+</script>
+
+  <title>FANS阅读笔记 | Slient2009</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="Slient2009" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="ナビゲーションバーの切り替え">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Slient2009</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">All I need is Twin Island Milk</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>ホーム</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>プロフィール</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>タグ<span class="badge">9</span></a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>アーカイブ<span class="badge">26</span></a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="ja">
+    <link itemprop="mainEntityOfPage" href="http://slient2009.github.io/2022/04/01/FANS/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/round_tiger.png">
+      <meta itemprop="name" content="slient2009">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Slient2009">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          FANS阅读笔记
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">投稿日</span>
+
+              <time title="作成日：2022-04-01 00:00:04" itemprop="dateCreated datePublished" datetime="2022-04-01T00:00:04-04:00">2022-04-01</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">編集日</span>
+                <time title="修正日：2022-12-18 03:56:49" itemprop="dateModified" datetime="2022-12-18T03:56:49-05:00">2022-12-18</time>
+              </span>
+
+          
+            <span class="post-meta-item" title="閲覧数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">閲覧数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>论文FANS: Fuzzing Android Native System Services via Automated Interface Analysis阅读笔记和代码阅读笔记</p>
+<span id="more"></span>
+
+
+
+<blockquote>
+<p>FANS: Fuzzing Android Native System Services via Automated Interface Analysis [29th USENIX]</p>
+<p>文章提出了一个全自动化fuzz安卓原生系统服务的工具。<br>依照AOSP编译流程，扫描涉及interface的相关代码源文件，得到所有interface基本信息<br>通过对interface model的理解，生成合法的输入进行测试。<br>测试框架采用CS架构，建立在多台测试真机和服务器之上，发现了若干漏洞和exception。</p>
+</blockquote>
+<h3 id="Knownledge"><a href="#Knownledge" class="headerlink" title="Knownledge"></a>Knownledge</h3><p>Android native system service</p>
+<p>binder &amp; RPC</p>
+<h3 id="challenges"><a href="#challenges" class="headerlink" title="challenges"></a>challenges</h3><ol>
+<li>Android原生系统服务通过基于Binder的特定接口唤醒，所以需要自动识别并生成针对性的测试用例。</li>
+<li>有效的测试用例需要满足对应的接口模型。</li>
+<li>有效的测试用例还得满足语义要求，包括变量依赖和接口依赖</li>
+</ol>
+<h3 id="routine"><a href="#routine" class="headerlink" title="routine"></a>routine</h3><ol>
+<li>首先收集目标服务中所有的interface和nest-interface。</li>
+<li>然后提取interface model以及interface AST，包括transaction code, variable name, variable type in transaction data。</li>
+<li>基于variable name&amp;type推断variable dependency，基于生成和使用关系推断interface dependency。</li>
+<li>基于以上的interface model和dependency知识，生成语义语法合规的sequence of transactions。</li>
+<li>实验在6台Android9机器上进行，从数千个crash中发现了20个vulnerabilities,20个已经被Google确认。以及138个Java exceptions。</li>
+</ol>
+<h3 id="1-Introduction"><a href="#1-Introduction" class="headerlink" title="1 Introduction"></a>1 Introduction</h3><h4 id="1-1-Related-Work"><a href="#1-1-Related-Work" class="headerlink" title="1.1 Related Work"></a>1.1 Related Work</h4><h5 id="BinderCracker"><a href="#BinderCracker" class="headerlink" title="BinderCracker"></a>BinderCracker</h5><p>通过记录调用来获取target service model。</p>
+<p>不能获取准确的输入语义知识（变量名和变量类型），也不能获取rare interface和nested interface。</p>
+<h5 id="Chizpufle"><a href="#Chizpufle" class="headerlink" title="Chizpufle"></a>Chizpufle</h5><p>改进BinderCracker: 使用反射技术获取目标interface的参数知识，用于fuzz厂商预置的Java服务。<br>但是不能测试Android原生系统服务。</p>
+<h4 id="1-2-Challenges-amp-Approaches"><a href="#1-2-Challenges-amp-Approaches" class="headerlink" title="1.2 Challenges&amp;Approaches"></a>1.2 Challenges&amp;Approaches</h4><ol>
+<li><p>interface识别：top-level&amp;multi-level【Location】<br>【现状】<br>top-level会在ServiceManager中完成注册，multi-level interface通过top-level interface被获取。<br>多数interface通过AIDL定义，C++定义或者动态生成的interface是少数（之前的研究没有找到统一规律）。<br>【解决】<br>扫描Service注册操作，得到所有的top-level interface<br>扫描<strong>writeStrongBinder</strong>方法得到所有的multi-level interface。(deep interface通过调用该方法动态生成)</p>
+</li>
+<li><p>interface model extraction【Grammar】<br>【现状】<br>对于每个interface，需要找到支持的transactions列表。<br>需要确定interface输入数据的格式，且每个transaction有自己的输入数据格式，需要完全的自动化。<br>【解决】</p>
+<p>考虑到Android总是使用一系列特定的方法来实现序列化和反序列化（readInt32, writeInt32），所以可以通过识别这些方法的调用序列，推断出interface的输入语法。<br>为了维护变量的名字和类型，这里建立了发序列化操作的AST。</p>
+</li>
+<li><p>语义合法的输入生成【Semantic】<br>【现状】<br>Android会有安全检查（Sanity Check），因此输入的data需要语义合法。<br>语义要求包括变量名、变量类型、变量依赖、interface依赖以及变量和interface之间的依赖，比较难提取。<br>【解决】<br>通过2中获取的变量名和类型的知识，识别transaction内的变量依赖。<br>依赖transaction会反序列化被依赖transaction序列化的data，由此可以建立transaction之间的依赖关系。<br>通过生成&amp;使用关系推断interface之间的依赖关系。</p>
+</li>
+</ol>
+<h3 id="2-Background"><a href="#2-Background" class="headerlink" title="2 Background"></a>2 Background</h3><h4 id="2-1-Android-System-Service"><a href="#2-1-Android-System-Service" class="headerlink" title="2.1 Android System Service"></a>2.1 Android System Service</h4><h5 id="category"><a href="#category" class="headerlink" title="category"></a>category</h5><p>Java System Service[Java: Activity Manager]<br>Native System Service[C++: Camera Service]</p>
+<p>Services in <strong>normal domain</strong>, vendor domain, hardware domain。</p>
+<h5 id="Application-Service-Communication-Model"><a href="#Application-Service-Communication-Model" class="headerlink" title="Application-Service Communication Model"></a>Application-Service Communication Model</h5><p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20211225151708.png" alt="image-20211225151701175"></p>
+<p>service向service manager注册自己；<br>service监听并响应application的调用，返回调用结果；</p>
+<p>application向service manager请求目标service的interface(top-level interface)；<br>application向top-level interface请求multi-level interface；<br>application调用目标interface的transaction完成动作；</p>
+<h3 id="2-2-Research-Scope"><a href="#2-2-Research-Scope" class="headerlink" title="2.2 Research Scope"></a>2.2 Research Scope</h3><p>Android native system service<br>相关经验可以推广到其他类别的service</p>
+<h3 id="3-Design"><a href="#3-Design" class="headerlink" title="3 Design"></a>3 Design</h3><h4 id="3-1-Design-Choices"><a href="#3-1-Design-Choices" class="headerlink" title="3.1 Design Choices"></a>3.1 Design Choices</h4><h5 id="RPC-centric-testing"><a href="#RPC-centric-testing" class="headerlink" title="RPC-centric testing"></a>RPC-centric testing</h5><p>测试系统服务，可以直接向系统注入服务可响应的事件，直接绕过RPC。<br>但是这种做法会因为生成了大量异常事件带来极高的误报率。</p>
+<p>因为在实际中，攻击者与service的交互会经过IPC机制。<br>而IPC Binder会对数据进行安全检查，序列化操作也会受到系统状态的影响。<br>实现难度较大<br>所以，需要通过将生成数据注入IPC Binder机制，使得达到service的数据满足一定的语法语义特征，从而降低误报率。</p>
+<h5 id="Generation-based-fuzzing"><a href="#Generation-based-fuzzing" class="headerlink" title="Generation-based fuzzing"></a>Generation-based fuzzing</h5><p>mutation-based fuzzing生成的测试数据容易出现语法错误或者语义错误，所以选择Generation-based fuzzing。</p>
+<h5 id="Learn-input-model-from-code"><a href="#Learn-input-model-from-code" class="headerlink" title="Learn input model from code"></a>Learn input model from code</h5><p>如何指导测试用例的生成？<br>grammar knowledge   obtained manully: 大量人工参与，不能自动化<br>learn from transactions recorded：受数据集影响较大，有什么数据学到什么知识；容易忽略不常见的transaction</p>
+<p>从源代码中挖掘输入模型的知识，input model knowledge is buried in the source code</p>
+<h4 id="3-2-Overview"><a href="#3-2-Overview" class="headerlink" title="3.2 Overview"></a>3.2 Overview</h4><p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20211226164606.png" alt="image-20211226164606597"></p>
+<h4 id="3-3-Interface-Collector"><a href="#3-3-Interface-Collector" class="headerlink" title="3.3 Interface Collector"></a>3.3 Interface Collector</h4><p>每一个interface都会使用onTransact()方法来响应调用操作，可以根据这个知识来识别出所有的interface。<br>具体来说，FANS并不是直接扫描AOSP的所有C/C++源代码，而是扫描出现在编译命令中的所有C/C++源代码，这样子可以识别出通过AIDL动态生成的interface。</p>
+<p><strong>（存疑）</strong><br>目前看来是把AOSP代码编译一遍，然后记录所有的编译命令，搜索编译命令中涉及到的文件，对去检查这些文件是否包含关于接口的代码。<br>这样子就可以检查到编译过程中通过AIDL动态生成的interface。</p>
+<h4 id="3-4-Interface-Model-Extractor"><a href="#3-4-Interface-Model-Extractor" class="headerlink" title="3.4 Interface Model Extractor"></a>3.4 Interface Model Extractor</h4><blockquote>
+<p>对interface建模</p>
+</blockquote>
+<h5 id="3-Principles"><a href="#3-Principles" class="headerlink" title="3 Principles"></a>3 Principles</h5><p>Complete-完备：所有的interface，所有的transaction<br>Precise-准确：要生成合法的输入通过IPC Binder的安全检查。（从变量模式、变量名和变量类型入手，也就是语法与语义都要合法）<br>Convenient-便捷：建模方法要简单。</p>
+<h5 id="Choices"><a href="#Choices" class="headerlink" title="Choices"></a>Choices</h5><p>选择深入分析server端的代码，以期达到更为准确全面的提取效果。<br>先使用工具将AIDL接口代码转化为C/C++代码，保留信息的准确性。<br>再建立AST提取onTransact()方法的信息。</p>
+<h5 id="Transaction-Code-Identification"><a href="#Transaction-Code-Identification" class="headerlink" title="Transaction Code Identification"></a>Transaction Code Identification</h5><blockquote>
+<p>Service-&gt;Interface-&gt;Transaction</p>
+</blockquote>
+<p>一个Service可能有多个Interface，在一个Interface中，根据收到的code的不同，会进入不同的处理逻辑，称transaction。</p>
+<p>具体到onTransact()方法中，interface会根据code将控制流分配到不同的transaction逻辑中。<br>一般会通过switch语句实现，case就是code值了。<br>所以建立了onTransact()的AST模型之后，不同的transaction就会形成不同的子树，由此识别出不同的transaction。</p>
+<h5 id="Variable-Extraction"><a href="#Variable-Extraction" class="headerlink" title="Variable Extraction"></a>Variable Extraction</h5><blockquote>
+<p>通过建立AST，获取interface-transaction<strong>输入输出</strong>的语法语义知识。 Gammar&amp;Semantic</p>
+</blockquote>
+<p>当完成了transaction代码的识别之后，需要进一步地识别出transaction从data中反序列化得到的所有<strong>输入变量</strong>。<br>因为要尝试推断inter-transaction依赖，所以还要识别向replay中序列化注入了哪些<strong>输出变量</strong>。</p>
+<p>flag不需要fuzz，后文用于标记synchronized call和asynchronized call。</p>
+<p>变量通过代码语句生效，从编码的角度而言，有顺序语句、条件语句和循环语句，这里再特别分类出返回语句，那么变量也有相应的4类。</p>
+<p><strong>Sequential Variable</strong>:</p>
+<img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20211226204935.png" alt="image-20211226204935641" style="zoom: 67%;" />
+
+<p>checkInterface(): 检查client端提供的token是否合法<br>readXXX(): readInt32, readString16<br>read(a, sizeof(a)*num): 读入一个原生数据结构<br>read(a): 读入一个可子序列化的对象 Flattenable&amp;Light-Flattenable<br>readFromParcel(&amp;data): 基于自己实现的反序列化方法获取对象<br>callLocal():<br>Misc: 调用其他函数处理，递归式识别</p>
+<p><strong>Conditional Variable</strong></p>
+<img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20211226213501.png" alt="image-20211226213501510" style="zoom:67%;" />
+
+<p>if&amp;switch语句，将相关的变量(fd)作为conditional input</p>
+<p><strong>Loop Variable</strong></p>
+<img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20211226213513.png" alt="image-20211226213512944" style="zoom:67%;" />
+
+<p>识别出循环语句内部的变量，记为loop variable</p>
+<p><strong>Return Variable</strong></p>
+<img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20211226213803.png" alt="image-20211226213803732" style="zoom:67%;" />
+
+<p>如果一条执行路径返回了ERROR_CODE，那么这条路径出现漏洞的概率更低。<br>虽然在fuzz的过程中，总是希望输入使得目标程序出现ERROR，但是这里的ERROR是程序本身识别抛出的，说明存在一定的安全检查逻辑。<br>所以会把这条执行路径降权，生成较少的测试用例来测试这条路径。</p>
+<p>同时，会帮助建立准确的transaction间依赖关系。（存疑）</p>
+<blockquote>
+<p>Besides, it will also help us generate explicit inter-transaction dependency, as inputs that do not satisfy the dependency usually fall back to error handling paths.</p>
+</blockquote>
+<h5 id="Type-Definition-Extraction"><a href="#Type-Definition-Extraction" class="headerlink" title="Type Definition Extraction"></a>Type Definition Extraction</h5><blockquote>
+<p>都可以通过AST完成</p>
+</blockquote>
+<p>在基本类型之外，需要重点分析以下三类</p>
+<p>structure-like: 联合体和结构体<br>Enumeration: 枚举类<br>Alias: typedef别名，注意命名空间namespace，避免冲突；可能会递归头文件</p>
+<img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/202212181542927.png" alt="image-20211226215915343" style="zoom:67%;" />
+
+<h4 id="3-5-Dependency-Inferer"><a href="#3-5-Dependency-Inferer" class="headerlink" title="3.5 Dependency Inferer"></a>3.5 Dependency Inferer</h4><blockquote>
+<p>interface dependency: how an interface is used by other interface<br>variable dependency in transaction</p>
+</blockquote>
+<h5 id="Interface-Dependency"><a href="#Interface-Dependency" class="headerlink" title="Interface Dependency"></a>Interface Dependency</h5><blockquote>
+<p>onTransact()  write/readStrongBinder() 在interface extrector和interface dependency inferer中的作用不是非常明确。</p>
+<p>用这两种方法标定interface？<br>还是说先用onTransact()标定top-level interface，然后用write/readStrongBinder确定依赖关系，同时标定multi-level interface？</p>
+<p>我认为是后者，因为在interface-colletor.py中还是单纯依赖<code>onTransact()</code>函数名判断是否为interface related file</p>
+<p>【原文】Interface Acquisition： As for top-level interfaces, we can get them through the service manager. Multi-level interfaces can then be recursively obtained via the recognized interface dependency</p>
+</blockquote>
+<h6 id="Generation-Dependency"><a href="#Generation-Dependency" class="headerlink" title="Generation Dependency"></a>Generation Dependency</h6><p>如前所述，top-level interface会直接向servicemanager注册自己，直接被获取。<br>multi-level interface通过top/upper-level interface的返回来获取。</p>
+<p>向A接口请求B接口，则A接口会调用**writeStringBinder()**方法向reply写入一个序列化的B接口，然后返回给调用者。</p>
+<h6 id="Use-Dependency"><a href="#Use-Dependency" class="headerlink" title="Use Dependency"></a>Use Dependency</h6><p>如果B接口使用了A接口，那么B接口会调用readStrongBinder()方法从data中反序列化一个A接口出来用。</p>
+<blockquote>
+<p>区别</p>
+<p>A接口生成B接口，写入reply中给调用者使用。<br>B接口从接收的data中反序列化出来一个A接口使用。</p>
+</blockquote>
+<h5 id="Variable-Dependency"><a href="#Variable-Dependency" class="headerlink" title="Variable Dependency"></a>Variable Dependency</h5><h6 id="intra-transaction"><a href="#intra-transaction" class="headerlink" title="intra-transaction"></a>intra-transaction</h6><p>条件语句-&gt;条件依赖<br>循环语句-&gt;循环依赖<br>array类数据-&gt;array依赖，通常会有一个变量来声明array的长度，类似循环依赖</p>
+<h6 id="inter-transaction"><a href="#inter-transaction" class="headerlink" title="inter-transaction"></a>inter-transaction</h6><p>一个transaction的input可能是另外一transaction的output。（两个transaction同属一个interface）</p>
+<p>这里采取的是一些模糊的规则来建立跨transaction的<strong>两个变量</strong>之间的依赖（依据存疑）</p>
+<ol>
+<li>一个变量是输入，一个变量是输出</li>
+<li>处于不同的transaction</li>
+<li>变量的类型相同 (primitive type)</li>
+<li>要么输入变量的type不是基本类型，要么两者的变量名相似</li>
+</ol>
+<img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20211226230410.png" alt="image-20211226230410400" style="zoom:67%;" />
+
+
+
+<h4 id="3-6-Fuzzer-Engine"><a href="#3-6-Fuzzer-Engine" class="headerlink" title="3.6 Fuzzer Engine"></a>3.6 Fuzzer Engine</h4><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20211227094740.png" alt="image-20211227094739944" style="zoom: 67%;" />
+
+<p>Fuzz工作在设备上进行<br>Manager将fuzzer和语料传递到设备上<br>fuzzer将日志数据传回用于分析</p>
+<h5 id="Principles-of-Transaction-Generator"><a href="#Principles-of-Transaction-Generator" class="headerlink" title="Principles of Transaction Generator"></a>Principles of Transaction Generator</h5><p>在生成transaction数据时，依次满足以下三个principle</p>
+<ol>
+<li><p>约束：A变量是否存在取决于B变量，则在生成transaction时，先检查B变量</p>
+</li>
+<li><p>依赖：如果A变量可以通过一个transaction生成，则以较高的概率通过这个transaction生成一个A变量，以较低的概率不通过transaction生成</p>
+</li>
+<li><p>类型与名称：直接根据变量的类型和名称生成具体的值，例如根据<em>opPackageName</em>生成一个<em>String16</em>，根据<em>pid</em>生成一个<em>int</em>。</p>
+<blockquote>
+<p>依赖原则是调用其他transaction生成数据，类型与名称原则是直接生成，相互矛盾。<br>如果有个变量A既可以通过transaction生成，也有type和name，如何处理？<br>依照原则的优先级，应该以较高概率使用依赖原则调用其他transaction生成数据，以较低概率直接直接生成。</p>
+</blockquote>
+</li>
+</ol>
+<h3 id="4-Implementation"><a href="#4-Implementation" class="headerlink" title="4 Implementation"></a>4 Implementation</h3><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20211227100633.png" alt="image-20211227100633367" style="zoom:67%;" />
+
+<p>从零开始的FANS，而不是AFL-based。</p>
+<h5 id="搜索接口-Interface-Collector"><a href="#搜索接口-Interface-Collector" class="headerlink" title="搜索接口 Interface Collector"></a>搜索接口 Interface Collector</h5><p>因为有的interface是通过AIDL动态生成的，所以这里是在编译AOSP源码的过程中记录编译命令，获取到interface和variable。<br>具体的原理尚不清楚，但是根据前文“并不是扫描整个AOSP源码”描述，猜测可能是通过编译命令涉及到的文件缩小搜索范围，根据onTransaction获取interface相关代码文件，然后提取interface model。</p>
+<h5 id="提取接口-Interface-Model-Extractor"><a href="#提取接口-Interface-Model-Extractor" class="headerlink" title="提取接口 Interface Model Extractor"></a>提取接口 Interface Model Extractor</h5><p>使用Clang生成AST文件，只保留AST中与输入输出变量相关的节点，接着进行后续处理使其可以被fuzzer使用。(JSON格式)</p>
+<h5 id="依赖推断-Dependency-Inferer"><a href="#依赖推断-Dependency-Inferer" class="headerlink" title="依赖推断 Dependency Inferer"></a>依赖推断 Dependency Inferer</h5><p>遍历AST，推断出interface的<strong>generation dependency</strong>和<strong>use dependency</strong>，<br>以及variable的<strong>inter-transaction dependency</strong>。</p>
+<h5 id="Fuzzer-Engine"><a href="#Fuzzer-Engine" class="headerlink" title="Fuzzer Engine"></a>Fuzzer Engine</h5><p>在host上的Fuzzer Manager会在多台设备上运行fuzzer、同步数据。</p>
+<p>使用ASan检查内存错误</p>
+<p>fuzzer以root权限运行</p>
+<p>配置flag，表示是否需要接收reply，指定transaction是synchronous还是asynchronous</p>
+<p>logcat+tombstones记录crash</p>
+<h3 id="5-Evaluation"><a href="#5-Evaluation" class="headerlink" title="5 Evaluation"></a>5 Evaluation</h3><h4 id="Interface"><a href="#Interface" class="headerlink" title="Interface"></a>Interface</h4><h5 id="Interface-Collection"><a href="#Interface-Collection" class="headerlink" title="Interface Collection"></a>Interface Collection</h5><p>编译1小时，搜索几秒钟，共计68个interface。</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20211227142202.png" alt="image-20211227142202600"></p>
+<h5 id="Interface-Dependency-1"><a href="#Interface-Dependency-1" class="headerlink" title="Interface Dependency"></a>Interface Dependency</h5><p>依赖关系图大致是有向无环图。<br>一个interface可以通过多个上级interface得到，<strong>于是从多条依赖路径来测试目标interface</strong>。</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20211227143640.png" alt="image-20211227143640748"></p>
+<h4 id="Interface-Model-1375"><a href="#Interface-Model-1375" class="headerlink" title="Interface Model 1375"></a>Interface Model 1375</h4><p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20211228161948.png" alt="image-20211228161948206"></p>
+<p>811个interface transactions，1375条transaction path，说明许多transaction有多条执行路径、多个返回可能。</p>
+<h5 id="statistices"><a href="#statistices" class="headerlink" title="statistices"></a>statistices</h5><p>多数变量是conditional variable</p>
+<p>所有的别名操作（typedef）都是对三种基本变量的重组，内涵更多的语义信息。</p>
+<p>Primitive、String之间的依赖较多</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20211227151522.png" alt="image-20211227151521965"></p>
+<img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/202212181542999.png" alt="image-20211226215915343" style="zoom:67%;" />
+
+<h5 id="建模方法的准确性"><a href="#建模方法的准确性" class="headerlink" title="建模方法的准确性"></a>建模方法的准确性</h5><p>因为没有可以对比的数据和研究，所以这里是随机选择了10个interface手动建模对比的。</p>
+<blockquote>
+<p>not entirely precise but good enough</p>
+</blockquote>
+<h5 id="漏洞列表"><a href="#漏洞列表" class="headerlink" title="漏洞列表"></a>漏洞列表</h5><p>共计30个漏洞，22个在Android native system service中， 5个在lib中，3个属于Linux的漏洞。</p>
+<p>还触发了138个Java Exception</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20211227160557.png" alt="image-20211227160557260"></p>
+<h3 id="6-Discussion"><a href="#6-Discussion" class="headerlink" title="6 Discussion"></a>6 Discussion</h3><h4 id="对比评价"><a href="#对比评价" class="headerlink" title="对比评价"></a>对比评价</h4><h5 id="BinderCracker-1"><a href="#BinderCracker-1" class="headerlink" title="BinderCracker"></a>BinderCracker</h5><p>开源 vs 闭源</p>
+<p>基于input model vs 基于traffic学习</p>
+<p>30+138 on 9.0 vs 89 on 5.1 </p>
+<p>automated vs manully [gong(first)]</p>
+<p>native and promote vs vendor [Chizpurfle]</p>
+<h4 id="自我评价"><a href="#自我评价" class="headerlink" title="自我评价"></a>自我评价</h4><h5 id="Interface-Model-Accuracy"><a href="#Interface-Model-Accuracy" class="headerlink" title="Interface Model Accuracy"></a>Interface Model Accuracy</h5><blockquote>
+<p>good enough but not entirely precise</p>
+</blockquote>
+<p>loop次数的判定：如果不能准确确定，就使用loop的前一个变量。<br>用alias标识变量类型，但是使用时又用primitive type。<br>transaction dependency: 可能存在特定的调用顺序，服务可以被视作状态机 （？state-sensitive）</p>
+<h5 id="Coverage-Guided-Fuzzing"><a href="#Coverage-Guided-Fuzzing" class="headerlink" title="Coverage Guided Fuzzing"></a>Coverage Guided Fuzzing</h5><p>没有使用覆盖率知识<br>state-sensitive: 当前程序的coverage也还受到之前输入的影响。（Fork()）</p>
+<h5 id="Fuzzing-Efficiency"><a href="#Fuzzing-Efficiency" class="headerlink" title="Fuzzing Efficiency"></a>Fuzzing Efficiency</h5><p>fuzzer以root权限运行，导致系统经常进入recovery模式。<br>然后就得手动重新刷机，影响实验效率。</p>
+<h5 id="Interface-based-Fuzzing-in-Android"><a href="#Interface-based-Fuzzing-in-Android" class="headerlink" title="Interface-based Fuzzing in Android"></a>Interface-based Fuzzing in Android</h5><p>提出可以把本文的理论推广到vendor service和hardware service。</p>
+<h3 id="7-My-View"><a href="#7-My-View" class="headerlink" title="7 My View"></a>7 My View</h3><p>测试部署架构，不够稳定，性能不够  -&gt; 模拟器</p>
+<h2 id="FANS-Code-Review"><a href="#FANS-Code-Review" class="headerlink" title="FANS Code Review"></a>FANS Code Review</h2><p>android.googlesource.com访问有问题，使用aosp.tuna.tshinghua.edu.cn替换来git clone</p>
+<p>python2，安装python2或者退出anaconda的base环境</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 可能需要安装以下库文件</span></span><br><span class="line">sudo apt-get install libx11-dev:i386 libreadline6-dev:i386 libgl1-mesa-dev g++-multilib</span><br><span class="line">sudo apt-get install -y git flex bison gperf build-essential libncurses5-dev:i386</span><br><span class="line">sudo apt-get install tofrodos python-markdown libxml2-utils xsltproc zlib1g-dev:i386</span><br><span class="line">sudo apt-get install dpkg-dev libsdl1.2-dev libesd0-dev</span><br><span class="line">sudo apt-get install git-core gnupg flex bison gperf build-essential</span><br><span class="line">sudo apt-get install zip curl zlib1g-dev gcc-multilib g++-multilib</span><br><span class="line">sudo apt-get install libc6-dev-i386</span><br><span class="line">sudo apt-get install lib32ncurses5-dev x11proto-core-dev libx11-dev</span><br><span class="line">sudo apt-get install libgl1-mesa-dev libxml2-utils xsltproc unzip m4</span><br><span class="line">sudo apt-get install lib32z-dev ccache</span><br><span class="line">sudo apt-get install libssl-dev</span><br><span class="line">sudo apt-get install libxml2-dev libxml2-doc</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 我觉得日志最后输出这些就算编译好了</span></span><br><span class="line"><span class="meta">[100%</span><span class="bash"> 73879/73879] /bin/bash -c <span class="string">&quot;(export SGDISK=out/host/linux-x86/bin/sgdisk; device/generic/goldfish/tools/mk_qemu_image.sh out/target/product/generic/system.img)&quot;</span></span></span><br><span class="line">1+0 records in</span><br><span class="line">2048+0 records out</span><br><span class="line">1048576 bytes (1.0 MB, 1.0 MiB) copied, 0.00850228 s, 123 MB/s</span><br><span class="line">1536+0 records in</span><br><span class="line">1536+0 records out</span><br><span class="line">1610612736 bytes (1.6 GB, 1.5 GiB) copied, 1.41226 s, 1.1 GB/s</span><br><span class="line">1048576+0 records in</span><br><span class="line">1048576+0 records out</span><br><span class="line">1048576 bytes (1.0 MB, 1.0 MiB) copied, 0.977471 s, 1.1 MB/s</span><br><span class="line">Creating new GPT entries.</span><br><span class="line">Warning: The kernel is still using the old partition table.</span><br><span class="line">The new table will be used at the next reboot.</span><br><span class="line">The operation has completed successfully.</span><br><span class="line">Setting name!</span><br><span class="line">partNum is 0</span><br><span class="line">REALLY setting name!</span><br><span class="line">Warning: The kernel is still using the old partition table.</span><br><span class="line">The new table will be used at the next reboot.</span><br><span class="line">The operation has completed successfully.</span><br><span class="line"></span><br><span class="line">[0;32m#### build completed successfully (28:52 (mm:ss)) ####[00m</span><br></pre></td></tr></table></figure>
+
+<p>搜索相关教程，把Android Pie的编译流程走一遍。由命令<code>make -j [N_PROCS] showcommands 2&gt;&amp;1 &gt;cmd.txt</code>，得到cmd.txt保存编译命令。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 一行编译命令如下</span></span><br><span class="line">[ 89% 65753/73879] /bin/bash -c &quot;(rm -f out/target/product/generic/obj/SHARED_LIBRARIES/libstagefright_omx.vendor_intermediates/libstagefright_omx.vendor.so out/target/product/generic/obj/SHARED_LIBRARIES/libstagefright_omx.vendor_intermediates/libstagefright_omx.vendor.so.dynsyms out/target/product/generic/obj/SHARED_LIBRARIES/libstagefright_omx.vendor_intermediates/libstagefright_omx.vendor.so.funcsyms out/target/product/generic/obj/SHARED_LIBRARIES/libstagefright_omx.vendor_intermediates/libstagefright_omx.vendor.so.keep_symbols out/target/product/generic/obj/SHARED_LIBRARIES/libstagefright_omx.vendor_intermediates/libstagefright_omx.vendor.so.debug out/target/product/generic/obj/SHARED_LIBRARIES/libstagefright_omx.vendor_intermediates/libstagefright_omx.vendor.so.mini_debuginfo.xz ) &amp;&amp; (if prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9/bin/arm-linux-androideabi-strip --strip-all -R .comment out/target/product/generic/symbols/system/lib/vndk-28/libstagefright_omx.so -o out/target/product/generic/obj/SHARED_LIBRARIES/libstagefright_omx.vendor_intermediates/libstagefright_omx.vendor.so; then prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9/bin/arm-linux-androideabi-objcopy --only-keep-debug out/target/product/generic/symbols/system/lib/vndk-28/libstagefright_omx.so out/target/product/generic/obj/SHARED_LIBRARIES/libstagefright_omx.vendor_intermediates/libstagefright_omx.vendor.so.debug &amp;&amp; prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9/bin/arm-linux-androideabi-nm -D out/target/product/generic/symbols/system/lib/vndk-28/libstagefright_omx.so --format=posix --defined-only | awk &#x27;&#123; print \$1 &#125;&#x27; | sort &gt;out/target/product/generic/obj/SHARED_LIBRARIES/libstagefright_omx.vendor_intermediates/libstagefright_omx.vendor.so.dynsyms &amp;&amp; prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9/bin/arm-linux-androideabi-nm out/target/product/generic/symbols/system/lib/vndk-28/libstagefright_omx.so --format=posix --defined-only | awk &#x27;&#123; if (\$2 == \&quot;T\&quot; || \$2 == \&quot;t\&quot; || \$2 == \&quot;D\&quot;) print \$1 &#125;&#x27; | sort &gt;out/target/product/generic/obj/SHARED_LIBRARIES/libstagefright_omx.vendor_intermediates/libstagefright_omx.vendor.so.funcsyms &amp;&amp; comm -13 out/target/product/generic/obj/SHARED_LIBRARIES/libstagefright_omx.vendor_intermediates/libstagefright_omx.vendor.so.dynsyms out/target/product/generic/obj/SHARED_LIBRARIES/libstagefright_omx.vendor_intermediates/libstagefright_omx.vendor.so.funcsyms &gt;out/target/product/generic/obj/SHARED_LIBRARIES/libstagefright_omx.vendor_intermediates/libstagefright_omx.vendor.so.keep_symbols &amp;&amp; echo &gt;&gt;out/target/product/generic/obj/SHARED_LIBRARIES/libstagefright_omx.vendor_intermediates/libstagefright_omx.vendor.so.keep_symbols &amp;&amp; prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9/bin/arm-linux-androideabi-objcopy --rename-section .debug_frame=saved_debug_frame out/target/product/generic/obj/SHARED_LIBRARIES/libstagefright_omx.vendor_intermediates/libstagefright_omx.vendor.so.debug out/target/product/generic/obj/SHARED_LIBRARIES/libstagefright_omx.vendor_intermediates/libstagefright_omx.vendor.so.mini_debuginfo &amp;&amp; prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9/bin/arm-linux-androideabi-objcopy -S --remove-section .gdb_index --remove-section .comment --keep-symbols=out/target/product/generic/obj/SHARED_LIBRARIES/libstagefright_omx.vendor_intermediates/libstagefright_omx.vendor.so.keep_symbols out/target/product/generic/obj/SHARED_LIBRARIES/libstagefright_omx.vendor_intermediates/libstagefright_omx.vendor.so.mini_debuginfo &amp;&amp; prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9/bin/arm-linux-androideabi-objcopy --rename-section saved_debug_frame=.debug_frame out/target/product/generic/obj/SHARED_LIBRARIES/libstagefright_omx.vendor_intermediates/libstagefright_omx.vendor.so.mini_debuginfo &amp;&amp; rm -f out/target/product/generic/obj/SHARED_LIBRARIES/libstagefright_omx.vendor_intermediates/libstagefright_omx.vendor.so.mini_debuginfo.xz &amp;&amp; xz out/target/product/generic/obj/SHARED_LIBRARIES/libstagefright_omx.vendor_intermediates/libstagefright_omx.vendor.so.mini_debuginfo &amp;&amp; prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9/bin/arm-linux-androideabi-objcopy --add-section .gnu_debugdata=out/target/product/generic/obj/SHARED_LIBRARIES/libstagefright_omx.vendor_intermediates/libstagefright_omx.vendor.so.mini_debuginfo.xz out/target/product/generic/obj/SHARED_LIBRARIES/libstagefright_omx.vendor_intermediates/libstagefright_omx.vendor.so; else cp -f out/target/product/generic/symbols/system/lib/vndk-28/libstagefright_omx.so out/target/product/generic/obj/SHARED_LIBRARIES/libstagefright_omx.vendor_intermediates/libstagefright_omx.vendor.so; fi )&quot;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h3 id="1-Service-Related-File-Collector"><a href="#1-Service-Related-File-Collector" class="headerlink" title="1 Service Related File Collector"></a>1 Service Related File Collector</h3><p>旨在收集与Android native system service相关的文件，具体来说，与以下主体相关：</p>
+<ol>
+<li>top-level &amp; multi-level interface</li>
+<li>标准的parcel、flattenable、lightFlattenable结构体</li>
+<li>接收parcel类参数的函数</li>
+<li>不使用readFromParcel&amp;writeToParcel的特殊parcel结构体</li>
+</ol>
+<p>大致流程如下：</p>
+<ol>
+<li>FANS分析<code>cmd.txt</code>文件，提取AOSP编译过程中涉及到的cpp/cc文件，缩小搜索范围，同时排除特定目录下的文件和hardware相关的代码文件</li>
+<li>枚举文件每一行代码，根据<code>status_t xxxxx::onTransact(</code>的模式确定包含的interface，将interface和当前文件file关联</li>
+<li>如果代码包含interface，那显然是interface-related</li>
+<li>如果代码中有<code>readFromParcel</code>、<code>writeToParcel</code>、<code>flatten</code>、<code>unflatten</code>关键字，说明可能与interface交互，也是interface-related的</li>
+<li>如果代码中有包含<code>misc_parcel_related_function</code>或者<code>special_parcelable_function</code>，也视作是interface_related的</li>
+<li>最后输出两个文件，记录interface与所在文件路径的json格式文件[interface2file.json]，记录所有interface-related file的文件[service_related_file.txt]。</li>
+</ol>
+<h3 id="2-Interface-Model-Extractor"><a href="#2-Interface-Model-Extractor" class="headerlink" title="2 Interface Model Extractor"></a>2 Interface Model Extractor</h3><h4 id="2-1-Pre-Procees"><a href="#2-1-Pre-Procees" class="headerlink" title="2.1 Pre-Procees"></a>2.1 Pre-Procees</h4><p>根据readme.md，似乎得先把llvm以及clang-6.0配置好再运行<code>gen_all_related_cc1_cmd.py</code>。</p>
+<p><code>gen_all_related_cc1_cmd.py</code>又把cmd.txt拿出来分析，把AOSP编译过程中涉及到clang编译的命令记录筛选出来。（”-v 2&gt;&amp;1”，把错误输出也定向到标准输出），然后把结果保存为json，键值关系是&lt;filepath,cmd_result&gt;。</p>
+<p><code>extract_from_ast.py</code>把前一步得到的cmd_result拿出来，把<code>aosp_clang_location</code>替换为<code>manually_build_clang_location</code>，同时修改了一些其他的编译配置，然后去执行编译一遍。最后检查命令行的输出结果，确保编译顺利完成。</p>
+<p>考虑到在上述两者之间，我们还手动编译了BinderIface，需要搞懂它的作用。这里面涉及到了一些AST的东西。<br>同时需要注意的是，整个pre-process的工作都还是只提取interface/service related information，真正的处理还是得看post-process。</p>
+<p><strong>BinderIface</strong></p>
+<p>VisitTypedefDecl()： 似乎是记录编译目标cpp/cc时，涉及到的变量类型的alias和type，将其保存在typemap&lt;underlyingType, qualifiedName&gt;中。<br>暂时姑且认为BinderIface已经完成了对interface的AST操作。</p>
+<p><strong>Corner Case</strong><br>在部分代码中，switch case语句并没有按照一定格式优雅地编写，需要手动调整这一小部分代码，便于后续处理。具体的细节在<code>pre-process/misc.md</code>中。</p>
+<h4 id="2-2-post-process"><a href="#2-2-post-process" class="headerlink" title="2.2 post-process"></a>2.2 post-process</h4><p><strong>init.sh</strong></p>
+<p>重置一些目录和文件，然后调用init.py。处理一下pre-process中收集到的underlyingType与qualifiedName。<br>简单来说就是借用并查集操作，把各级别名与对应的基本类型直接关联起来。<br>从文件操作上来看，读入<code>rough_interface_related_data_dir/typemap.txt</code>，输出<code>interface_model_extractor_dir/simplified_typemap_file.txt</code>。</p>
+
+    </div>
+
+    
+    
+    
+        
+
+  <div class="followme">
+    <p>Welcome to my other publishing channels</p>
+
+    <div class="social-list">
+
+        <div class="social-item">
+          <a target="_blank" class="social-link" href="/atom.xml">
+            <span class="icon">
+              <i class="fa fa-rss"></i>
+            </span>
+
+            <span class="label">RSS</span>
+          </a>
+        </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Android/" rel="tag"># Android</a>
+              <a href="/tags/Paper/" rel="tag"># Paper</a>
+              <a href="/tags/Fuzz/" rel="tag"># Fuzz</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/04/01/HwachaFuzzer/" rel="prev" title="IntentFuzzer阅读笔记">
+      <i class="fa fa-chevron-left"></i> IntentFuzzer阅读笔记
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/05/04/ISCC-Android/" rel="next" title="ISCC CTF Android">
+      ISCC CTF Android <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          見出し
+        </li>
+        <li class="sidebar-nav-overview">
+          概要
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Knownledge"><span class="nav-number">1.</span> <span class="nav-text">Knownledge</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#challenges"><span class="nav-number">2.</span> <span class="nav-text">challenges</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#routine"><span class="nav-number">3.</span> <span class="nav-text">routine</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-Introduction"><span class="nav-number">4.</span> <span class="nav-text">1 Introduction</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-1-Related-Work"><span class="nav-number">4.1.</span> <span class="nav-text">1.1 Related Work</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#BinderCracker"><span class="nav-number">4.1.1.</span> <span class="nav-text">BinderCracker</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Chizpufle"><span class="nav-number">4.1.2.</span> <span class="nav-text">Chizpufle</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-2-Challenges-amp-Approaches"><span class="nav-number">4.2.</span> <span class="nav-text">1.2 Challenges&amp;Approaches</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-Background"><span class="nav-number">5.</span> <span class="nav-text">2 Background</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#2-1-Android-System-Service"><span class="nav-number">5.1.</span> <span class="nav-text">2.1 Android System Service</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#category"><span class="nav-number">5.1.1.</span> <span class="nav-text">category</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Application-Service-Communication-Model"><span class="nav-number">5.1.2.</span> <span class="nav-text">Application-Service Communication Model</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-Research-Scope"><span class="nav-number">6.</span> <span class="nav-text">2.2 Research Scope</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-Design"><span class="nav-number">7.</span> <span class="nav-text">3 Design</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#3-1-Design-Choices"><span class="nav-number">7.1.</span> <span class="nav-text">3.1 Design Choices</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#RPC-centric-testing"><span class="nav-number">7.1.1.</span> <span class="nav-text">RPC-centric testing</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Generation-based-fuzzing"><span class="nav-number">7.1.2.</span> <span class="nav-text">Generation-based fuzzing</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Learn-input-model-from-code"><span class="nav-number">7.1.3.</span> <span class="nav-text">Learn input model from code</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-2-Overview"><span class="nav-number">7.2.</span> <span class="nav-text">3.2 Overview</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-3-Interface-Collector"><span class="nav-number">7.3.</span> <span class="nav-text">3.3 Interface Collector</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-4-Interface-Model-Extractor"><span class="nav-number">7.4.</span> <span class="nav-text">3.4 Interface Model Extractor</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#3-Principles"><span class="nav-number">7.4.1.</span> <span class="nav-text">3 Principles</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Choices"><span class="nav-number">7.4.2.</span> <span class="nav-text">Choices</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Transaction-Code-Identification"><span class="nav-number">7.4.3.</span> <span class="nav-text">Transaction Code Identification</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Variable-Extraction"><span class="nav-number">7.4.4.</span> <span class="nav-text">Variable Extraction</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Type-Definition-Extraction"><span class="nav-number">7.4.5.</span> <span class="nav-text">Type Definition Extraction</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-5-Dependency-Inferer"><span class="nav-number">7.5.</span> <span class="nav-text">3.5 Dependency Inferer</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#Interface-Dependency"><span class="nav-number">7.5.1.</span> <span class="nav-text">Interface Dependency</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#Generation-Dependency"><span class="nav-number">7.5.1.1.</span> <span class="nav-text">Generation Dependency</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#Use-Dependency"><span class="nav-number">7.5.1.2.</span> <span class="nav-text">Use Dependency</span></a></li></ol></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Variable-Dependency"><span class="nav-number">7.5.2.</span> <span class="nav-text">Variable Dependency</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#intra-transaction"><span class="nav-number">7.5.2.1.</span> <span class="nav-text">intra-transaction</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#inter-transaction"><span class="nav-number">7.5.2.2.</span> <span class="nav-text">inter-transaction</span></a></li></ol></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-6-Fuzzer-Engine"><span class="nav-number">7.6.</span> <span class="nav-text">3.6 Fuzzer Engine</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#Principles-of-Transaction-Generator"><span class="nav-number">7.6.1.</span> <span class="nav-text">Principles of Transaction Generator</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-Implementation"><span class="nav-number">8.</span> <span class="nav-text">4 Implementation</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%90%9C%E7%B4%A2%E6%8E%A5%E5%8F%A3-Interface-Collector"><span class="nav-number">8.0.1.</span> <span class="nav-text">搜索接口 Interface Collector</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%8F%90%E5%8F%96%E6%8E%A5%E5%8F%A3-Interface-Model-Extractor"><span class="nav-number">8.0.2.</span> <span class="nav-text">提取接口 Interface Model Extractor</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E4%BE%9D%E8%B5%96%E6%8E%A8%E6%96%AD-Dependency-Inferer"><span class="nav-number">8.0.3.</span> <span class="nav-text">依赖推断 Dependency Inferer</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Fuzzer-Engine"><span class="nav-number">8.0.4.</span> <span class="nav-text">Fuzzer Engine</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-Evaluation"><span class="nav-number">9.</span> <span class="nav-text">5 Evaluation</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Interface"><span class="nav-number">9.1.</span> <span class="nav-text">Interface</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#Interface-Collection"><span class="nav-number">9.1.1.</span> <span class="nav-text">Interface Collection</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Interface-Dependency-1"><span class="nav-number">9.1.2.</span> <span class="nav-text">Interface Dependency</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Interface-Model-1375"><span class="nav-number">9.2.</span> <span class="nav-text">Interface Model 1375</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#statistices"><span class="nav-number">9.2.1.</span> <span class="nav-text">statistices</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%BB%BA%E6%A8%A1%E6%96%B9%E6%B3%95%E7%9A%84%E5%87%86%E7%A1%AE%E6%80%A7"><span class="nav-number">9.2.2.</span> <span class="nav-text">建模方法的准确性</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%BC%8F%E6%B4%9E%E5%88%97%E8%A1%A8"><span class="nav-number">9.2.3.</span> <span class="nav-text">漏洞列表</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-Discussion"><span class="nav-number">10.</span> <span class="nav-text">6 Discussion</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%AF%B9%E6%AF%94%E8%AF%84%E4%BB%B7"><span class="nav-number">10.1.</span> <span class="nav-text">对比评价</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#BinderCracker-1"><span class="nav-number">10.1.1.</span> <span class="nav-text">BinderCracker</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%87%AA%E6%88%91%E8%AF%84%E4%BB%B7"><span class="nav-number">10.2.</span> <span class="nav-text">自我评价</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#Interface-Model-Accuracy"><span class="nav-number">10.2.1.</span> <span class="nav-text">Interface Model Accuracy</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Coverage-Guided-Fuzzing"><span class="nav-number">10.2.2.</span> <span class="nav-text">Coverage Guided Fuzzing</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Fuzzing-Efficiency"><span class="nav-number">10.2.3.</span> <span class="nav-text">Fuzzing Efficiency</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Interface-based-Fuzzing-in-Android"><span class="nav-number">10.2.4.</span> <span class="nav-text">Interface-based Fuzzing in Android</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-My-View"><span class="nav-number">11.</span> <span class="nav-text">7 My View</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#FANS-Code-Review"><span class="nav-number"></span> <span class="nav-text">FANS Code Review</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-Service-Related-File-Collector"><span class="nav-number">1.</span> <span class="nav-text">1 Service Related File Collector</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-Interface-Model-Extractor"><span class="nav-number">2.</span> <span class="nav-text">2 Interface Model Extractor</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#2-1-Pre-Procees"><span class="nav-number">2.1.</span> <span class="nav-text">2.1 Pre-Procees</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-2-post-process"><span class="nav-number">2.2.</span> <span class="nav-text">2.2 post-process</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="slient2009"
+      src="/images/round_tiger.png">
+  <p class="site-author-name" itemprop="name">slient2009</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">26</span>
+          <span class="site-state-item-name">ポスト</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-name">タグ</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://slient2009.github.io/atom.xml" title="RSS → https:&#x2F;&#x2F;slient2009.github.io&#x2F;atom.xml"><i class="rss fa-fw"></i>RSS</a>
+      </span>
+  </div>
+
+
+
+
+
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2021 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">slient2009</span>
+</div>
+
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="合計閲覧者数">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="閲覧合計数">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

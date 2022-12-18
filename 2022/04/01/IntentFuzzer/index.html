@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/pig_128x128.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/pig_32x32.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/pig_16x16.ico">
+  <link rel="mask-icon" href="/images/pig_128x128.ico" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic|Roboto Slab:300,300italic,400,400italic,700,700italic|Rotoro Mono:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"slient2009.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="论文IntentFuzzer: Detecting Capability Leaks of Android Applications阅读笔记">
+<meta property="og:type" content="article">
+<meta property="og:title" content="IntentFuzzer阅读笔记">
+<meta property="og:url" content="http://slient2009.github.io/2022/04/01/IntentFuzzer/index.html">
+<meta property="og:site_name" content="Slient2009">
+<meta property="og:description" content="论文IntentFuzzer: Detecting Capability Leaks of Android Applications阅读笔记">
+<meta property="og:locale" content="ja_JP">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20220303135454.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20220303135658.png">
+<meta property="article:published_time" content="2022-04-01T04:00:02.000Z">
+<meta property="article:modified_time" content="2022-12-18T07:39:24.000Z">
+<meta property="article:author" content="slient2009">
+<meta property="article:tag" content="Android">
+<meta property="article:tag" content="Paper">
+<meta property="article:tag" content="Fuzz">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20220303135454.png">
+
+<link rel="canonical" href="http://slient2009.github.io/2022/04/01/IntentFuzzer/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'ja'
+  };
+</script>
+
+  <title>IntentFuzzer阅读笔记 | Slient2009</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="Slient2009" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="ナビゲーションバーの切り替え">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Slient2009</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">All I need is Twin Island Milk</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>ホーム</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>プロフィール</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>タグ<span class="badge">9</span></a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>アーカイブ<span class="badge">26</span></a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="ja">
+    <link itemprop="mainEntityOfPage" href="http://slient2009.github.io/2022/04/01/IntentFuzzer/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/round_tiger.png">
+      <meta itemprop="name" content="slient2009">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Slient2009">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          IntentFuzzer阅读笔记
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">投稿日</span>
+
+              <time title="作成日：2022-04-01 00:00:02" itemprop="dateCreated datePublished" datetime="2022-04-01T00:00:02-04:00">2022-04-01</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">編集日</span>
+                <time title="修正日：2022-12-18 02:39:24" itemprop="dateModified" datetime="2022-12-18T02:39:24-05:00">2022-12-18</time>
+              </span>
+
+          
+            <span class="post-meta-item" title="閲覧数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">閲覧数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>论文IntentFuzzer: Detecting Capability Leaks of Android Applications阅读笔记</p>
+<span id="more"></span>
+
+
+
+<blockquote>
+<p>IntentFuzzer: Detecting Capability Leaks of Android Applications</p>
+<p>目标是检测Android上的权限泄露问题，比如组件C具有权限P，另一个应用A可能通过构造特定的intent来调用组件C，从而达到使用权限P的目标。<br>一个典型的场景就是C有权限P且exported=true，但是在响应intent的时候没有鉴别是不是外来的，导致泄露的权限P。</p>
+<p>文章使用了若干启发式搜索方法来构造intent，同时修改system代码检测部分API并生成反馈，形成了一种基于的反馈引导的fuzz方法。</p>
+</blockquote>
+<h3 id="1-Intro"><a href="#1-Intro" class="headerlink" title="1 Intro"></a>1 Intro</h3><p>回顾了之前的方法，介绍了Android的权限泄露问题（Capibility Leak）：<br>Capability leak is such a vulnerability that an application exposes some permissions, by which other applications without these permissions can access protected resource.</p>
+<h3 id="2-Background"><a href="#2-Background" class="headerlink" title="2 Background"></a>2 Background</h3><h4 id="2-1-Permission-Model"><a href="#2-1-Permission-Model" class="headerlink" title="2.1 Permission Model"></a>2.1 Permission Model</h4><p>Google的设计规则：App默认情况下不能获取危险的权限，手机用户需要在应用安装的时候授予权限。</p>
+<h4 id="2-2-Inter-Component-Communication"><a href="#2-2-Inter-Component-Communication" class="headerlink" title="2.2 Inter Component Communication"></a>2.2 Inter Component Communication</h4><p>ICC就是指intent机制嘛。</p>
+<p>还有就是androidmanifest.xml中可以设置activity、service为exported=false来使得这个activity拒绝响应app之外的intent，未设置时默认是true。</p>
+<p>这篇文章主要关注这些exported=true，可以响应外来intent的组件。</p>
+<h4 id="2-3-Capability-Leaks"><a href="#2-3-Capability-Leaks" class="headerlink" title="2.3 Capability Leaks"></a>2.3 Capability Leaks</h4><p>Capability Leak, 也称 Permission Re-Delegation</p>
+<p>一个例子：正常应用A有权限P，A有一个对外暴露(exported=true)的组件C，而且C没有做好intent的安全检查，那么恶意应用M可能在无授权的情况下向C发送构造的intent从而使用P权限。</p>
+<p>其实这里只要C简单的判断一下intent的发送者是不是App自身的组件就可以避免权限泄露了，但是广大的开发者不以为意。</p>
+<h3 id="3-System-Design"><a href="#3-System-Design" class="headerlink" title="3 System Design"></a>3 System Design</h3><p>本研究动态地生成合适的intent并发送到目标组件，然后检查是否有权限泄露。<br>对于intent的生成，会从manifest中提取信息构建基本框架，然后通过修改system的API函数来进行反馈，修正intent的具体字段。</p>
+<h4 id="3-1-Fuzz-Strategy"><a href="#3-1-Fuzz-Strategy" class="headerlink" title="3.1 Fuzz Strategy"></a>3.1 Fuzz Strategy</h4><p>进行了一系列的讨论，把研究目标缩小到Started Service、Broadcast Receiver和explicit intent：</p>
+<ol>
+<li>作者认为Activity虽然也有提权攻击和页面欺诈钓鱼的情况，但是因为activity一般带界面且直接与用户交互，遇到问题时用户自己可以关掉activity来终止代码的运行，所以并不是非常严重。（存疑）</li>
+<li>作者把service分为started service和bound service两种，其中bound service不接受外来intent，所以不考虑。</li>
+<li>作者把intent分为explicit intent和implicit intent两种（显式和隐式），会使用显式intent来fuzz。</li>
+<li>作者把capability leak分为两种，一种是组件有意对外exported但是没有合理地检查intent的发送方权限；另一种是组件疏忽对外暴露。这两种情况下，组件都会接收显式intent。</li>
+</ol>
+<h4 id="3-2-Permission-Leak-Detection"><a href="#3-2-Permission-Leak-Detection" class="headerlink" title="3.2 Permission Leak Detection"></a>3.2 Permission Leak Detection</h4><p>前面说到未授权M通过带授权A的组件C执行了权限P，如何确定P权限被执行了？</p>
+<p>IntentFuzzer会在设备上植入一个不申请任何权限的Agent，然后修改Android系统代码，实时检查权限P是否被申请。（权限在app安装的时候授予，但是在运行时会即时进行permission check）</p>
+<h4 id="3-3-Intent-Construction"><a href="#3-3-Intent-Construction" class="headerlink" title="3.3 Intent Construction"></a>3.3 Intent Construction</h4><p>对于前面提到的Started Services，其入口函数onStart-Command()，对于Broadcast Receiver，其入口函数是onReceive()。</p>
+<p>对于intent涉及到的相关结构，其构造方法如下：</p>
+<ol>
+<li><p>Action:<br>对于那些有意exported来接收外来显式intent的组件，它们会在manifest中通过intent-filter来定义可以响应的action类型，枚举这些预定的action来测试对应组件即可；<br>对于那些疏忽exported意外地可以接受外来显式intent的组件，它们本身并不会在manifest中定义intent-filter，因为它们本来应该只响应app内部intent的。它们可能会检查action的值，然后决定运行后续的代码，如下面的代码示例。对于这些action的值，Google本身预定义并推荐使用了一系列的值，当然app本身可以定义自己的值，不过它们往往会是<code>packagePath.ActioType</code>的模式，所以本研究会从dex的变量池中选出符合这种模式的字符串加上Google预定义的值，作为可能的action键值。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onReceive</span><span class="params">(Context context, Intent intent)</span> </span>&#123;</span><br><span class="line">	SmsManager smsManager = SmsManager.getDefault();</span><br><span class="line">	String action = <span class="string">&quot;com.example.test.action.SEND_SMS&quot;</span>;</span><br><span class="line">	<span class="keyword">if</span> (action.equals(intent.getAction())) &#123;</span><br><span class="line">		smsManager.sendTextMessage(<span class="string">&quot;10086&quot;</span>, <span class="keyword">null</span>, <span class="string">&quot;test&quot;</span>,<span class="keyword">null</span>, <span class="keyword">null</span>); </span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>Data:<br>可以从intent-filter关于data属性的定义推测data的类型，具体可以从<code>scheme://host:port/path</code>这个模式来推测。研究中预先准备了一些data，如果有合适的intent-filter，就会使用对应的data来进行测试。</p>
+</li>
+<li><p>Extras:<br>Extras就是一系列包含Java原语的键值对，并不在intent-filter中定义，但是会在目标组件的代码中反应出来。<br>如下面示例代码，可以通过提取getStringExtra(‘name’)这样的API来判断目标组件会从intent中提取哪些extra。<br>具体来说，IntentFuzzer又一次修改的系统源码中关于getXXXExtra()这里函数，通过log返回它的调用情况。<br>在一次测试中，如果目标组件尝试从intent中提取类型为String键名为sms的extra数据但是没有成功，那么log中会包含相关的feedback，告诉intentfuzzer在下一次测试中，为测试intent加上这样的extra数据。<br>这样一来会测试到更为深层的代码逻辑。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">onStartCommand</span><span class="params">(Intent intent, <span class="keyword">int</span> flags, <span class="keyword">int</span> startId)</span> </span>&#123;</span><br><span class="line">	SmsManager smsManager = SmsManager.getDefault();</span><br><span class="line">	String smsContent = intent.getStringExtra(<span class="string">&quot;sms&quot;</span>);</span><br><span class="line">	<span class="keyword">if</span> (smsContent != <span class="keyword">null</span> &amp;&amp; smsContent != <span class="string">&quot;&quot;</span>) &#123;</span><br><span class="line">		smsManager.sendTextMessage(<span class="string">&quot;10086&quot;</span>, <span class="keyword">null</span>, smsContent, <span class="keyword">null</span>, <span class="keyword">null</span>); </span><br><span class="line">    &#125;</span><br><span class="line">	...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>Category:<br>显式intent一般不考虑category，相关匹配机制参考：<a target="_blank" rel="noopener" href="https://blog.csdn.net/iispring/article/details/48481793">https://blog.csdn.net/iispring/article/details/48481793</a></p>
+</li>
+<li><p>Flags:<br>flags会指示系统如何运行目标组件，不需要考虑。</p>
+</li>
+</ol>
+<h4 id="3-4-General-Fuzzing-Steps"><a href="#3-4-General-Fuzzing-Steps" class="headerlink" title="3.4 General Fuzzing Steps"></a>3.4 General Fuzzing Steps</h4><p>对于exported组件：</p>
+<ol>
+<li>枚举每个intent-filter中的Action，循环2-5</li>
+<li>如果intent-filter有Data，才构建Data数组</li>
+<li>初始化Extra键值对集合为空集E</li>
+<li>构造并发送一个包含Action，Data，E-extra的intent</li>
+<li>等待几秒，看看是否触发了permissionCheck和getXXXExtra的API。如果获取了一个新的Extra数据，向E中添加这样的键值对，回到4，否则退出当前循环。</li>
+</ol>
+<p>对于没有intent-filter的组件，也即那些可能因为没有设置而被默认暴露的组件：</p>
+<ol>
+<li>构建隐含Action（即常量池+预设值），对于每一个隐含Action，执行2-4</li>
+<li>初始化Extra为空集E</li>
+<li>构造并发送一个包含Action，E-extra的intent</li>
+<li>等待几秒，看看是否触发了permissionCheck和getXXXExtra的API。如果获取了一个新的Extra数据，向E中添加这样的键值对，回到3，否则退出当前循环。</li>
+</ol>
+<h3 id="4-Implementation"><a href="#4-Implementation" class="headerlink" title="4 Implementation"></a>4 Implementation</h3><h4 id="4-1-Architecture"><a href="#4-1-Architecture" class="headerlink" title="4.1 Architecture"></a>4.1 Architecture</h4><p>在drozer的框架上构建的，并且编写的drozer module来实现IntentFuzzer console。</p>
+<h4 id="4-2-System-Modification"><a href="#4-2-System-Modification" class="headerlink" title="4.2 System Modification"></a>4.2 System Modification</h4><p>拦截<code>checkPermission(String permision, int pid, int uid)</code>函数，向logcat中输出permission和uid就知道当前是那个应用在使用什么权限。</p>
+<p>拦截<code>getXXXExtra(String name, ...)</code>这一类函数，就指导当前应用的组件在尝试从intent中获取那些extra数据。</p>
+<h3 id="5-Evaluation"><a href="#5-Evaluation" class="headerlink" title="5 Evaluation"></a>5 Evaluation</h3><h4 id="5-1-Experiment-Design"><a href="#5-1-Experiment-Design" class="headerlink" title="5.1 Experiment Design"></a>5.1 Experiment Design</h4><p>2183 Google Play Apps, SAMSUNG Galaxy Nexus, Android 4.2.2</p>
+<p>closed-source ROMs in Redmi Android4.2.2 &amp; Lenovo K860i 4.2.1</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20220303135454.png" alt="image-20220303134511786"></p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20220303135658.png" alt="image-20220303134523059"></p>
+<h4 id="5-2-Case-Study"><a href="#5-2-Case-Study" class="headerlink" title="5.2 Case Study"></a>5.2 Case Study</h4><p>有一些实际的case分析，增加了文章的可信度。</p>
+
+    </div>
+
+    
+    
+    
+        
+
+  <div class="followme">
+    <p>Welcome to my other publishing channels</p>
+
+    <div class="social-list">
+
+        <div class="social-item">
+          <a target="_blank" class="social-link" href="/atom.xml">
+            <span class="icon">
+              <i class="fa fa-rss"></i>
+            </span>
+
+            <span class="label">RSS</span>
+          </a>
+        </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Android/" rel="tag"># Android</a>
+              <a href="/tags/Paper/" rel="tag"># Paper</a>
+              <a href="/tags/Fuzz/" rel="tag"># Fuzz</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/04/01/DroidFuzzer/" rel="prev" title="DroidFuzzer阅读笔记">
+      <i class="fa fa-chevron-left"></i> DroidFuzzer阅读笔记
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/04/01/HwachaFuzzer/" rel="next" title="IntentFuzzer阅读笔记">
+      IntentFuzzer阅读笔记 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          見出し
+        </li>
+        <li class="sidebar-nav-overview">
+          概要
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-Intro"><span class="nav-number">1.</span> <span class="nav-text">1 Intro</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-Background"><span class="nav-number">2.</span> <span class="nav-text">2 Background</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#2-1-Permission-Model"><span class="nav-number">2.1.</span> <span class="nav-text">2.1 Permission Model</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-2-Inter-Component-Communication"><span class="nav-number">2.2.</span> <span class="nav-text">2.2 Inter Component Communication</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-3-Capability-Leaks"><span class="nav-number">2.3.</span> <span class="nav-text">2.3 Capability Leaks</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-System-Design"><span class="nav-number">3.</span> <span class="nav-text">3 System Design</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#3-1-Fuzz-Strategy"><span class="nav-number">3.1.</span> <span class="nav-text">3.1 Fuzz Strategy</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-2-Permission-Leak-Detection"><span class="nav-number">3.2.</span> <span class="nav-text">3.2 Permission Leak Detection</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-3-Intent-Construction"><span class="nav-number">3.3.</span> <span class="nav-text">3.3 Intent Construction</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-4-General-Fuzzing-Steps"><span class="nav-number">3.4.</span> <span class="nav-text">3.4 General Fuzzing Steps</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-Implementation"><span class="nav-number">4.</span> <span class="nav-text">4 Implementation</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#4-1-Architecture"><span class="nav-number">4.1.</span> <span class="nav-text">4.1 Architecture</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-2-System-Modification"><span class="nav-number">4.2.</span> <span class="nav-text">4.2 System Modification</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-Evaluation"><span class="nav-number">5.</span> <span class="nav-text">5 Evaluation</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#5-1-Experiment-Design"><span class="nav-number">5.1.</span> <span class="nav-text">5.1 Experiment Design</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#5-2-Case-Study"><span class="nav-number">5.2.</span> <span class="nav-text">5.2 Case Study</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="slient2009"
+      src="/images/round_tiger.png">
+  <p class="site-author-name" itemprop="name">slient2009</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">26</span>
+          <span class="site-state-item-name">ポスト</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-name">タグ</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://slient2009.github.io/atom.xml" title="RSS → https:&#x2F;&#x2F;slient2009.github.io&#x2F;atom.xml"><i class="rss fa-fw"></i>RSS</a>
+      </span>
+  </div>
+
+
+
+
+
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2021 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">slient2009</span>
+</div>
+
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="合計閲覧者数">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="閲覧合計数">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

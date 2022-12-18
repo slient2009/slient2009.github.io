@@ -20,25 +20,26 @@
     var CONFIG = {"hostname":"slient2009.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
   </script>
 
-  <meta name="description" content="与刷机的第二次亲密接触。（第一次直接把HUAWEI主板刷坏了，默哀一秒">
+  <meta name="description" content="论文DroidFuzzer: Fuzzing the Android Apps with Intent-Filter Tag阅读笔记">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Nexus5刷机体验">
-<meta property="og:url" content="http://slient2009.github.io/2021/07/29/Nexus5-Flashing/index.html">
+<meta property="og:title" content="DroidFuzzer阅读笔记">
+<meta property="og:url" content="http://slient2009.github.io/2022/04/01/DroidFuzzer/index.html">
 <meta property="og:site_name" content="Slient2009">
-<meta property="og:description" content="与刷机的第二次亲密接触。（第一次直接把HUAWEI主板刷坏了，默哀一秒">
+<meta property="og:description" content="论文DroidFuzzer: Fuzzing the Android Apps with Intent-Filter Tag阅读笔记">
 <meta property="og:locale" content="ja_JP">
-<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20210729152850.png">
-<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20210729154629.png">
-<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20210729154813.png">
-<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20210729165444.png">
-<meta property="article:published_time" content="2021-07-29T04:00:00.000Z">
-<meta property="article:modified_time" content="2021-09-09T08:52:37.000Z">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20211214201802.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20211214203637.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20211214203102.png">
+<meta property="article:published_time" content="2022-04-01T04:00:01.000Z">
+<meta property="article:modified_time" content="2022-12-18T07:39:17.000Z">
 <meta property="article:author" content="slient2009">
 <meta property="article:tag" content="Android">
+<meta property="article:tag" content="Paper">
+<meta property="article:tag" content="Fuzz">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20210729152850.png">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20211214201802.png">
 
-<link rel="canonical" href="http://slient2009.github.io/2021/07/29/Nexus5-Flashing/">
+<link rel="canonical" href="http://slient2009.github.io/2022/04/01/DroidFuzzer/">
 
 
 <script id="page-configurations">
@@ -51,7 +52,7 @@
   };
 </script>
 
-  <title>Nexus5刷机体验 | Slient2009</title>
+  <title>DroidFuzzer阅读笔记 | Slient2009</title>
   
 
 
@@ -164,7 +165,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="ja">
-    <link itemprop="mainEntityOfPage" href="http://slient2009.github.io/2021/07/29/Nexus5-Flashing/">
+    <link itemprop="mainEntityOfPage" href="http://slient2009.github.io/2022/04/01/DroidFuzzer/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/round_tiger.png">
@@ -177,7 +178,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          Nexus5刷机体验
+          DroidFuzzer阅读笔记
         </h1>
 
         <div class="post-meta">
@@ -187,14 +188,14 @@
               </span>
               <span class="post-meta-item-text">投稿日</span>
 
-              <time title="作成日：2021-07-29 00:00:00" itemprop="dateCreated datePublished" datetime="2021-07-29T00:00:00-04:00">2021-07-29</time>
+              <time title="作成日：2022-04-01 00:00:01" itemprop="dateCreated datePublished" datetime="2022-04-01T00:00:01-04:00">2022-04-01</time>
             </span>
               <span class="post-meta-item">
                 <span class="post-meta-item-icon">
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">編集日</span>
-                <time title="修正日：2021-09-09 04:52:37" itemprop="dateModified" datetime="2021-09-09T04:52:37-04:00">2021-09-09</time>
+                <time title="修正日：2022-12-18 02:39:17" itemprop="dateModified" datetime="2022-12-18T02:39:17-05:00">2022-12-18</time>
               </span>
 
           
@@ -215,51 +216,59 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <p>与刷机的第二次亲密接触。<br>（第一次直接把HUAWEI主板刷坏了，默哀一秒</p>
+        <p>论文DroidFuzzer: Fuzzing the Android Apps with Intent-Filter Tag阅读笔记</p>
 <span id="more"></span>
 
+<blockquote>
+<p>DroidFuzzer: Fuzzing the Android Apps with Intent-Filter Tag<br>In <em>Proceedings of International Conference on Advances in Mobile Computing &amp; Multimedia</em> (pp. 68-74).</p>
+<p>文章提出了一种借助Intent-filter的fuzz安卓应用的框架，主要面向接收外来MIME数据的Activity，也即注册了相应的intent-filter的Activity。</p>
+</blockquote>
+<h3 id="1-相关框架介绍"><a href="#1-相关框架介绍" class="headerlink" title="1 相关框架介绍"></a>1 相关框架介绍</h3><p><strong>Monkey</strong>:运行在模拟器或者设备上的压力测试工具，可以模拟用户事件（点击、滑动、按压）和一些系统级事件。</p>
+<p><strong>MonkeyRunner</strong>:提供API，可以通过编写脚本控制设备和测试过程，常用于功能测试和回归测试，但是也只能模拟用户事件。</p>
+<p><strong>DroidPilot</strong>:通过模拟器或者设备，可以获取UI对象，支持脚本化测试，支持同时在大量的设备上进行测试，常用于UI测试。</p>
+<p><strong>iTestin</strong>:可以记录在一台设备上的脚本测试，然后部署到其他的设备上，用于大规模的设备测试和回归测试。</p>
+<p><strong>Robotium</strong>:基于Android Instrumentation，该测试框架使得编写强大而鲁棒的自动化UI测试脚本更加容易。</p>
+<p><em>上述框架都聚焦于UI测试</em></p>
+<p><strong>Dynodroid</strong>:通过生成相关的用户事件输入给App来进行fuzz，同时可以以一种轻量的方法监控App对输入用户事件的反应。</p>
+<p>还有一些其他的fuzz切入点，例如SMS、NFC、binder。</p>
+<h3 id="2-DroidFuzzer设计"><a href="#2-DroidFuzzer设计" class="headerlink" title="2 DroidFuzzer设计"></a>2 DroidFuzzer设计</h3><p>Android有四大组件：Activity、Broadcast Receiver、Service、Content Provider。</p>
+<p>Activity自然是App与用户交互的主要接口，同时Intent又是Activity之间交互的主要方式，所以选择通过Fuzz Intent的手段来测试App。<br>按照作者的表述，Activity是App的“核心”，Intent是Activity接收的输入数据，那么Intent也就可以视作App的输入，于是就通过Fuzz Intent的方式来测试整个App。</p>
+<p>DroidFuzzer是灰盒的，除了确定哪些Activity接收Intent之外，不再关心更为具体的内部信息。可以分为预处理、变异和动态检测三个模块，</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20211214201802.png" alt="image-20211214145729111"></p>
+<h4 id="2-1-预处理模块"><a href="#2-1-预处理模块" class="headerlink" title="2.1 预处理模块"></a>2.1 预处理模块</h4><p>在预处理阶段，需要确定哪些Activity会处理外来的输入数据，也即确定哪些Activity注册了监听事件。<br>这里通过解析AndroidManifest.xml文件来确定静态注册的intent-filter，包括action、category和data这三个字段。<br>因为主要是考虑接收外来MIME数据的Activity，所以对于data字段，包括了常见的video、audio、text、image、application等数据类型。</p>
+<p>对于动态注册的intent-filter暂时没有考虑。</p>
+<h4 id="2-2-变异模块"><a href="#2-2-变异模块" class="headerlink" title="2.2 变异模块"></a>2.2 变异模块</h4><p>在这个模块主要有三个问题需要解决：</p>
+<ol>
+<li>如何提供不同种类的正常的数据作为输入</li>
+<li>如何构造正常数据</li>
+<li>如何生成异常数据</li>
+</ol>
+<p>解决方法：</p>
+<ol>
+<li>搜集各种严格遵循格式的MIME数据作为seed data</li>
+<li>人工构造包含各种MIME格式文件的数据库，用于指导MIME数据的生成</li>
+<li>如何设计变异功能，需要建立在对MIME数据格式的理解之上。<br>文章首先总结了MIME格式的大致结构：一般来说，MIME数据流会被分成多个chunk，每个chunk内部会包含一些field来完成一些描述，这些field长度一般为若干byte，存储着不同类型的数据。<br>因此，变异策略聚焦于这些field来进行。<br>文章考虑了4中主要的field类型，包括Integer,Flag,String,ByteArray，并制订了对应的变异方案（但是都比较基础）。</li>
+</ol>
+<h4 id="2-3-动态检测模块"><a href="#2-3-动态检测模块" class="headerlink" title="2.3 动态检测模块"></a>2.3 动态检测模块</h4><p>Android App的运行可以分为Java和Native两个层面。<br>对于Java层，DroidFuzzer通过覆写ActivityController来进行crash检测。<br>对于Native层，通过监控tombstone文件来进行crash检测（tombstone文件会包含已crash进程的相关信息）。</p>
+<h3 id="3-评估"><a href="#3-评估" class="headerlink" title="3 评估"></a>3 评估</h3><p>文章对Bug的定义：</p>
+<ol>
+<li>造成crash或者exit</li>
+<li>造成ANR(Application Not Responding)</li>
+<li>造成无限制的资源占用</li>
+</ol>
+<p>完成了两类文件的测试，分析了一些具体的crash原因。</p>
+<p>特别提出的是，文章声称DroidFuzzer以App的形式进行工作，非常方便展开测试。</p>
+<h4 id="3-1-视频测试"><a href="#3-1-视频测试" class="headerlink" title="3.1 视频测试"></a>3.1 视频测试</h4><p>测试对象：MX Player，QQ Player，Mobo Player。<br>测试格式：AVI PM4 RM</p>
+<p>QQ Player的鲁棒性要差一些；MP4因为格式最为复杂，所以造成的bug多一些。</p>
+<img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20211214203637.png" alt="image-20211214202701442" style="zoom: 50%;" />
 
-<h1 id="准备"><a href="#准备" class="headerlink" title="准备"></a>准备</h1><p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/linhaostudy/p/11543687.html">Android Recovery升级原理</a></p>
-<p><a target="_blank" rel="noopener" href="https://www.getdroidtips.com/twrp-recovery-lg-g3/">How to Install Official TWRP Recovery on LG G3 and Root it (All Variant) (getdroidtips.com)</a></p>
-<p><a target="_blank" rel="noopener" href="https://www.getdroidtips.com/android-11-nexus-5/">Android 11 for Google Nexus 5 | How to Install AOSP 11.0 (getdroidtips.com)</a></p>
-<p><a target="_blank" rel="noopener" href="https://technastic.com/fastboot-commands-list/">Fastboot Commands List - Cheat Sheet PDF Download | Technastic</a></p>
-<p>Nexus 5 (已经root，解了BL锁，打开USB debugging)</p>
-<p>下载twrp-xx-hammerhead.img到电脑</p>
-<p>下载合适的LineageOS-xxx-forhammerhead.zip到手机，如路径/sdcard/LineageOS.zip</p>
-<h1 id="安装twrp"><a href="#安装twrp" class="headerlink" title="安装twrp"></a>安装twrp</h1><p>使用fastboot刷入twrp</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">adb reboot bootloader # 先进入bootloader</span><br><span class="line">fastboot devices #检查设备连接情况</span><br><span class="line">fastboot flash recovery twrp-xx-hammerhead.img #把twrp刷到recovery分区</span><br><span class="line">fastboot reboot # 然后重启到recovery模式</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash">或者，用本地img文件把手机启动到recovery模式，而不是刷上去，一次性的</span></span><br><span class="line">fastboot boot twrp-xx-hammerhead.img </span><br></pre></td></tr></table></figure>
 
-<h1 id="安装LineageOS"><a href="#安装LineageOS" class="headerlink" title="安装LineageOS"></a>安装LineageOS</h1><p>重启到recovery进入到twrp的图形化界面中操作，选择install<br>选择路径下/sdcard/LineageOS.zip即可开刷，然后等待刷机完成<br>然后重启到System进入LineageOS安装引导，可以考虑不把recovery替换为LineageOS的recovery，方便以后用twrp<strong>反复折腾</strong>。</p>
-<img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20210729152850.png" alt="image-20210729152633883" style="zoom: 50%;" />
 
-<h1 id="安装GApps"><a href="#安装GApps" class="headerlink" title="安装GApps"></a>安装GApps</h1><p><a target="_blank" rel="noopener" href="https://www.moonlol.com/google-gapps%E6%9C%8D%E5%8B%99%E6%A1%86%E6%9E%B6-5971.html">刷入Google GApps服務框架 – 月光部落 (moonlol.com)</a></p>
-<p><a target="_blank" rel="noopener" href="https://sspai.com/post/36083">Open GApps，也许是 Android 刷机爱好者的「装机必备」</a></p>
-<p>先去OpenGApps下载合适的GApps套件，这里我先选择了openGApps-11-nano版本。<br>然后adb push到手机上，通过twrp安装即可。</p>
-<p><strong>空间不足</strong></p>
-<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20210729154629.png" alt="image-20210729153331825"></p>
-<p>直接装nano遇到分区空间不足的问题，在XDA上找了一下，发现了一个老外魔改的twrp用于重新分配各个分区的大小。<br>这里为了安装GApps，主要是需要增加System区的大小。</p>
-<p>[<a target="_blank" rel="noopener" href="https://forum.xda-developers.com/t/recovery-unofficial-twrp-hh-for-nexus-5-hammerhead-discontinued.4047653/">RECOVERY][UNOFFICIAL] TWRP HH for Nexus 5 (hammerhead) [DISCONTINUED] | XDA Forums (xda-developers.com)</a></p>
-<p>需要重新安装XDA大佬改过的twrp，然后在twrp-advanced-command中执行<code>hh_repart -m</code>，接着重新安装系统，最后安装GApps。</p>
-<p><strong>LineageOS卡在启动画面</strong></p>
-<p>我又去XDA上看，看到也有老哥遇到了同样的问题。<br>可能是因为LineageOS版本的问题，老外的工具貌似只在LineageOS17上有过成功安装的例子。<br>于是我又去把系统换成LineageOS17.1（Android10，GApps也需要下载对应的版本），其余按照相同的流程重来一遍。</p>
-<p><strong>但是空间还是不足</strong></p>
-<p>我又去翻XDA的帖子，发现虽然老外推荐GApps-nano，但是可能更为精简的pico才合适，所以也许一开始选LineageOS18+GApps-pico才是对的。</p>
-<p>但是我先试了一下LineageOS17.1 + GApps-pico，最终成功安装。</p>
-<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20210729154813.png" alt="image-20210729154811028"></p>
-<p><strong>LineageOS18 + GApps-pico</strong></p>
-<p>同样，只要使用pico版本的GApps，就可以在LineageOS18上面成功安装。<br>但是，LineageOS17 + GApps-nano依然卡在开机画面，一位XDA老哥也有相同经历。</p>
-<h1 id="安装V2Ray"><a href="#安装V2Ray" class="headerlink" title="安装V2Ray"></a>安装V2Ray</h1><p>现在，手机里面有了最为基础的Google套件，下面想配置一下科学上网工具。</p>
-<p>先安装<a target="_blank" rel="noopener" href="https://github.com/2dust/v2rayNG/releases">v2rayNG</a>，但是导入配置之后无法连接，一开始还以为是网络的问题。<br>实则是因为手机和代理服务器有时间差导致连接错误。<br>nexus作为Google亲儿子，开机之后使用的时间服务器(NTP)在海外，所以并不能同步到正确的网络时间。<br>所以这里需要把nexus的NTP服务器改成国内的。</p>
-<p><a target="_blank" rel="noopener" href="https://liuzesen.com/2020/05/10/%E6%9B%B4%E6%94%B9Android%E8%AE%BE%E5%A4%87NTP%E6%9C%8D%E5%8A%A1%E5%99%A8/">更改 Android 设备 NTP 服务器 | Hello Underground (liuzesen.com)</a></p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 使用Ubuntu连接手机操作</span></span><br><span class="line"><span class="meta">#</span><span class="bash">先在开发者选项中打开rooted debugging</span></span><br><span class="line">adb root  # 然后把自己提成root权限</span><br><span class="line">adb shell # 连进去</span><br><span class="line">settings put global ntp_server ntp.tuna.tsinghua.edu.cn</span><br><span class="line">reboot </span><br><span class="line"><span class="meta"> #</span><span class="bash"> 不过贵清的服务器我这边没成功，最后换成了阿里的ntp1.aliyun.com</span></span><br></pre></td></tr></table></figure>
-
-<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20210729165444.png" alt="image-20210729165431046"></p>
-<p>接着，就可以使用v2ray科学上网，但是我这边弄下来连接不是很稳定。</p>
-<h1 id="安装卸载一般软件"><a href="#安装卸载一般软件" class="headerlink" title="安装卸载一般软件"></a>安装卸载一般软件</h1><p>我这个nexus5是2G+16G，存储空间非常宝贵，虽然LineageOS的预装软件不是很多，但是也还是有些软件不会用到。<br>比如AudioFX，需要干掉。</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb shell pm disable--user --user 0 org.lineageos.audiofx #卸载其余预装软件同理</span><br></pre></td></tr></table></figure>
-
-<p>登录Google Play来下载一些软件，这个时候系统提示清理存储空间，但是明明空间还很充足。<br>一时半会儿不知道咋解决，就先adb安装了吧。</p>
-<p>后面使用截屏又会提示<code>Taking screenshots isn&#39;t allowed by the app or your organization</code>，不知道是什么原因。</p>
+<h4 id="3-2-音频测试"><a href="#3-2-音频测试" class="headerlink" title="3.2 音频测试"></a>3.2 音频测试</h4><p>测试对象：TTPod BaiduMusic<br>测试格式：WMA MP3</p>
+<p><img src="https://raw.githubusercontent.com/slient2009/PicGo/main/img/20211214203102.png" alt="image-20211214203102569"></p>
+<h3 id="4-一些问题"><a href="#4-一些问题" class="headerlink" title="4 一些问题"></a>4 一些问题</h3><p>性能问题没有提及：没有进行源码分析，没有说明硬件参数，App本身的运行速度就不高，而且DroidFuzzer也以App形式存在，令人很难相信DroidFuzzer在测试方面具有较好的性能。</p>
+<p>变异策略：不具有很强的针对性，效率问题值得讨论，当然，这也属于黑盒或者灰盒分析的自身的问题。</p>
+<p>没有开源</p>
 
     </div>
 
@@ -289,6 +298,8 @@
       <footer class="post-footer">
           <div class="post-tags">
               <a href="/tags/Android/" rel="tag"># Android</a>
+              <a href="/tags/Paper/" rel="tag"># Paper</a>
+              <a href="/tags/Fuzz/" rel="tag"># Fuzz</a>
           </div>
 
         
@@ -297,12 +308,12 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2021/06/21/Hello-Hexo/" rel="prev" title="Hexo美化记录">
-      <i class="fa fa-chevron-left"></i> Hexo美化记录
+    <a href="/2022/02/12/Android-Reverse-2/" rel="prev" title="VNCTF2022 Android cm1.apk">
+      <i class="fa fa-chevron-left"></i> VNCTF2022 Android cm1.apk
     </a></div>
       <div class="post-nav-item">
-    <a href="/2021/08/15/Android-NDK/" rel="next" title="Android NDK开发学习笔记">
-      Android NDK开发学习笔记 <i class="fa fa-chevron-right"></i>
+    <a href="/2022/04/01/IntentFuzzer/" rel="next" title="IntentFuzzer阅读笔记">
+      IntentFuzzer阅读笔记 <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
       </footer>
@@ -362,7 +373,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%87%86%E5%A4%87"><span class="nav-number">1.</span> <span class="nav-text">准备</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%AE%89%E8%A3%85twrp"><span class="nav-number">2.</span> <span class="nav-text">安装twrp</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%AE%89%E8%A3%85LineageOS"><span class="nav-number">3.</span> <span class="nav-text">安装LineageOS</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%AE%89%E8%A3%85GApps"><span class="nav-number">4.</span> <span class="nav-text">安装GApps</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%AE%89%E8%A3%85V2Ray"><span class="nav-number">5.</span> <span class="nav-text">安装V2Ray</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%AE%89%E8%A3%85%E5%8D%B8%E8%BD%BD%E4%B8%80%E8%88%AC%E8%BD%AF%E4%BB%B6"><span class="nav-number">6.</span> <span class="nav-text">安装卸载一般软件</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-%E7%9B%B8%E5%85%B3%E6%A1%86%E6%9E%B6%E4%BB%8B%E7%BB%8D"><span class="nav-number">1.</span> <span class="nav-text">1 相关框架介绍</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-DroidFuzzer%E8%AE%BE%E8%AE%A1"><span class="nav-number">2.</span> <span class="nav-text">2 DroidFuzzer设计</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#2-1-%E9%A2%84%E5%A4%84%E7%90%86%E6%A8%A1%E5%9D%97"><span class="nav-number">2.1.</span> <span class="nav-text">2.1 预处理模块</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-2-%E5%8F%98%E5%BC%82%E6%A8%A1%E5%9D%97"><span class="nav-number">2.2.</span> <span class="nav-text">2.2 变异模块</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-3-%E5%8A%A8%E6%80%81%E6%A3%80%E6%B5%8B%E6%A8%A1%E5%9D%97"><span class="nav-number">2.3.</span> <span class="nav-text">2.3 动态检测模块</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-%E8%AF%84%E4%BC%B0"><span class="nav-number">3.</span> <span class="nav-text">3 评估</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#3-1-%E8%A7%86%E9%A2%91%E6%B5%8B%E8%AF%95"><span class="nav-number">3.1.</span> <span class="nav-text">3.1 视频测试</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-2-%E9%9F%B3%E9%A2%91%E6%B5%8B%E8%AF%95"><span class="nav-number">3.2.</span> <span class="nav-text">3.2 音频测试</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-%E4%B8%80%E4%BA%9B%E9%97%AE%E9%A2%98"><span class="nav-number">4.</span> <span class="nav-text">4 一些问题</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
